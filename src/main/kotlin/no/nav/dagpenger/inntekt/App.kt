@@ -16,9 +16,7 @@ import io.ktor.server.netty.Netty
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
-
-
-fun main(){
+fun main() {
     val application = embeddedServer(Netty, port = 8080) {
         inntektApi()
     }
