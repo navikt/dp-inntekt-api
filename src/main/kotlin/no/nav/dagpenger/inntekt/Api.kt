@@ -21,7 +21,7 @@ class Api {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val application = embeddedServer(Netty, port = 8092, module = Application::main)
+            val application = embeddedServer(Netty, port = 8080, module = Application::main)
             application.start(wait = false)
             Runtime.getRuntime().addShutdownHook(Thread {
                 application.stop(5, 5, TimeUnit.SECONDS)
