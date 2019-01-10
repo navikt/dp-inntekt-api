@@ -10,9 +10,9 @@ import io.ktor.server.testing.withTestApplication
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class ApiTest {
+class AppTest {
 
-    @Test fun ` should be able to Http GET inntekt `() = withTestApplication(Application::main) {
+    @Test fun ` should be able to Http GET inntekt `() = withTestApplication(Application::inntektApi) {
         with(handleRequest(HttpMethod.Get, "inntekt/1234")) {
             assertEquals(HttpStatusCode.OK, response.status())
             val inntekt = Gson().fromJson<Inntekt>(response.content, Inntekt::class.java)

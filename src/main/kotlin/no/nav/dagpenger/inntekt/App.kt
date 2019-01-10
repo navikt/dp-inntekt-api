@@ -16,18 +16,16 @@ import io.ktor.server.netty.Netty
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
-class Api {
 
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val application = embeddedServer(Netty, port = 8080, module = Application::main)
-            application.start(wait = false)
-            Runtime.getRuntime().addShutdownHook(Thread {
-                application.stop(5, 5, TimeUnit.SECONDS)
-            })
-        }
+
+fun main(){
+    val application = embeddedServer(Netty, port = 8080) {
+        inntektApi()
     }
+    application.start(wait = false)
+    Runtime.getRuntime().addShutdownHook(Thread {
+        application.stop(5, 5, TimeUnit.SECONDS)
+    })
 }
 
 data class Inntekt(
@@ -39,7 +37,7 @@ data class Inntekt(
     }
 }
 
-fun Application.main() {
+fun Application.inntektApi() {
     install(DefaultHeaders)
     install(CallLogging)
     install(ContentNegotiation) {
