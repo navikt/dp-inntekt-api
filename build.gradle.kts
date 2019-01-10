@@ -6,7 +6,6 @@ plugins {
     groovy
     kotlin("jvm") version "1.3.11"
     id("com.diffplug.gradle.spotless") version "3.13.0"
-    id("info.solidsoft.pitest") version "1.3.0"
     id("com.github.johnrengelman.shadow") version "4.0.3"
 }
 
@@ -18,21 +17,15 @@ buildscript {
 
 apply {
     plugin("com.diffplug.gradle.spotless")
-    plugin("info.solidsoft.pitest")
 }
 
 repositories {
-    mavenCentral()
-    maven("http://packages.confluent.io/maven/")
-    maven("https://dl.bintray.com/kotlin/ktor")
-    maven("https://dl.bintray.com/kotlin/kotlinx")
-    maven("https://dl.bintray.com/kittinunf/maven")
-    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    jcenter()
 }
 
 application {
     applicationName = "dagpenger-inntekt-api"
-    mainClassName = "bla"
+    mainClassName = "no.nav.dagpenger.inntekt.Api"
 }
 
 java {
@@ -40,14 +33,22 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+val ktorVersion = "1.1.1"
+val kotlinLoggingVersion = "1.4.9"
+
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation("io.ktor:ktor-server:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-gson:$ktorVersion")
+    implementation("io.ktor:ktor-auth:$ktorVersion")
+    implementation("io.ktor:ktor-locations:$ktorVersion")
+    implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
 
-    // Use the latest Groovy version for Spock testing
-    testImplementation("org.codehaus.groovy:groovy-all:2.5.4")
 
-    // Use the awesome Spock testing and specification framework even with Java
-    testImplementation("org.spockframework:spock-core:1.2-groovy-2.5")
+    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit"))
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("junit:junit:4.12")
 }
 
