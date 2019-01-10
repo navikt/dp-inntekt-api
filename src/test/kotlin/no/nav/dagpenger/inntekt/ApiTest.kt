@@ -6,7 +6,7 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
-import java.math.BigDecimal
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -16,7 +16,7 @@ class ApiTest {
         with(handleRequest(HttpMethod.Get, "inntekt/1234")) {
             assertEquals(HttpStatusCode.OK, response.status())
             val inntekt = Gson().fromJson<Inntekt>(response.content, Inntekt::class.java)
-            assertEquals(inntekt.number, BigDecimal(111))
+            assertEquals(inntekt, Inntekt.sampleInntekt)
             assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
         }
     }
