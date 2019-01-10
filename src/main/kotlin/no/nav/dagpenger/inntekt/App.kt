@@ -24,7 +24,7 @@ fun main(){
     }
     application.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
-        application.stop(5, 5, TimeUnit.SECONDS)
+        application.stop(5, 60, TimeUnit.SECONDS)
     })
 }
 
