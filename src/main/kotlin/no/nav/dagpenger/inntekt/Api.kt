@@ -4,7 +4,6 @@ class Api {
 
     fun some(): Boolean = true
 
-
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
