@@ -16,10 +16,8 @@ class ApiTest {
         with(handleRequest(HttpMethod.Get, "inntekt/1234")) {
             assertEquals(HttpStatusCode.OK, response.status())
             val inntekt = Gson().fromJson<Inntekt>(response.content, Inntekt::class.java)
-            assertEquals(inntekt.number,  BigDecimal(111))
-            assertEquals("application/json; charset=UTF-8",  response.headers["Content-Type"])
+            assertEquals(inntekt.number, BigDecimal(111))
+            assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
         }
     }
-
-
 }

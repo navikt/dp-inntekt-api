@@ -7,7 +7,6 @@ import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.gson.gson
-import io.ktor.locations.Locations
 import io.ktor.response.respond
 import io.ktor.routing.get
 import io.ktor.routing.route
@@ -24,13 +23,12 @@ class Api {
         fun main(args: Array<String>) {
             val application = embeddedServer(Netty, port = 8092, module = Application::main)
             application.start(wait = false)
-            Runtime.getRuntime().addShutdownHook(Thread{
+            Runtime.getRuntime().addShutdownHook(Thread {
                 application.stop(5, 5, TimeUnit.SECONDS)
             })
         }
     }
 }
-
 
 data class Inntekt(
     val number: BigDecimal
@@ -41,7 +39,6 @@ data class Inntekt(
     }
 }
 
-
 fun Application.main() {
     install(DefaultHeaders)
     install(CallLogging)
@@ -49,7 +46,6 @@ fun Application.main() {
         gson {
         }
     }
-    install(Locations)
 
     routing {
 

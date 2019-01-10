@@ -3,7 +3,6 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     application
-    groovy
     kotlin("jvm") version "1.3.11"
     id("com.diffplug.gradle.spotless") version "3.13.0"
     id("com.github.johnrengelman.shadow") version "4.0.3"
@@ -42,9 +41,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-gson:$ktorVersion")
     implementation("io.ktor:ktor-auth:$ktorVersion")
-    implementation("io.ktor:ktor-locations:$ktorVersion")
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
-
 
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
