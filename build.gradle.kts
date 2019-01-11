@@ -53,11 +53,42 @@ dependencies {
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
 
+    // SOAP dependencies
+    implementation("com.sun.xml.ws:jaxws-tools:2.3.0.2")
+    implementation("javax.xml.ws:jaxws-api:2.3.1")
+
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
 }
+
+java {
+    val mainJavaSourceSet: SourceDirectorySet = sourceSets.getByName("main").java
+    mainJavaSourceSet.srcDir("$projectDir/build/generated-sources")
+}
+
+val wsdlDir = "$projectDir/wsdl"
+val wsdlsToGenerate = listOf(
+    "$wsdlDir/inntektskomponent/Binding.wsdl")
+
+val generatedDir = "$projectDir/build/generated-sources"
+
+tasks {
+    register("wsimport") {
+        group = "other"
+        doLast {
+            mkdir(generatedDir)
+            wsdlsToGenerate.forEach {
+                ant.withGroovyBuilder {
+                    "taskdef"("name" to "wsimport", "classname" to "com.sun.tools.ws.ant.WsImport", "classpath" to sourceSets.getAt("main").runtimeClasspath.asPath)
+                    "wsimport"("wsdl" to it, "sourcedestdir" to generatedDir, "xnocompile" to true) {}
+                }
+            }
+        }
+    }
+}
+tasks.getByName("compileKotlin").dependsOn("wsimport")
 
 spotless {
     kotlin {
