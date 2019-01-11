@@ -24,7 +24,7 @@ repositories {
 
 application {
     applicationName = "dp-inntekt-api"
-    mainClassName = "no.nav.dagpenger.inntekt.AppKt"
+    mainClassName = "no.nav.dagpenger.inntekt.InntektApiKt"
 }
 
 java {

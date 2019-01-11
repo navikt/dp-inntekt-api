@@ -16,11 +16,11 @@ import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import java.math.BigDecimal
-import java.util.concurrent.TimeUnit
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.exporter.common.TextFormat
 import io.prometheus.client.hotspot.DefaultExports
+import java.math.BigDecimal
+import java.util.concurrent.TimeUnit
 
 private val collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
 
@@ -62,17 +62,17 @@ fun Application.inntektApi() {
                     Inntekt.sampleInntekt
                 )
             }
-            get("/isAlive") {
-                call.respondText("ALIVE", ContentType.Text.Plain)
-            }
-            get("/isReady") {
-                call.respondText("READY", ContentType.Text.Plain)
-            }
-            get("/metrics") {
-                val names = call.request.queryParameters.getAll("name[]")?.toSet() ?: setOf()
-                call.respondTextWriter(ContentType.parse(TextFormat.CONTENT_TYPE_004)) {
-                    TextFormat.write004(this, collectorRegistry.filteredMetricFamilySamples(names))
-                }
+        }
+        get("/isAlive") {
+            call.respondText("ALIVE", ContentType.Text.Plain)
+        }
+        get("/isReady") {
+            call.respondText("READY", ContentType.Text.Plain)
+        }
+        get("/metrics") {
+            val names = call.request.queryParameters.getAll("name[]")?.toSet() ?: setOf()
+            call.respondTextWriter(ContentType.parse(TextFormat.CONTENT_TYPE_004)) {
+                TextFormat.write004(this, collectorRegistry.filteredMetricFamilySamples(names))
             }
         }
     }

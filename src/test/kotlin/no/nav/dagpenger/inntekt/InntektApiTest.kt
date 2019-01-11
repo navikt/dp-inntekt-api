@@ -9,8 +9,20 @@ import io.ktor.server.testing.withTestApplication
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class AppTest {
+class InntektApiTest {
 
+    @Test
+    fun ` should be able to Http GET isReady, isAlive and metrics endpoint `() = withTestApplication(Application::inntektApi) {
+        with(handleRequest(HttpMethod.Get, "isAlive")) {
+            assertEquals(HttpStatusCode.OK, response.status())
+        }
+        with(handleRequest(HttpMethod.Get, "isReady")) {
+            assertEquals(HttpStatusCode.OK, response.status())
+        }
+        with(handleRequest(HttpMethod.Get, "metrics")) {
+            assertEquals(HttpStatusCode.OK, response.status())
+        }
+    }
     @Test
     fun ` should be able to Http GET inntekt `() = withTestApplication(Application::inntektApi) {
         with(handleRequest(HttpMethod.Get, "inntekt/1234")) {
