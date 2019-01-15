@@ -36,7 +36,7 @@ val ktorVersion = "1.1.1"
 val kotlinLoggingVersion = "1.4.9"
 val jupiterVersion = "5.3.2"
 val log4j2Version = "2.11.1"
-val prometheusVersion = "0.5.0"
+val prometheusVersion = "0.6.0"
 
 dependencies {
     implementation(kotlin("stdlib"))
