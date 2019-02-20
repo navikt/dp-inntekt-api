@@ -33,22 +33,37 @@ java {
 }
 
 val ktorVersion = "1.1.1"
+val fuelVersion = "2.0.1"
 val kotlinLoggingVersion = "1.6.22"
 val jupiterVersion = "5.3.2"
 val log4j2Version = "2.11.1"
 val prometheusVersion = "0.6.0"
+val moshiVersion = "1.8.0"
+val ktorMoshiVersion = "1.0.1"
 
 dependencies {
     implementation(kotlin("stdlib"))
+
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    implementation("io.ktor:ktor-gson:$ktorVersion")
     implementation("io.ktor:ktor-auth:$ktorVersion")
+
+    implementation("com.squareup.moshi:moshi-adapters:$moshiVersion")
+    implementation("com.squareup.moshi:moshi-kotlin:$moshiVersion")
+    implementation("com.squareup.moshi:moshi:$moshiVersion")
+    implementation("com.ryanharter.ktor:ktor-moshi:$ktorMoshiVersion")
+
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
+
+    implementation("com.github.kittinunf.fuel:fuel:$fuelVersion")
+    implementation("com.github.kittinunf.fuel:fuel-moshi:$fuelVersion")
+
     implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
     implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
+
+    implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
 
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
@@ -58,6 +73,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:$jupiterVersion")
+    testImplementation("com.github.tomakehurst:wiremock-standalone:2.21.0")
 }
 
 spotless {
