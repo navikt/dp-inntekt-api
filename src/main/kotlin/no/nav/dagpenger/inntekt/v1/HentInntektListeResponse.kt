@@ -1,5 +1,6 @@
-package no.nav.dagpenger.inntekt
+package no.nav.dagpenger.inntekt.v1
 
+import com.squareup.moshi.Json
 import java.math.BigDecimal
 import java.time.YearMonth
 
@@ -19,7 +20,7 @@ data class ArbeidsInntektInformasjon(
 
 data class Inntekt(
     val beloep: BigDecimal,
-    val beskrivelse: String,
+    val beskrivelse: InntektBeskrivelse,
     val fordel: String,
     val informasjonsstatus: String,
     val inngaarIGrunnlagForTrekk: Boolean,
@@ -30,7 +31,7 @@ data class Inntekt(
     val inntektsstatus: String,
     val leveringstidspunkt: YearMonth,
     val opplysningspliktig: Aktoer,
-    val utbetaltIMaaned: String,
+    val utbetaltIMaaned: YearMonth,
     val utloeserArbeidsgiveravgift: Boolean,
     val virksomhet: Aktoer
 )
@@ -51,4 +52,16 @@ enum class InntektType {
     NAERINGSINNTEKT,
     PENSJON_ELLER_TRYGD,
     YTELSE_FRA_OFFENTLIGE
+}
+
+enum class SpesielleInntjeningsforhold {
+
+    @Json(name = "hyreTilMannskapPaaFiskeSmaahvalfangstOgSelfangstfartoey") HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+    @Json(name = "loennVedArbeidsmarkedstiltak") LOENN_VED_ARBEIDSMARKEDSTILTAK,
+    UNKNOWN
+}
+
+enum class InntektBeskrivelse {
+    @Json(name = "fastloenn") FASTLOENN,
+    @Json(name = "feriepenger") FERIEPENGER
 }

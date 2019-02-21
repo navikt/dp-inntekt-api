@@ -1,8 +1,9 @@
-package no.nav.dagpenger.inntekt
+package no.nav.dagpenger.inntekt.v1
 
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import com.github.kittinunf.result.Result
+import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.oidc.OidcClient
 import java.time.YearMonth
 
@@ -23,11 +24,12 @@ class InntektskomponentHttpClient(
             månedFom,
             månedTom
         )
+        val jsonBody = jsonRequestRequestAdapter.toJson(requestBody)
 
         val (_, response, result) = with(hentInntektlisteUrl.httpPost()) {
             header("Authorization" to oidcClient.oidcToken().access_token.toBearerToken())
             header("Nav-Call-Id" to "dp-inntekt-api")
-            body("")
+            body(jsonBody)
             responseObject(moshiDeserializerOf(jsonResponseAdapter))
         }
         return when (result) {
