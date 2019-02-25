@@ -3,7 +3,9 @@ package no.nav.dagpenger.inntekt
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.ToJson
+import com.squareup.moshi.adapters.EnumJsonAdapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import no.nav.dagpenger.inntekt.v1.SpesielleInntjeningsforhold
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.YearMonth
@@ -14,6 +16,8 @@ val moshiInstance: Moshi = Moshi.Builder()
     .add(LocalDateJsonAdapter())
     .add(KotlinJsonAdapterFactory())
     .add(BigDecimalJsonAdapter())
+    .add(SpesielleInntjeningsforhold::class.java,
+        EnumJsonAdapter.create(SpesielleInntjeningsforhold::class.java).withUnknownFallback(SpesielleInntjeningsforhold.UNKNOWN))
     .build()!!
 
 class YearMonthJsonAdapter {
