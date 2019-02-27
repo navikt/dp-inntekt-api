@@ -26,7 +26,13 @@ fun klassifiserInntekter(uklassifiserteInntekter: HentInntektListeResponse): Kla
 
 fun klassifiserInntekt(datagrunnlag: DatagrunnlagKlassifisering): InntektKlasse {
     val inntektKlassePredicates = listOf(
-        predicatesInntektklasseArbeid() to InntektKlasse.ARBEIDSINNTEKT
+        predicatesInntektklasseArbeid() to InntektKlasse.ARBEIDSINNTEKT,
+        predicatesInntektklasseDagpenger() to InntektKlasse.DAGPENGER,
+        predicatesInntektklasseDagpengerFangstFiske() to InntektKlasse.DAGPENGER_FANGST_FISKE,
+        predicatesInntektklasseNæringsinntekt() to InntektKlasse.NÆRINGSINNTEKT,
+        predicatesInntektklasseSykepenger() to InntektKlasse.SYKEPENGER,
+        predicatesInntektklasseSykepengerFangstFiske() to InntektKlasse.SYKEPENGER_FANGST_FISKE,
+        predicatesInntektklasseTiltakslønn() to InntektKlasse.TILTAKSLØNN
     )
 
     val klasser = inntektKlassePredicates
