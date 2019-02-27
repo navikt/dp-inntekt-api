@@ -1,10 +1,12 @@
-package no.nav.dagpenger.inntekt.v1
+package no.nav.dagpenger.inntekt
 
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import com.github.kittinunf.result.Result
-import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.oidc.OidcClient
+import no.nav.dagpenger.inntekt.v1.Aktoer
+import no.nav.dagpenger.inntekt.v1.AktoerType
+import no.nav.dagpenger.inntekt.v1.HentInntektListeResponse
 import java.time.YearMonth
 
 class InntektskomponentHttpClient(

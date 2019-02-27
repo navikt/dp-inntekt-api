@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.v1.klassifisering
+package no.nav.dagpenger.inntekt.klassifisering
 
 import java.math.BigDecimal
 import java.time.YearMonth
@@ -21,10 +21,9 @@ data class KlassifisertInntekt(
 enum class InntektKlasse {
     ARBEIDSINNTEKT,
     DAGPENGER,
-    DAGPENGER_FANGST_FISK,
-    SYKEPENGER_FANGST_FISK,
+    DAGPENGER_FANGST_FISKE,
+    SYKEPENGER_FANGST_FISKE,
     NÆRINGSINNTEKT,
-    FØDSELSPENGER,
     SYKEPENGER,
     TILTAKSLØNN
 }

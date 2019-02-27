@@ -1,10 +1,10 @@
 package no.nav.dagpenger.inntekt
 
 data class Environment(
-    val username: String = getEnvVar("SRVDP_INNTEKT_API_USERNAME", "igroup"),
-    val password: String = getEnvVar("SRVDP_INNTEKT_API_PASSWORD", "itest"),
-    val oicdStsUrl: String = getEnvVar("OIDC_STS_ISSUERURL", ""),
-    val hentinntektListeUrl: String = getEnvVar("HENTINNTEKTLISTE_URL", ""),
+    val username: String = getEnvVar("SRVDP_INNTEKT_API_USERNAME"),
+    val password: String = getEnvVar("SRVDP_INNTEKT_API_PASSWORD"),
+    val oicdStsUrl: String = getEnvVar("OIDC_STS_ISSUERURL"),
+    val hentinntektListeUrl: String = getEnvVar("HENTINNTEKTLISTE_URL"),
     val httpPort: Int = 8099
 )
 

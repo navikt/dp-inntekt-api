@@ -6,7 +6,8 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.route
-import no.nav.dagpenger.inntekt.v1.klassifisering.klassifiserInntekter
+import no.nav.dagpenger.inntekt.InntektskomponentHttpClient
+import no.nav.dagpenger.inntekt.klassifisering.klassifiserInntekter
 import java.time.YearMonth
 
 fun Routing.inntekt(inntektskomponentHttpClient: InntektskomponentHttpClient) {

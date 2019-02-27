@@ -12,7 +12,6 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.prometheus.client.hotspot.DefaultExports
 import no.nav.dagpenger.inntekt.oidc.StsOidcClient
-import no.nav.dagpenger.inntekt.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.v1.inntekt
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
@@ -22,7 +21,7 @@ fun main() {
 
     DefaultExports.initialize()
     val application = embeddedServer(Netty, port = env.httpPort) {
-        inntektApi()
+        inntektApi(env)
     }
     application.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -30,8 +29,7 @@ fun main() {
     })
 }
 
-fun Application.inntektApi() {
-    val env = Environment()
+fun Application.inntektApi(env: Environment) {
 
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
         env.hentinntektListeUrl,
