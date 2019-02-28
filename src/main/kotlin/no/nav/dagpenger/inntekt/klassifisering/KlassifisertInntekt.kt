@@ -3,7 +3,7 @@ package no.nav.dagpenger.inntekt.klassifisering
 import java.math.BigDecimal
 import java.time.YearMonth
 
-data class KlassifisertInntektListe(
+data class Inntekt(
     val inntektsId: String,
     val inntektsListe: List<KlassifisertInntektMåned>
 )

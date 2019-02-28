@@ -6,7 +6,7 @@ import no.nav.dagpenger.inntekt.v1.InntektType
 import no.nav.dagpenger.inntekt.v1.SpesielleInntjeningsforhold
 import kotlin.reflect.KFunction
 
-fun klassifiserInntekter(uklassifiserteInntekter: HentInntektListeResponse): KlassifisertInntektListe {
+fun klassifiserInntekter(uklassifiserteInntekter: HentInntektListeResponse): Inntekt {
 
     val klassifiserteInntektMåneder = uklassifiserteInntekter.arbeidsInntektMaaned.map { måned ->
         val årMåned = måned.aarMaaned
@@ -21,7 +21,7 @@ fun klassifiserInntekter(uklassifiserteInntekter: HentInntektListeResponse): Kla
         KlassifisertInntektMåned(årMåned, klassifiserteInntekter)
     }
 
-    return KlassifisertInntektListe("12345", klassifiserteInntektMåneder)
+    return Inntekt("12345", klassifiserteInntektMåneder)
 }
 
 fun klassifiserInntekt(datagrunnlag: DatagrunnlagKlassifisering): InntektKlasse {
