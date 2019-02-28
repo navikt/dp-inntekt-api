@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import com.github.tomakehurst.wiremock.matching.RegexPattern
+import no.nav.dagpenger.inntekt.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.oidc.OidcClient
 import no.nav.dagpenger.inntekt.oidc.OidcToken
 import org.junit.Rule
@@ -23,7 +24,7 @@ class InntektskomponentHttpClientTest {
     }
 
     @Test
-    fun `fetch JournalPost on 200 ok`() {
+    fun `fetch klassifisert inntekt on 200 ok`() {
         val body = InntektskomponentHttpClientTest::class.java
             .getResource("/test-data/example-inntekt-payload.json").readText()
 

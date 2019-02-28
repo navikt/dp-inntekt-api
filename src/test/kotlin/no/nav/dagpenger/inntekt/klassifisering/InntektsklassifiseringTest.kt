@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.v1.klassifisering
+package no.nav.dagpenger.inntekt.klassifisering
 
 import no.nav.dagpenger.inntekt.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.v1.InntektType

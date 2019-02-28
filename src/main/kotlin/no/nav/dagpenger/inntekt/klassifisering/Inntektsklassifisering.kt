@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.v1.klassifisering
+package no.nav.dagpenger.inntekt.klassifisering
 
 import no.nav.dagpenger.inntekt.v1.HentInntektListeResponse
 import no.nav.dagpenger.inntekt.v1.InntektBeskrivelse
@@ -26,7 +26,13 @@ fun klassifiserInntekter(uklassifiserteInntekter: HentInntektListeResponse): Kla
 
 fun klassifiserInntekt(datagrunnlag: DatagrunnlagKlassifisering): InntektKlasse {
     val inntektKlassePredicates = listOf(
-        inntektklasseArbeidPredicates() to InntektKlasse.ARBEIDSINNTEKT
+        predicatesInntektklasseArbeid() to InntektKlasse.ARBEIDSINNTEKT,
+        predicatesInntektklasseDagpenger() to InntektKlasse.DAGPENGER,
+        predicatesInntektklasseDagpengerFangstFiske() to InntektKlasse.DAGPENGER_FANGST_FISKE,
+        predicatesInntektklasseNæringsinntekt() to InntektKlasse.NÆRINGSINNTEKT,
+        predicatesInntektklasseSykepenger() to InntektKlasse.SYKEPENGER,
+        predicatesInntektklasseSykepengerFangstFiske() to InntektKlasse.SYKEPENGER_FANGST_FISKE,
+        predicatesInntektklasseTiltakslønn() to InntektKlasse.TILTAKSLØNN
     )
 
     val klasser = inntektKlassePredicates
