@@ -1,6 +1,7 @@
 name: dp-inntekt-api
 image: repo.adeo.no:5443/dp-inntekt-api
 team: teamdagpenger
+port: 8099
 replicas:
   min: 2
   max: 4
@@ -13,3 +14,17 @@ resources:
     memory: 256Mi
 prometheus:
   enabled: true
+fasitResources:
+  used:
+    - alias: srvdp-inntekt-api
+      resourceType: credential
+    - alias: hentinntektliste
+      resourceType: restservice
+    - alias: security-token-service-issuer
+      resourceType: baseUrl
+      propertyMap:
+        url: OIDC_STS_ISSUERURL
+  exposed:
+    - alias: dagpenger-inntekt-api-rest
+      resourceType: restservice
+      path: /
