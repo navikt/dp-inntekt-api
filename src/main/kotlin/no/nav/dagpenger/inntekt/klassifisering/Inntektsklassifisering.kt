@@ -29,7 +29,7 @@ fun klassifiserInntekt(datagrunnlag: DatagrunnlagKlassifisering): InntektKlasse 
         predicatesInntektklasseArbeid() to InntektKlasse.ARBEIDSINNTEKT,
         predicatesInntektklasseDagpenger() to InntektKlasse.DAGPENGER,
         predicatesInntektklasseDagpengerFangstFiske() to InntektKlasse.DAGPENGER_FANGST_FISKE,
-        predicatesInntektklasseNæringsinntekt() to InntektKlasse.NÆRINGSINNTEKT,
+        predicatesInntektklasseNæringsinntekt() to InntektKlasse.FANGST_FISKE,
         predicatesInntektklasseSykepenger() to InntektKlasse.SYKEPENGER,
         predicatesInntektklasseSykepengerFangstFiske() to InntektKlasse.SYKEPENGER_FANGST_FISKE,
         predicatesInntektklasseTiltakslønn() to InntektKlasse.TILTAKSLØNN

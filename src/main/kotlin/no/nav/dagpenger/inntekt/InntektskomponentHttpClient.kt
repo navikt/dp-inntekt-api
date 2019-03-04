@@ -12,9 +12,9 @@ import java.time.YearMonth
 class InntektskomponentHttpClient(
     private val hentInntektlisteUrl: String,
     private val oidcClient: OidcClient
-) {
+) : InntektskomponentClient {
 
-    fun getInntekt(fnr: String, månedFom: YearMonth, månedTom: YearMonth): HentInntektListeResponse {
+    override fun getInntekt(fnr: String, månedFom: YearMonth, månedTom: YearMonth): HentInntektListeResponse {
 
         val jsonResponseAdapter = moshiInstance.adapter(HentInntektListeResponse::class.java)
 

@@ -19,9 +19,14 @@ import java.util.concurrent.TimeUnit
 fun main() {
     val env = Environment()
 
+    val inntektskomponentHttpClient = InntektskomponentHttpClient(
+        env.hentinntektListeUrl,
+        StsOidcClient(env.oicdStsUrl, env.username, env.password)
+    )
+
     DefaultExports.initialize()
     val application = embeddedServer(Netty, port = env.httpPort) {
-        inntektApi(env)
+        inntektApi(env, inntektskomponentHttpClient)
     }
     application.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -29,12 +34,7 @@ fun main() {
     })
 }
 
-fun Application.inntektApi(env: Environment) {
-
-    val inntektskomponentHttpClient = InntektskomponentHttpClient(
-        env.hentinntektListeUrl,
-        StsOidcClient(env.oicdStsUrl, env.username, env.password)
-    )
+fun Application.inntektApi(env: Environment, inntektskomponentHttpClient: InntektskomponentClient) {
 
     install(DefaultHeaders)
     install(CallLogging) {

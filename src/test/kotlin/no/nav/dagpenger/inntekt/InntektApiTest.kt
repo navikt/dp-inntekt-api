@@ -12,7 +12,9 @@ class InntektApiTest {
     private val env = Environment("", "", "", "", 8080)
 
     @Test
-    fun ` should be able to Http GET isReady, isAlive and metrics endpoint `() = withTestApplication({ inntektApi(env) }) {
+    fun ` should be able to Http GET isReady, isAlive and metrics endpoint `() =
+        withTestApplication({ inntektApi(env, DummyInntektkomponentClient()) }) {
+
         with(handleRequest(HttpMethod.Get, "isAlive")) {
             assertEquals(HttpStatusCode.OK, response.status())
         }
