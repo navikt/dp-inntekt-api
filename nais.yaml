@@ -1,30 +1,35 @@
-name: dp-inntekt-api
-image: repo.adeo.no:5443/dp-inntekt-api
-team: teamdagpenger
-port: 8099
-replicas:
-  min: 2
-  max: 4
-resources:
-  limits:
-    cpu: 1000m
-    memory: 384Mi
-  requests:
-    cpu: 100m
-    memory: 256Mi
-prometheus:
-  enabled: true
-fasitResources:
-  used:
-    - alias: srvdp-inntekt-api
-      resourceType: credential
-    - alias: hentinntektliste
-      resourceType: restservice
-    - alias: security-token-service-issuer
-      resourceType: baseUrl
-      propertyMap:
-        url: OIDC_STS_ISSUERURL
-  exposed:
-    - alias: dagpenger-inntekt-api-rest
-      resourceType: restservice
-      path: /
+# Example https://github.com/nais/naiserator/blob/master/examples/nais-max.yaml
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: dp-inntekt-api
+  namespace: default
+  labels:
+    team: teamdagpenger
+  annotations:
+    zone: fss
+spec:
+  image: repo.adeo.no:5443/dp-inntekt-api:latest
+  port: 8099
+  team: teamdagpenger
+  liveness:
+    path: isAlive
+  readiness:
+    path: isReady
+  replicas:
+    min: 2
+    max: 4
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 384Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  prometheus:
+    enabled: true
+    path: /metrics
+  secrets: true
+  env:
+    - name: OIDC_STS_ISSUERURL
+      value: https://security-token-service/ # http://security-token-service

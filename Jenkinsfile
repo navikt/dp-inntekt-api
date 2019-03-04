@@ -1,24 +1,23 @@
 pipeline {
   agent any
   environment {
-    APPLICATION_NAME = 'dp-inntekt-api'
-    ZONE = 'fss'
-    NAMESPACE = 'default'
-    VERSION = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-    DOCKER_REPO = 'repo.adeo.no:5443/'
-    DOCKER_IMAGE_VERSION = '${DOCKER_REPO}${APPLICATION_NAME}:${VERSION}'
+    DEPLOYMENT = readYaml(file: './nais.yaml')
+    APPLICATION_NAME = "${DEPLOYMENT.metadata.name}"
+    ZONE = "${DEPLOYMENT.metadata.annotations.zone}"
+    NAMESPACE = "${DEPLOYMENT.metadata.namespace}"
+    VERSION = sh(label: 'Get git sha1 as version', script: 'git rev-parse --short HEAD', returnStdout: true).trim()
   }
 
   stages {
     stage('Install dependencies') {
       steps {
-        sh "./gradlew assemble"
+        sh './gradlew assemble'
       }
     }
 
     stage('Build') {
       steps {
-        sh "./gradlew build"
+        sh './gradlew build'
       }
 
       post {
@@ -37,45 +36,39 @@ pipeline {
       }
     }
 
-    stage('Publish') {
-      steps {
-        timeout(10) {
-                input 'Keep going?'
-        }
+    stage('Deploy') {
+      when { branch 'master' }
 
-        withCredentials([usernamePassword(
-          credentialsId: 'repo.adeo.no',
-          usernameVariable: 'REPO_USERNAME',
-          passwordVariable: 'REPO_PASSWORD'
-        )]) {
-            sh "docker login -u ${REPO_USERNAME} -p ${REPO_PASSWORD} repo.adeo.no:5443"
-        }
-
-        script {
-          sh "docker build . --pull -t ${DOCKER_IMAGE_VERSION}"
-        }
-        script {
-          sh "docker push ${DOCKER_IMAGE_VERSION}"
-        }
+      environment {
+        DOCKER_REPO = 'repo.adeo.no:5443'
+        DOCKER_IMAGE_VERSION = '${DOCKER_REPO}/${APPLICATION_NAME}:${VERSION}'
       }
-    }
 
-    stage("Publish service contract") {
       steps {
-        withCredentials([usernamePassword(
+        withDockerRegistry(
           credentialsId: 'repo.adeo.no',
-          usernameVariable: 'REPO_USERNAME',
-          passwordVariable: 'REPO_PASSWORD'
-        )]) {
-          sh "curl -vvv --user ${REPO_USERNAME}:${REPO_PASSWORD} --upload-file nais.yaml https://repo.adeo.no/repository/raw/nais/${APPLICATION_NAME}/${VERSION}/nais.yaml"
+          url: "https://${DOCKER_REPO}"
+        ) {
+          sh label: 'Build and push Docker image', script: """
+            docker build . --pull -t ${DOCKER_IMAGE_VERSION}
+            docker push ${DOCKER_IMAGE_VERSION}
+          """
         }
-      }
-    }
 
-    stage('Deploy to non-production') {
-      steps {
-        script {
-          response = naisDeploy.createNaisAutodeployment(env.APPLICATION_NAME, env.VERSION,"t1",env.ZONE ,env.NAMESPACE, "")
+        sh label: 'Prepare service contract', script: """
+            sed 's/latest/${VERSION}/' nais.yaml | tee nais.yaml
+        """
+
+        sh label: 'Deploy to non-production', script: """
+          kubectl config use-context dev-${env.ZONE}
+          kubectl apply -n ${env.NAMESPACE} -f nais.yaml --wait
+          kubectl rollout status -w deployment/${APPLICATION_NAME}
+        """
+      }
+
+      post {
+        success {
+          archiveArtifacts artifacts: 'nais.yaml', fingerprint: true
         }
       }
     }
