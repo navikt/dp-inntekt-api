@@ -60,6 +60,7 @@ pipeline {
         """
 
         sh label: 'Deploy to non-production', script: """
+          cat nais.yaml
           kubectl config use-context dev-${env.ZONE}
           kubectl apply -n ${env.NAMESPACE} -f nais.yaml --wait
           kubectl rollout status -w deployment/${APPLICATION_NAME}
