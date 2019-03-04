@@ -10,7 +10,7 @@ metadata:
     zone: fss
 spec:
   image: repo.adeo.no:5443/dp-inntekt-api:latest
-  port: 8080
+  port: 8099
   team: teamdagpenger
   liveness:
     path: isAlive
