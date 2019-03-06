@@ -24,8 +24,8 @@ fun Routing.inntekt(inntektskomponentClient: InntektskomponentClient) {
 
             val uklassifisertInntekt = inntektskomponentClient.getInntekt(
                 requestBody.aktørId,
-                beregningsDatoMonth,
-                earliestMonth
+                earliestMonth,
+                beregningsDatoMonth
             )
 
             val klassifiserteInntekter = klassifiserInntekter(uklassifisertInntekt)
