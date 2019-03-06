@@ -1,2 +1,2 @@
 # dagpenger-inntekt-api
-Holder kopi av inntekter fra inntektskomponentet for regelkjøring av Dagpenger vilkår
+Holder kopi av inntekter fra inntektskomponenten for regelkjøring av dagpenger-vilkår
