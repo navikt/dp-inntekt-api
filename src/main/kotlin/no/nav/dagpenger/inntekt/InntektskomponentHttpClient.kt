@@ -14,7 +14,7 @@ class InntektskomponentHttpClient(
     private val oidcClient: OidcClient
 ) : InntektskomponentClient {
 
-    override fun getInntekt(fnr: String, månedFom: YearMonth, månedTom: YearMonth): HentInntektListeResponse {
+    override fun getInntekt(aktørId: String, månedFom: YearMonth, månedTom: YearMonth): HentInntektListeResponse {
 
         val jsonResponseAdapter = moshiInstance.adapter(HentInntektListeResponse::class.java)
 
@@ -22,7 +22,7 @@ class InntektskomponentHttpClient(
         val requestBody = HentInntektListeRequest(
             "DagpengerGrunnlagA-Inntekt",
             "Dagpenger",
-            Aktoer(AktoerType.NATURLIG_IDENT, fnr),
+            Aktoer(AktoerType.AKTOER_ID, aktørId),
             månedFom,
             månedTom
         )
