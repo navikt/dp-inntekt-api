@@ -5,5 +5,5 @@ import java.time.YearMonth
 
 interface InntektskomponentClient {
 
-    fun getInntekt(fnr: String, månedFom: YearMonth, månedTom: YearMonth): HentInntektListeResponse
+    fun getInntekt(aktørId: String, månedFom: YearMonth, månedTom: YearMonth): HentInntektListeResponse
 }

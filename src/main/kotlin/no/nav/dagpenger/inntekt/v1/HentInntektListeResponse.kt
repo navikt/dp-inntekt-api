@@ -5,7 +5,7 @@ import java.math.BigDecimal
 import java.time.YearMonth
 
 data class HentInntektListeResponse(
-    val arbeidsInntektMaaned: List<ArbeidsInntektMaaned>,
+    val arbeidsInntektMaaned: List<ArbeidsInntektMaaned>?,
     val ident: Aktoer
 )
 

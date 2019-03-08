@@ -7,7 +7,7 @@ import java.time.YearMonth
 
 class DummyInntektkomponentClient : InntektskomponentClient {
 
-    override fun getInntekt(fnr: String, månedFom: YearMonth, månedTom: YearMonth): HentInntektListeResponse {
-        return HentInntektListeResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, ""))
+    override fun getInntekt(aktørId: String, månedFom: YearMonth, månedTom: YearMonth): HentInntektListeResponse {
+        return HentInntektListeResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, aktørId))
     }
 }
