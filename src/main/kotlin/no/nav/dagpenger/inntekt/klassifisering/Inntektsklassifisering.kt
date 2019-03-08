@@ -1,13 +1,13 @@
 package no.nav.dagpenger.inntekt.klassifisering
 
-import no.nav.dagpenger.inntekt.v1.HentInntektListeResponse
-import no.nav.dagpenger.inntekt.v1.InntektBeskrivelse
-import no.nav.dagpenger.inntekt.v1.InntektType
-import no.nav.dagpenger.inntekt.v1.SpesielleInntjeningsforhold
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentenResponse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 import kotlin.reflect.KFunction
 
 // todo - TEST THIS!!! MISSING UNIT TEST
-fun klassifiserInntekter(uklassifiserteInntekter: HentInntektListeResponse): Inntekt {
+fun klassifiserInntekter(uklassifiserteInntekter: InntektkomponentenResponse): Inntekt {
 
     val klassifiserteInntektMåneder = uklassifiserteInntekter.arbeidsInntektMaaned?.map { måned ->
         val årMåned = måned.aarMaaned

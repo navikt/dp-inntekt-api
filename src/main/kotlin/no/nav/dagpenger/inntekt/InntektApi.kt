@@ -17,6 +17,9 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.prometheus.client.hotspot.DefaultExports
 import mu.KotlinLogging
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oidc.StsOidcClient
 import no.nav.dagpenger.inntekt.v1.inntekt
 import org.slf4j.event.Level
@@ -29,8 +32,8 @@ fun main() {
     val env = Environment()
 
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
-        env.hentinntektListeUrl,
-        StsOidcClient(env.oicdStsUrl, env.username, env.password)
+            env.hentinntektListeUrl,
+            StsOidcClient(env.oicdStsUrl, env.username, env.password)
     )
 
     DefaultExports.initialize()

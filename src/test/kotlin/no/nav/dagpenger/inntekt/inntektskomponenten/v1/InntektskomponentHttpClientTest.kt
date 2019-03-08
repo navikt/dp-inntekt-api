@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt
+package no.nav.dagpenger.inntekt.inntektskomponenten.v1
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
@@ -38,8 +38,8 @@ class InntektskomponentHttpClientTest {
         )
 
         val inntektskomponentClient = InntektskomponentHttpClient(
-            wireMockRule.url("/v1/hentinntektliste"),
-            DummyOidcClient()
+                wireMockRule.url("/v1/hentinntektliste"),
+                DummyOidcClient()
         )
 
         val hentInntektListeResponse =
