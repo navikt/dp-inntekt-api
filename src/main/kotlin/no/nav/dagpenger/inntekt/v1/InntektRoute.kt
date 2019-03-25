@@ -28,7 +28,7 @@ fun Routing.inntekt(inntektskomponentClient: InntektskomponentClient) {
 
             val klassifiserteInntekter = inntektCache[inntektKey]?.let { it } ?: run {
                 val newInntekt = getInntektFromInntektskomponenten(inntektskomponentClient, requestBody)
-                inntektCache[inntektKey] = newInntekt
+                // inntektCache[inntektKey] = newInntekt
                 newInntekt
             }
 
