@@ -36,7 +36,7 @@ class InntektskomponentHttpClient(
         }
         return when (result) {
             is Result.Failure -> throw InntektskomponentenHttpClientException(
-                "Failed to fetch inntekt. Response message ${response.responseMessage}. Error message: ${result.error.message}"
+                "Failed to fetch inntekt. Response message: ${response.responseMessage}. Error message: ${result.error.message}"
             )
             is Result.Success -> result.get()
         }
