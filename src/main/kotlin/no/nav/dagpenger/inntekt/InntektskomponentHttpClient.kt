@@ -36,8 +36,7 @@ class InntektskomponentHttpClient(
         }
         return when (result) {
             is Result.Failure -> throw InntektskomponentenHttpClientException(
-                "Failed to fetch inntekt. Response message ${response.responseMessage}",
-                result.getException()
+                "Failed to fetch inntekt. Response message ${response.responseMessage}. Error message: ${result.error.message}"
             )
             is Result.Success -> result.get()
         }
@@ -55,6 +54,5 @@ data class HentInntektListeRequest(
 fun String.toBearerToken() = "Bearer $this"
 
 class InntektskomponentenHttpClientException(
-    override val message: String,
-    override val cause: Throwable
-) : RuntimeException(message, cause)
+    override val message: String
+) : RuntimeException(message)
