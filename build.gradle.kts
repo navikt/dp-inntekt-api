@@ -40,6 +40,7 @@ val log4j2Version = "2.11.1"
 val prometheusVersion = "0.6.0"
 val moshiVersion = "1.8.0"
 val ktorMoshiVersion = "1.0.1"
+val mockkVersion = "1.9.1"
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -74,6 +75,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:$jupiterVersion")
     testImplementation("com.github.tomakehurst:wiremock-standalone:2.21.0")
+    testImplementation("io.mockk:mockk:$mockkVersion")
 }
 
 spotless {

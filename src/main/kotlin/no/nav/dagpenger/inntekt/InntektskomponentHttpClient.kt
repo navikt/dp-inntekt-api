@@ -35,7 +35,7 @@ class InntektskomponentHttpClient(
             responseObject(moshiDeserializerOf(jsonResponseAdapter))
         }
         return when (result) {
-            is Result.Failure -> throw InntektskomponentenHttpClientException(
+            is Result.Failure -> throw InntektskomponentenHttpClientException(response.statusCode,
                 "Failed to fetch inntekt. Response message: ${response.responseMessage}. Error message: ${result.error.message}"
             )
             is Result.Success -> result.get()
@@ -54,5 +54,6 @@ data class HentInntektListeRequest(
 fun String.toBearerToken() = "Bearer $this"
 
 class InntektskomponentenHttpClientException(
+    val status: Int,
     override val message: String
 ) : RuntimeException(message)
