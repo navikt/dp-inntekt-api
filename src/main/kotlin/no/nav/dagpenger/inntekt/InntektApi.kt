@@ -3,6 +3,7 @@ package no.nav.dagpenger.inntekt
 import com.ryanharter.ktor.moshi.moshi
 import com.squareup.moshi.JsonEncodingException
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CallLogging
@@ -15,6 +16,7 @@ import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.util.pipeline.PipelineContext
 import io.prometheus.client.hotspot.DefaultExports
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.oidc.StsOidcClient
@@ -47,6 +49,9 @@ fun Application.inntektApi(env: Environment, inntektskomponentHttpClient: Inntek
     install(DefaultHeaders)
 
     install(StatusPages) {
+        exception<BadRequestException> { cause ->
+            badRequest(cause)
+        }
         exception<Throwable> { cause ->
             LOGGER.error("Request failed!", cause)
             call.respond(HttpStatusCode.InternalServerError, "Failed to fetch inntekt")
@@ -78,3 +83,12 @@ fun Application.inntektApi(env: Environment, inntektskomponentHttpClient: Inntek
         naischecks()
     }
 }
+
+private suspend fun <T : Throwable> PipelineContext<Unit, ApplicationCall>.badRequest(
+    cause: T
+) {
+    call.respond(HttpStatusCode.BadRequest)
+    throw cause
+}
+
+class BadRequestException : RuntimeException()
