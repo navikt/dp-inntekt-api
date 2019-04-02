@@ -20,6 +20,7 @@ import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.oidc.StsOidcClient
 import no.nav.dagpenger.inntekt.v1.inntekt
 import org.slf4j.event.Level
+import java.net.URI
 import java.util.concurrent.TimeUnit
 
 private val LOGGER = KotlinLogging.logger {}
@@ -49,15 +50,29 @@ fun Application.inntektApi(env: Environment, inntektskomponentHttpClient: Inntek
     install(StatusPages) {
         exception<Throwable> { cause ->
             LOGGER.error("Request failed!", cause)
-            call.respond(HttpStatusCode.InternalServerError, "Failed to fetch inntekt")
+            val error = Problem(
+                type = URI("urn:dp:error:inntekt"),
+                title = "Uhåndtert feil!"
+            )
+            call.respond(HttpStatusCode.InternalServerError, error)
         }
         exception<InntektskomponentenHttpClientException> { cause ->
             LOGGER.error("Request failed against inntektskomponenet", cause)
-            call.respond(HttpStatusCode.fromValue(cause.status), cause.message)
+            val error = Problem(
+                type = URI("urn:dp:error:inntekt"),
+                title = "Feilet mot inntektskomponentent!",
+                status = cause.status
+            )
+            call.respond(HttpStatusCode.fromValue(cause.status), error)
         }
         exception<JsonEncodingException> { cause ->
-            LOGGER.error("Bad input", cause)
-            call.respond(HttpStatusCode.BadRequest, "Request was malformed")
+            LOGGER.error("Request was malformed", cause)
+            val error = Problem(
+                type = URI("urn:dp:error:inntekt:parameter"),
+                title = "Klarte ikke å lese inntektsparameterene",
+                status = 400
+            )
+            call.respond(HttpStatusCode.BadRequest, error)
         }
     }
     install(CallLogging) {

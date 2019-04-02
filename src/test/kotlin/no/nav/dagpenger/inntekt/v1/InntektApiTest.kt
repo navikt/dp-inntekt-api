@@ -12,9 +12,12 @@ import io.mockk.mockk
 import no.nav.dagpenger.inntekt.Environment
 import no.nav.dagpenger.inntekt.InntektskomponentClient
 import no.nav.dagpenger.inntekt.InntektskomponentenHttpClientException
+import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.inntektApi
+import no.nav.dagpenger.inntekt.moshiInstance
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 val validJson = """
@@ -31,7 +34,7 @@ val jsonMissingFields = """
 }
 """.trimIndent()
 
-class InntektRouteTest {
+class InntektApiTest {
 
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
 
@@ -76,7 +79,7 @@ class InntektRouteTest {
     }
 
     @Test
-    fun ` should forward Http status from inntektskomponenten`() = testApp {
+    fun ` Should respond on unhandled errors and return in rfc7807 problem details standard `() = testApp {
         handleRequest(HttpMethod.Post, "/v1/inntekt") {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(
@@ -91,6 +94,33 @@ class InntektRouteTest {
         }.apply {
             assertTrue(requestHandled)
             Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
+            val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
+            assertEquals("Feilet mot inntektskomponentent!", problem?.title)
+            assertEquals("urn:dp:error:inntekt", problem?.type.toString())
+            assertEquals(400, problem?.status)
+        }
+    }
+
+    @Test
+    fun ` should forward Http status from inntektskomponenten and return in rfc7807 problem details standard `() = testApp {
+        handleRequest(HttpMethod.Post, "/v1/inntekt") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            setBody(
+                """
+                {
+                    "aktørId": "5678",
+                    "vedtakId": 1,
+                    "beregningsDato": "2019-01-08"
+                }
+            """.trimIndent()
+            )
+        }.apply {
+            assertTrue(requestHandled)
+            Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
+            val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
+            assertEquals("Feilet mot inntektskomponentent!", problem?.title)
+            assertEquals("urn:dp:error:inntekt", problem?.type.toString())
+            assertEquals(400, problem?.status)
         }
     }
 
@@ -102,6 +132,21 @@ class InntektRouteTest {
         }.apply {
             assertTrue(requestHandled)
             Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
+        }
+    }
+
+    @Test
+    fun ` Errors should return in rfc7807 problem details standard on bad request`() = testApp {
+        handleRequest(HttpMethod.Post, "/v1/inntekt") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            setBody(jsonMissingFields)
+        }.apply {
+            assertTrue(requestHandled)
+            Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
+            val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
+            assertEquals("Klarte ikke å lese inntektsparameterene", problem?.title)
+            assertEquals("urn:dp:error:inntekt:parameter", problem?.type.toString())
+            assertEquals(400, problem?.status)
         }
     }
 
