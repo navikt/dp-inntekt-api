@@ -3,27 +3,29 @@ package no.nav.dagpenger.inntekt.inntektskomponenten.v1
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import com.github.kittinunf.result.Result
-import no.nav.dagpenger.inntekt.oidc.OidcClient
-
+import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.moshiInstance
+import no.nav.dagpenger.inntekt.oidc.OidcClient
 import java.time.YearMonth
+
+private val LOGGER = KotlinLogging.logger {}
+private val jsonResponseAdapter = moshiInstance.adapter(InntektkomponentResponse::class.java)
+private val jsonRequestRequestAdapter = moshiInstance.adapter(HentInntektListeRequest::class.java)
 
 class InntektskomponentHttpClient(
     private val hentInntektlisteUrl: String,
     private val oidcClient: OidcClient
 ) : InntektskomponentClient {
 
-    override fun getInntekt(aktørId: String, månedFom: YearMonth, månedTom: YearMonth): InntektkomponentenResponse {
+    override fun getInntekt(request: InntektkomponentRequest): InntektkomponentResponse {
+        LOGGER.info("Fetching new inntekt for $request")
 
-        val jsonResponseAdapter = moshiInstance.adapter(InntektkomponentenResponse::class.java)
-
-        val jsonRequestRequestAdapter = moshiInstance.adapter(HentInntektListeRequest::class.java)
         val requestBody = HentInntektListeRequest(
                 "DagpengerGrunnlagA-Inntekt",
                 "Dagpenger",
-                Aktoer(AktoerType.AKTOER_ID, aktørId),
-                månedFom,
-                månedTom
+                Aktoer(AktoerType.AKTOER_ID, request.aktørId),
+                request.månedFom,
+                request.månedTom
         )
         val jsonBody = jsonRequestRequestAdapter.toJson(requestBody)
 

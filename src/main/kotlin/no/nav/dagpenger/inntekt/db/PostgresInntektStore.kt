@@ -5,7 +5,7 @@ import de.huxhorn.sulky.ulid.ULID
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentenResponse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.v1.InntektRequest
@@ -14,33 +14,34 @@ import javax.sql.DataSource
 
 class PostgresInntektStore(private val dataSource: DataSource) : InntektStore {
 
-    private val adapter: JsonAdapter<InntektkomponentenResponse> = moshiInstance.adapter(InntektkomponentenResponse::class.java)
+    private val adapter: JsonAdapter<InntektkomponentResponse> = moshiInstance.adapter(InntektkomponentResponse::class.java)
     private val ulidGenerator = ULID()
 
-    override fun getInntekt(request: InntektRequest): StoredInntekt {
+    override fun getInntektId(request: InntektRequest): InntektId? {
         try {
             return using(sessionOf(dataSource)) { session ->
                 session.run(
                         queryOf(
-                                """SELECT id, inntekt
-                            from inntekt_v1 i INNER JOIN inntekt_V1_arena_mapping m on i.id = m.inntektid
-                            WHERE m.aktørId = ? AND m.vedtakid = ? AND m.beregningsdato = ?""".trimMargin(), request.aktørId, request.vedtakId, request.beregningsDato).map { row ->
-                            StoredInntekt(InntektId(row.string("id")), adapter.fromJson(row.string("inntekt"))!!)
-                        }.asSingle) ?: throw InntektNotFoundException("Inntekt for request $request not found.")
+                                """SELECT inntektId
+                                    FROM inntekt_V1_arena_mapping
+                                    WHERE aktørId = ? AND vedtakid = ? AND beregningsdato = ?
+                            """.trimMargin(), request.aktørId, request.vedtakId, request.beregningsDato).map { row ->
+                            InntektId(row.string("inntektId"))
+                        }.asSingle)
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
         }
     }
 
-    override fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentenResponse): StoredInntekt {
+    override fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt {
         try {
-            val inntektId = ulidGenerator.nextULID()
+            val inntektId = InntektId(ulidGenerator.nextULID())
             using(sessionOf(dataSource)) { session ->
                 session.transaction { tx ->
 
-                    tx.run(queryOf("INSERT INTO inntekt_V1 VALUES (?, (to_json(?::json)))", inntektId, adapter.toJson(inntekt)).asUpdate)
-                    tx.run(queryOf("INSERT INTO inntekt_V1_arena_mapping VALUES (?, ?, ?, ?)", inntektId, request.aktørId, request.vedtakId, request.beregningsDato).asUpdate)
+                    tx.run(queryOf("INSERT INTO inntekt_V1 VALUES (?, (to_json(?::json)))", inntektId.id, adapter.toJson(inntekt)).asUpdate)
+                    tx.run(queryOf("INSERT INTO inntekt_V1_arena_mapping VALUES (?, ?, ?, ?)", inntektId.id, request.aktørId, request.vedtakId, request.beregningsDato).asUpdate)
                 }
             }
             return getInntekt(inntektId)
@@ -49,11 +50,11 @@ class PostgresInntektStore(private val dataSource: DataSource) : InntektStore {
         }
     }
 
-    private fun getInntekt(inntektsId: String): StoredInntekt {
+    override fun getInntekt(inntektId: InntektId): StoredInntekt {
         return using(sessionOf(dataSource)) { session ->
-            session.run(queryOf(""" SELECT id, inntekt from inntekt_V1 where id = ?""", inntektsId).map { row -> StoredInntekt(InntektId(row.string("id")), adapter.fromJson(row.string("inntekt"))!!) }
+            session.run(queryOf(""" SELECT id, inntekt from inntekt_V1 where id = ?""", inntektId.id).map { row -> StoredInntekt(InntektId(row.string("id")), adapter.fromJson(row.string("inntekt"))!!) }
                     .asSingle)
-                    ?: throw InntektNotFoundException("Inntekt with id $inntektsId not found.")
+                    ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
         }
     }
 }

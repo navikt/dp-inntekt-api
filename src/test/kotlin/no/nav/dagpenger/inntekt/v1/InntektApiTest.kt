@@ -9,19 +9,20 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.dagpenger.inntekt.Environment
 
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentenResponse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.moshiInstance
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.time.YearMonth
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -44,33 +45,29 @@ class InntektApiTest {
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
 
     init {
-        every { inntektskomponentClientMock.getInntekt("1234", any(), any()) } returns InntektkomponentenResponse(
+        every { inntektskomponentClientMock.getInntekt(InntektkomponentRequest("1234", YearMonth.of(2015, 11), YearMonth.of(2019, 1))) } returns InntektkomponentResponse(
                 emptyList(),
                 Aktoer(AktoerType.AKTOER_ID, "1234")
         )
         every {
-            inntektskomponentClientMock.getInntekt(
-                "5678",
-                any(),
-                any()
-            )
+            inntektskomponentClientMock.getInntekt(InntektkomponentRequest("5678", YearMonth.of(2015, 11), YearMonth.of(2019, 1)))
         } throws InntektskomponentenHttpClientException(400, "Bad request")
     }
 
     @Test
     fun ` should be able to Http GET isReady, isAlive and metrics endpoint `() =
-        testApp {
+            testApp {
 
-            with(handleRequest(HttpMethod.Get, "isAlive")) {
-                Assertions.assertEquals(HttpStatusCode.OK, response.status())
+                with(handleRequest(HttpMethod.Get, "isAlive")) {
+                    Assertions.assertEquals(HttpStatusCode.OK, response.status())
+                }
+                with(handleRequest(HttpMethod.Get, "isReady")) {
+                    Assertions.assertEquals(HttpStatusCode.OK, response.status())
+                }
+                with(handleRequest(HttpMethod.Get, "metrics")) {
+                    Assertions.assertEquals(HttpStatusCode.OK, response.status())
+                }
             }
-            with(handleRequest(HttpMethod.Get, "isReady")) {
-                Assertions.assertEquals(HttpStatusCode.OK, response.status())
-            }
-            with(handleRequest(HttpMethod.Get, "metrics")) {
-                Assertions.assertEquals(HttpStatusCode.OK, response.status())
-            }
-        }
 
     @Test
     fun `post request with good json`() = testApp {
@@ -88,7 +85,7 @@ class InntektApiTest {
         handleRequest(HttpMethod.Post, "/v1/inntekt") {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(
-                """
+                    """
                 {
                     "aktørId": "5678",
                     "vedtakId": 1,
@@ -111,7 +108,7 @@ class InntektApiTest {
         handleRequest(HttpMethod.Post, "/v1/inntekt") {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(
-                """
+                    """
                 {
                     "aktørId": "5678",
                     "vedtakId": 1,
@@ -156,9 +153,8 @@ class InntektApiTest {
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        val env = Environment("", "", "", "")
         withTestApplication({
-            (inntektApi(env, inntektskomponentClientMock))
+            (inntektApi(inntektskomponentClientMock))
         }) { callback() }
     }
 }
