@@ -46,13 +46,17 @@ internal class PostgresInntektStoreTest {
     fun `Successful insert of inntekter`() {
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
+                val request = InntektRequest("1234", 1234, java.time.LocalDate.now())
                 val hentInntektListeResponse = InntektkomponentenResponse(
                         emptyList(),
                         Aktoer(AktoerType.AKTOER_ID, "1234")
                 )
-                val storedInntekt = insertInntekt(InntektRequest("1234", 1234, java.time.LocalDate.now()), hentInntektListeResponse)
+                val storedInntekt = insertInntekt(request, hentInntektListeResponse)
                 assertNotNull(storedInntekt.id)
                 assertTrue("Inntekstliste should be in the same state") { hentInntektListeResponse == storedInntekt.inntekt }
+
+                val storedInntektByRequest = getInntekt(request)
+                assertTrue("Inntekstliste should be in the same state") { storedInntekt == storedInntektByRequest }
             }
         }
     }

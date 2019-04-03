@@ -16,7 +16,7 @@ data class InntektId(val id: String) {
         try {
             ULID.parseULID(id)
         } catch (e: IllegalArgumentException) {
-            throw IllegalInntektId("ID $id is not a valid ULID", e)
+            throw IllegalInntektIdException("ID $id is not a valid ULID", e)
         }
     }
 }
@@ -25,4 +25,4 @@ class InntektNotFoundException(override val message: String) : RuntimeException(
 
 class StoreException(override val message: String) : RuntimeException(message)
 
-class IllegalInntektId(override val message: String, override val cause: Throwable?) : java.lang.RuntimeException(message, cause)
+class IllegalInntektIdException(override val message: String, override val cause: Throwable?) : java.lang.RuntimeException(message, cause)
