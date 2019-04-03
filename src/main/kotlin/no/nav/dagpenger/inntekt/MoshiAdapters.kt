@@ -5,8 +5,9 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.ToJson
 import com.squareup.moshi.adapters.EnumJsonAdapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import no.nav.dagpenger.inntekt.v1.SpesielleInntjeningsforhold
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 import java.math.BigDecimal
+import java.net.URI
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -16,6 +17,7 @@ val moshiInstance: Moshi = Moshi.Builder()
     .add(LocalDateJsonAdapter())
     .add(KotlinJsonAdapterFactory())
     .add(BigDecimalJsonAdapter())
+    .add(URIJsonAdapter())
     .add(SpesielleInntjeningsforhold::class.java,
         EnumJsonAdapter.create(SpesielleInntjeningsforhold::class.java).withUnknownFallback(SpesielleInntjeningsforhold.UNKNOWN))
     .build()!!
@@ -54,5 +56,17 @@ class BigDecimalJsonAdapter {
     @FromJson
     fun fromJson(json: String): BigDecimal {
         return BigDecimal(json)
+    }
+}
+
+class URIJsonAdapter {
+    @ToJson
+    fun toJson(uri: URI): String {
+        return uri.toString()
+    }
+
+    @FromJson
+    fun fromJson(json: String): URI {
+        return URI.create(json)
     }
 }

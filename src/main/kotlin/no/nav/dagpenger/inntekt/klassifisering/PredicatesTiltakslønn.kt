@@ -1,8 +1,8 @@
 package no.nav.dagpenger.inntekt.klassifisering
 
-import no.nav.dagpenger.inntekt.v1.InntektBeskrivelse
-import no.nav.dagpenger.inntekt.v1.InntektType
-import no.nav.dagpenger.inntekt.v1.SpesielleInntjeningsforhold
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 
 fun predicatesInntektklasseTiltakslønn(): List<(DatagrunnlagKlassifisering) -> Boolean> {
     return listOf(

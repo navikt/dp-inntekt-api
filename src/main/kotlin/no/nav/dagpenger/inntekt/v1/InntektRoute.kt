@@ -8,7 +8,8 @@ import io.ktor.routing.Routing
 import io.ktor.routing.post
 import io.ktor.routing.route
 import mu.KotlinLogging
-import no.nav.dagpenger.inntekt.InntektskomponentClient
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
+
 import no.nav.dagpenger.inntekt.klassifisering.Inntekt
 import no.nav.dagpenger.inntekt.klassifisering.klassifiserInntekter
 import java.time.LocalDate
@@ -56,11 +57,11 @@ fun getInntektFromInntektskomponenten(
 
 data class InntektRequest(
     val aktørId: String,
-    val vedtakId: String,
+    val vedtakId: Long,
     val beregningsDato: LocalDate
 )
 
 data class InntektKey(
     val beregningsDato: LocalDate,
-    val vedtaksId: String
+    val vedtaksId: Long
 )
