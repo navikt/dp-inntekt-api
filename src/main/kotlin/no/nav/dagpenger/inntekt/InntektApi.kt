@@ -20,6 +20,7 @@ import io.ktor.util.pipeline.PipelineContext
 import io.prometheus.client.hotspot.DefaultExports
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.oidc.StsOidcClient
+import no.nav.dagpenger.inntekt.v1.beregningsdato
 import no.nav.dagpenger.inntekt.v1.inntekt
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
@@ -36,7 +37,7 @@ fun main() {
 
     DefaultExports.initialize()
     val application = embeddedServer(Netty, port = env.httpPort) {
-        inntektApi(env, inntektskomponentHttpClient)
+        inntektApi(inntektskomponentHttpClient)
     }
     application.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -44,7 +45,7 @@ fun main() {
     })
 }
 
-fun Application.inntektApi(env: Environment, inntektskomponentHttpClient: InntektskomponentClient) {
+fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient) {
 
     install(DefaultHeaders)
 
@@ -80,6 +81,7 @@ fun Application.inntektApi(env: Environment, inntektskomponentHttpClient: Inntek
 
     routing {
         inntekt(inntektskomponentHttpClient)
+        beregningsdato()
         naischecks()
     }
 }

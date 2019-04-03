@@ -9,7 +9,6 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.dagpenger.inntekt.Environment
 import no.nav.dagpenger.inntekt.InntektskomponentClient
 import no.nav.dagpenger.inntekt.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.inntektApi
@@ -106,9 +105,8 @@ class InntektRouteTest {
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        val env = Environment("", "", "", "")
         withTestApplication({
-            (inntektApi(env, inntektskomponentClientMock))
+            (inntektApi(inntektskomponentClientMock))
         }) { callback() }
     }
 }

@@ -7,10 +7,9 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.route
 import no.nav.dagpenger.inntekt.BadRequestException
-import no.nav.dagpenger.inntekt.InntektskomponentClient
 import java.time.LocalDate
 
-fun Routing.beregningsdato(inntektskomponentClient: InntektskomponentClient) {
+fun Routing.beregningsdato() {
     route("v1/beregningsdato/{inntektsId}") {
         get {
             val inntektsId = call.parameters["inntektsId"] ?: throw BadRequestException()
