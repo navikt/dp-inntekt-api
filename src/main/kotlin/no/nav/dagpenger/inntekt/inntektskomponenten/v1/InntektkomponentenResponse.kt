@@ -1,10 +1,10 @@
-package no.nav.dagpenger.inntekt.v1
+package no.nav.dagpenger.inntekt.inntektskomponenten.v1
 
 import com.squareup.moshi.Json
 import java.math.BigDecimal
 import java.time.YearMonth
 
-data class HentInntektListeResponse(
+data class InntektkomponentenResponse(
     val arbeidsInntektMaaned: List<ArbeidsInntektMaaned>?,
     val ident: Aktoer
 )

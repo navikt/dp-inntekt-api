@@ -10,10 +10,15 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.dagpenger.inntekt.Environment
-import no.nav.dagpenger.inntekt.InntektskomponentClient
-import no.nav.dagpenger.inntekt.InntektskomponentenHttpClientException
+
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.inntektApi
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
+
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentenResponse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.moshiInstance
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -39,9 +44,9 @@ class InntektApiTest {
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
 
     init {
-        every { inntektskomponentClientMock.getInntekt("1234", any(), any()) } returns HentInntektListeResponse(
-            emptyList(),
-            Aktoer(AktoerType.AKTOER_ID, "1234")
+        every { inntektskomponentClientMock.getInntekt("1234", any(), any()) } returns InntektkomponentenResponse(
+                emptyList(),
+                Aktoer(AktoerType.AKTOER_ID, "1234")
         )
         every {
             inntektskomponentClientMock.getInntekt(

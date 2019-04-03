@@ -41,6 +41,14 @@ val prometheusVersion = "0.6.0"
 val moshiVersion = "1.8.0"
 val ktorMoshiVersion = "1.0.1"
 val mockkVersion = "1.9.1"
+val flywayVersion = "6.0.0-beta"
+val hikariVersion = "3.3.1"
+val postgresVersion = "42.2.5"
+val vaultJdbcVersion = "1.3.1"
+val kotliqueryVersion = "1.3.0"
+val vaultJavaDriverVersion = "3.1.0"
+val konfigVersion = "1.6.10.0"
+val testcontainers_version = "1.10.6"
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -66,6 +74,16 @@ dependencies {
 
     implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
 
+    implementation("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
+    implementation("org.postgresql:postgresql:$postgresVersion")
+    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
+    implementation("com.natpryce:konfig:$konfigVersion")
+    implementation("no.nav:vault-jdbc:$vaultJdbcVersion") {
+        exclude(module = "slf4j-simple")
+        exclude(module = "slf4j-api")
+    }
+
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
 
@@ -75,6 +93,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:$jupiterVersion")
     testImplementation("com.github.tomakehurst:wiremock-standalone:2.21.0")
+    testImplementation("org.testcontainers:postgresql:$testcontainers_version")
     testImplementation("io.mockk:mockk:$mockkVersion")
 }
 
