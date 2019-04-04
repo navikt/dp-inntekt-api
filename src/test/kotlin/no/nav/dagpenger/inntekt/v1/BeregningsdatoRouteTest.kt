@@ -23,7 +23,7 @@ class BeregningsdatoRouteTest {
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
-            (inntektApi(mockk()))
+            (inntektApi(mockk(), mockk()))
         }) { callback() }
     }
 }
