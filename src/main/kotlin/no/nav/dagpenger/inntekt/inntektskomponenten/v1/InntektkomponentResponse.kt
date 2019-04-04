@@ -4,7 +4,13 @@ import com.squareup.moshi.Json
 import java.math.BigDecimal
 import java.time.YearMonth
 
-data class InntektkomponentenResponse(
+data class InntektkomponentRequest(
+    val aktørId: String,
+    val månedFom: YearMonth,
+    val månedTom: YearMonth
+)
+
+data class InntektkomponentResponse(
     val arbeidsInntektMaaned: List<ArbeidsInntektMaaned>?,
     val ident: Aktoer
 )

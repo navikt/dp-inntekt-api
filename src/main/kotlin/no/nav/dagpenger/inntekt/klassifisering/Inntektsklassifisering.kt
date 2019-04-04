@@ -2,14 +2,14 @@ package no.nav.dagpenger.inntekt.klassifisering
 
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentenResponse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 import kotlin.reflect.KFunction
 
 // todo - TEST THIS!!! MISSING UNIT TEST
-fun klassifiserInntekter(uklassifiserteInntekter: InntektkomponentenResponse): Inntekt {
+fun klassifiserInntekter(uklassifiserteInntekter: InntektkomponentResponse): List<KlassifisertInntektMåned> {
 
-    val klassifiserteInntektMåneder = uklassifiserteInntekter.arbeidsInntektMaaned?.map { måned ->
+    return uklassifiserteInntekter.arbeidsInntektMaaned?.map { måned ->
         val årMåned = måned.aarMaaned
         val klassifiserteInntekter = måned.arbeidsInntektInformasjon.inntektListe.map { inntekt ->
             val datagrunnlagKlassifisering = DatagrunnlagKlassifisering(
@@ -20,8 +20,6 @@ fun klassifiserInntekter(uklassifiserteInntekter: InntektkomponentenResponse): I
         }
         KlassifisertInntektMåned(årMåned, klassifiserteInntekter)
     } ?: emptyList()
-
-    return Inntekt("12345", klassifiserteInntektMåneder)
 }
 
 private fun klassifiserInntekt(datagrunnlag: DatagrunnlagKlassifisering): InntektKlasse {
