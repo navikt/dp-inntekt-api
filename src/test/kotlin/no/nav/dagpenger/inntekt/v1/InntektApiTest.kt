@@ -97,8 +97,8 @@ class InntektApiTest {
             assertTrue(requestHandled)
             Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
             val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
-            assertEquals("Feilet mot inntektskomponentent!", problem?.title)
-            assertEquals("urn:dp:error:inntekt", problem?.type.toString())
+            assertEquals("Feilet mot inntektskomponenten!", problem?.title)
+            assertEquals("urn:dp:error:inntektskomponenten", problem?.type.toString())
             assertEquals(400, problem?.status)
         }
     }
@@ -120,8 +120,8 @@ class InntektApiTest {
             assertTrue(requestHandled)
             Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
             val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
-            assertEquals("Feilet mot inntektskomponentent!", problem?.title)
-            assertEquals("urn:dp:error:inntekt", problem?.type.toString())
+            assertEquals("Feilet mot inntektskomponenten!", problem?.title)
+            assertEquals("urn:dp:error:inntektskomponenten", problem?.type.toString())
             assertEquals(400, problem?.status)
         }
     }
@@ -146,7 +146,7 @@ class InntektApiTest {
             assertTrue(requestHandled)
             Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
             val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
-            assertEquals("Klarte ikke å lese inntektsparameterene", problem?.title)
+            assertEquals("Klarte ikke å lese parameterene", problem?.title)
             assertEquals("urn:dp:error:inntekt:parameter", problem?.type.toString())
             assertEquals(400, problem?.status)
         }

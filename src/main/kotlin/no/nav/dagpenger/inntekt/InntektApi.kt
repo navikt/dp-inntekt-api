@@ -22,6 +22,8 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oidc.StsOidcClient
+import no.nav.dagpenger.inntekt.v1.MissingInntektsIdException
+import no.nav.dagpenger.inntekt.v1.beregningsdato
 import no.nav.dagpenger.inntekt.v1.inntekt
 import org.slf4j.event.Level
 import java.net.URI
@@ -61,10 +63,10 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient)
             call.respond(HttpStatusCode.InternalServerError, error)
         }
         exception<InntektskomponentenHttpClientException> { cause ->
-            LOGGER.error("Request failed against inntektskomponenet", cause)
+            LOGGER.error("Request failed against inntektskomponenten", cause)
             val error = Problem(
-                type = URI("urn:dp:error:inntekt"),
-                title = "Feilet mot inntektskomponentent!",
+                type = URI("urn:dp:error:inntektskomponenten"),
+                title = "Feilet mot inntektskomponenten!",
                 status = cause.status
             )
             call.respond(HttpStatusCode.fromValue(cause.status), error)
@@ -73,7 +75,16 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient)
             LOGGER.error("Request was malformed", cause)
             val error = Problem(
                 type = URI("urn:dp:error:inntekt:parameter"),
-                title = "Klarte ikke å lese inntektsparameterene",
+                title = "Klarte ikke å lese parameterene",
+                status = 400
+            )
+            call.respond(HttpStatusCode.BadRequest, error)
+        }
+        exception<MissingInntektsIdException> { cause ->
+            LOGGER.error("Request was malformed", cause)
+            val error = Problem(
+                type = URI("urn:dp:error:inntekt:beregningsdato:parameter"),
+                title = "Klarte ikke å lese inntektsid",
                 status = 400
             )
             call.respond(HttpStatusCode.BadRequest, error)
@@ -94,6 +105,7 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient)
 
     routing {
         inntekt(inntektskomponentHttpClient, VoidInntektStore())
+        beregningsdato()
         naischecks()
     }
 }
