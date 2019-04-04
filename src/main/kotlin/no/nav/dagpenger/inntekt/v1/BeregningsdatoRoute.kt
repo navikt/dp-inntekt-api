@@ -6,13 +6,12 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.route
-import no.nav.dagpenger.inntekt.BadRequestException
 import java.time.LocalDate
 
 fun Routing.beregningsdato() {
     route("v1/beregningsdato/{inntektsId}") {
         get {
-            val inntektsId = call.parameters["inntektsId"] ?: throw BadRequestException()
+            val inntektsId = call.parameters["inntektsId"] ?: throw MissingInntektsIdException("Missing inntektsId")
 
             val beregningsdatoResponse = BeregningsdatoResponse(LocalDate.of(2019, 7, 14))
 
@@ -28,3 +27,5 @@ data class BeregningsdatoResponse(
 data class BeregningsdatoRequest(
     val inntektsId: String
 )
+
+class MissingInntektsIdException(override val message: String) : RuntimeException(message)

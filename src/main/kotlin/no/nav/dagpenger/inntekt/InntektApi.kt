@@ -3,7 +3,6 @@ package no.nav.dagpenger.inntekt
 import com.ryanharter.ktor.moshi.moshi
 import com.squareup.moshi.JsonEncodingException
 import io.ktor.application.Application
-import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CallLogging
@@ -16,13 +15,13 @@ import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.util.pipeline.PipelineContext
 import io.prometheus.client.hotspot.DefaultExports
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oidc.StsOidcClient
+import no.nav.dagpenger.inntekt.v1.MissingInntektsIdException
 import no.nav.dagpenger.inntekt.v1.beregningsdato
 import no.nav.dagpenger.inntekt.v1.inntekt
 import org.slf4j.event.Level
@@ -54,9 +53,6 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient)
     install(DefaultHeaders)
 
     install(StatusPages) {
-        exception<BadRequestException> { cause ->
-            badRequest(cause)
-        }
         exception<Throwable> { cause ->
             LOGGER.error("Request failed!", cause)
             val error = Problem(
@@ -66,10 +62,10 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient)
             call.respond(HttpStatusCode.InternalServerError, error)
         }
         exception<InntektskomponentenHttpClientException> { cause ->
-            LOGGER.error("Request failed against inntektskomponenet", cause)
+            LOGGER.error("Request failed against inntektskomponenten", cause)
             val error = Problem(
-                type = URI("urn:dp:error:inntekt"),
-                title = "Feilet mot inntektskomponentent!",
+                type = URI("urn:dp:error:inntektskomponenten"),
+                title = "Feilet mot inntektskomponenten!",
                 status = cause.status
             )
             call.respond(HttpStatusCode.fromValue(cause.status), error)
@@ -78,7 +74,16 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient)
             LOGGER.error("Request was malformed", cause)
             val error = Problem(
                 type = URI("urn:dp:error:inntekt:parameter"),
-                title = "Klarte ikke å lese inntektsparameterene",
+                title = "Klarte ikke å lese parameterene",
+                status = 400
+            )
+            call.respond(HttpStatusCode.BadRequest, error)
+        }
+        exception<MissingInntektsIdException> { cause ->
+            LOGGER.error("Request was malformed", cause)
+            val error = Problem(
+                type = URI("urn:dp:error:inntekt:beregningsdato:parameter"),
+                title = "Klarte ikke å lese inntektsid",
                 status = 400
             )
             call.respond(HttpStatusCode.BadRequest, error)
@@ -103,12 +108,3 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient)
         naischecks()
     }
 }
-
-private suspend fun <T : Throwable> PipelineContext<Unit, ApplicationCall>.badRequest(
-    cause: T
-) {
-    call.respond(HttpStatusCode.BadRequest)
-    throw cause
-}
-
-class BadRequestException : RuntimeException()

@@ -9,7 +9,6 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.dagpenger.inntekt.Environment
 
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.inntektApi
@@ -100,8 +99,8 @@ class InntektApiTest {
             assertTrue(requestHandled)
             Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
             val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
-            assertEquals("Feilet mot inntektskomponentent!", problem?.title)
-            assertEquals("urn:dp:error:inntekt", problem?.type.toString())
+            assertEquals("Feilet mot inntektskomponenten!", problem?.title)
+            assertEquals("urn:dp:error:inntektskomponenten", problem?.type.toString())
             assertEquals(400, problem?.status)
         }
     }
@@ -123,8 +122,8 @@ class InntektApiTest {
             assertTrue(requestHandled)
             Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
             val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
-            assertEquals("Feilet mot inntektskomponentent!", problem?.title)
-            assertEquals("urn:dp:error:inntekt", problem?.type.toString())
+            assertEquals("Feilet mot inntektskomponenten!", problem?.title)
+            assertEquals("urn:dp:error:inntektskomponenten", problem?.type.toString())
             assertEquals(400, problem?.status)
         }
     }
@@ -149,16 +148,15 @@ class InntektApiTest {
             assertTrue(requestHandled)
             Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
             val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
-            assertEquals("Klarte ikke å lese inntektsparameterene", problem?.title)
+            assertEquals("Klarte ikke å lese parameterene", problem?.title)
             assertEquals("urn:dp:error:inntekt:parameter", problem?.type.toString())
             assertEquals(400, problem?.status)
         }
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        val env = Environment("", "", "", "")
         withTestApplication({
-            (inntektApi(env, inntektskomponentClientMock))
+            (inntektApi(inntektskomponentClientMock))
         }) { callback() }
     }
 }
