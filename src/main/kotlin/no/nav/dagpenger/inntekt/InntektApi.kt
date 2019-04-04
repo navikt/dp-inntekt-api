@@ -17,7 +17,12 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.prometheus.client.hotspot.DefaultExports
 import mu.KotlinLogging
+import no.finn.unleash.DefaultUnleash
+import no.nav.dagpenger.inntekt.db.PostgresInntektStore
+import no.nav.dagpenger.inntekt.db.UnleashInntektStore
 import no.nav.dagpenger.inntekt.db.VoidInntektStore
+import no.nav.dagpenger.inntekt.db.dataSourceFrom
+import no.nav.dagpenger.inntekt.db.migrate
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
@@ -28,11 +33,31 @@ import no.nav.dagpenger.inntekt.v1.inntekt
 import org.slf4j.event.Level
 import java.net.URI
 import java.util.concurrent.TimeUnit
+import no.finn.unleash.util.UnleashConfig
+import no.nav.dagpenger.inntekt.db.InntektStore
 
 private val LOGGER = KotlinLogging.logger {}
 
 fun main() {
+    println(System.getenv())
+
     val config = Configuration()
+
+    migrate(config)
+
+    val unleashConfig = UnleashConfig.builder()
+            .appName(config.application.name)
+            .instanceId(config.application.instance)
+            .unleashAPI(config.application.unleashUrl)
+            .build()
+
+    val postgresInntektStore = PostgresInntektStore(dataSourceFrom(config))
+    val voidInntektStore = VoidInntektStore()
+    val unleashInntektStore = UnleashInntektStore(
+            postgresInntektStore = postgresInntektStore,
+            voidInntektStore = voidInntektStore,
+            unleash = DefaultUnleash(unleashConfig)
+    )
 
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
             config.application.hentinntektListeUrl,
@@ -41,7 +66,7 @@ fun main() {
 
     DefaultExports.initialize()
     val application = embeddedServer(Netty, port = config.application.httpPort) {
-        inntektApi(inntektskomponentHttpClient)
+        inntektApi(inntektskomponentHttpClient, unleashInntektStore)
     }
     application.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -49,7 +74,7 @@ fun main() {
     })
 }
 
-fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient) {
+fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient, inntektStore: InntektStore) {
 
     install(DefaultHeaders)
 
@@ -104,7 +129,7 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient)
     }
 
     routing {
-        inntekt(inntektskomponentHttpClient, VoidInntektStore())
+        inntekt(inntektskomponentHttpClient, inntektStore)
         beregningsdato()
         naischecks()
     }

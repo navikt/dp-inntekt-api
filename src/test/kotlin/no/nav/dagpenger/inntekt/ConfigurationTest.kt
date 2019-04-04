@@ -4,7 +4,15 @@ import org.junit.jupiter.api.Test
 
 class ConfigurationTest {
 
-    private val dummyConfigs = listOf("srvdp.inntekt.api.username", "srvdp.inntekt.api.password", "hentinntektliste.url", "oidc.sts.issuerurl")
+    private val dummyConfigs = listOf(
+        "srvdp.inntekt.api.username",
+        "host",
+        "unleash.url",
+        "srvdp.inntekt.api.password",
+        "hentinntektliste.url",
+        "oidc.sts.issuerurl"
+    )
+
     private fun withProps(props: Map<String, String>, test: () -> Unit) {
         for ((k, v) in props) {
             System.getProperties()[k] = v

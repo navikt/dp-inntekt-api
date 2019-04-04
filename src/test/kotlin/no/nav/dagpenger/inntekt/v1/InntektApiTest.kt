@@ -11,6 +11,7 @@ import io.mockk.every
 import io.mockk.mockk
 
 import no.nav.dagpenger.inntekt.Problem
+import no.nav.dagpenger.inntekt.db.VoidInntektStore
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
@@ -154,7 +155,7 @@ class InntektApiTest {
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
-            (inntektApi(inntektskomponentClientMock))
+            (inntektApi(inntektskomponentClientMock, VoidInntektStore()))
         }) { callback() }
     }
 }
