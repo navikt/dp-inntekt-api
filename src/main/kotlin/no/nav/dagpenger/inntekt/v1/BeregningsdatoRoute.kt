@@ -24,8 +24,4 @@ data class BeregningsdatoResponse(
     val beregningsdato: LocalDate
 )
 
-data class BeregningsdatoRequest(
-    val inntektsId: String
-)
-
 class MissingInntektsIdException(override val message: String) : RuntimeException(message)
