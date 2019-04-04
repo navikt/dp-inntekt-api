@@ -84,6 +84,7 @@ dependencies {
         exclude(module = "slf4j-api")
     }
 
+    implementation("no.finn.unleash:unleash-client-java:3.2.5")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
 

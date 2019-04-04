@@ -17,6 +17,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.prometheus.client.hotspot.DefaultExports
 import mu.KotlinLogging
+import no.nav.dagpenger.inntekt.db.VoidInntektStore
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
@@ -29,16 +30,16 @@ import java.util.concurrent.TimeUnit
 private val LOGGER = KotlinLogging.logger {}
 
 fun main() {
-    val env = Environment()
+    val config = Configuration()
 
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
-            env.hentinntektListeUrl,
-            StsOidcClient(env.oicdStsUrl, env.username, env.password)
+            config.application.hentinntektListeUrl,
+            StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
     )
 
     DefaultExports.initialize()
-    val application = embeddedServer(Netty, port = env.httpPort) {
-        inntektApi(env, inntektskomponentHttpClient)
+    val application = embeddedServer(Netty, port = config.application.httpPort) {
+        inntektApi(inntektskomponentHttpClient)
     }
     application.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -46,7 +47,7 @@ fun main() {
     })
 }
 
-fun Application.inntektApi(env: Environment, inntektskomponentHttpClient: InntektskomponentClient) {
+fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient) {
 
     install(DefaultHeaders)
 
@@ -92,7 +93,7 @@ fun Application.inntektApi(env: Environment, inntektskomponentHttpClient: Inntek
     }
 
     routing {
-        inntekt(inntektskomponentHttpClient)
+        inntekt(inntektskomponentHttpClient, VoidInntektStore())
         naischecks()
     }
 }

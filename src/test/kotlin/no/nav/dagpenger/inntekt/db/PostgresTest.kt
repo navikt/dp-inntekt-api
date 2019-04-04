@@ -5,12 +5,13 @@ import no.nav.dagpenger.inntekt.Configuration
 
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentenResponse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.v1.InntektRequest
 import org.junit.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 internal class PostgresTest {
@@ -47,16 +48,36 @@ internal class PostgresInntektStoreTest {
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
                 val request = InntektRequest("1234", 1234, java.time.LocalDate.now())
-                val hentInntektListeResponse = InntektkomponentenResponse(
+                val hentInntektListeResponse = InntektkomponentResponse(
                         emptyList(),
                         Aktoer(AktoerType.AKTOER_ID, "1234")
                 )
                 val storedInntekt = insertInntekt(request, hentInntektListeResponse)
-                assertNotNull(storedInntekt.id)
+                assertNotNull(storedInntekt.inntektId)
                 assertTrue("Inntekstliste should be in the same state") { hentInntektListeResponse == storedInntekt.inntekt }
 
-                val storedInntektByRequest = getInntekt(request)
+                val storedInntektByRequest = getInntekt(storedInntekt.inntektId)
                 assertTrue("Inntekstliste should be in the same state") { storedInntekt == storedInntektByRequest }
+            }
+        }
+    }
+
+    @Test
+    fun ` Inserting inntekt that  already exist should throw error `() {
+
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+                val request = InntektRequest("98765", 1234, java.time.LocalDate.now())
+                val hentInntektListeResponse = InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "98765")
+                )
+                insertInntekt(request, hentInntektListeResponse)
+                val result = kotlin.runCatching {
+                    insertInntekt(request, hentInntektListeResponse)
+                }
+                assertTrue { result.isFailure }
+                assertTrue { result.exceptionOrNull() is StoreException }
             }
         }
     }
@@ -66,15 +87,27 @@ internal class PostgresInntektStoreTest {
 
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
-                val hentInntektListeResponse = InntektkomponentenResponse(
+                val hentInntektListeResponse = InntektkomponentResponse(
                         emptyList(),
                         Aktoer(AktoerType.AKTOER_ID, "1234")
                 )
                 insertInntekt(InntektRequest("1234", 12345, java.time.LocalDate.now()), hentInntektListeResponse)
 
-                val storedInntekt = getInntekt(InntektRequest("1234", 12345, java.time.LocalDate.now()))
-                assertNotNull(storedInntekt.id)
-                assertTrue("Inntekstliste should be in the same state") { hentInntektListeResponse == storedInntekt.inntekt }
+                val inntektId = getInntektId(InntektRequest("1234", 12345, java.time.LocalDate.now()))
+                val storedInntekt = inntektId?.let { getInntekt(it) }
+                assertNotNull(storedInntekt?.inntektId)
+                assertTrue("Inntekstliste should be in the same state") { hentInntektListeResponse == storedInntekt?.inntekt }
+            }
+        }
+    }
+
+    @Test
+    fun ` Inntekt not present should give null StoredInntekt`() {
+
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+                val inntektId = getInntektId(InntektRequest("7890", 7890, java.time.LocalDate.now()))
+                assertNull(inntektId)
             }
         }
     }

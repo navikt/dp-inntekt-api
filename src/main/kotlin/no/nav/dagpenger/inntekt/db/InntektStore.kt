@@ -1,15 +1,16 @@
 package no.nav.dagpenger.inntekt.db
 
 import de.huxhorn.sulky.ulid.ULID
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentenResponse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.v1.InntektRequest
 
 interface InntektStore {
-    fun getInntekt(request: InntektRequest): StoredInntekt
-    fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentenResponse): StoredInntekt
+    fun getInntekt(inntektId: InntektId): StoredInntekt
+    fun getInntektId(request: InntektRequest): InntektId?
+    fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt
 }
 
-data class StoredInntekt(val id: InntektId, val inntekt: InntektkomponentenResponse)
+data class StoredInntekt(val inntektId: InntektId, val inntekt: InntektkomponentResponse)
 
 data class InntektId(val id: String) {
     init {
