@@ -10,8 +10,10 @@ class UnleashInntektStore(
     val unleash: Unleash
 ) : InntektStore {
 
+    private val toggle = "dp-inntekt-api.PostgresqlStore"
+
     override fun getInntekt(inntektId: InntektId): StoredInntekt {
-        return if (unleash.isEnabled("dp-regel-api.PostgresqlStore")) {
+        return if (unleash.isEnabled(toggle)) {
             postgresInntektStore.getInntekt(inntektId)
         } else {
             voidInntektStore.getInntekt(inntektId)
@@ -19,7 +21,7 @@ class UnleashInntektStore(
     }
 
     override fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt {
-        return if (unleash.isEnabled("dp-regel-api.PostgresqlStore")) {
+        return if (unleash.isEnabled(toggle)) {
             postgresInntektStore.insertInntekt(request, inntekt)
         } else {
             voidInntektStore.insertInntekt(request, inntekt)
@@ -27,7 +29,7 @@ class UnleashInntektStore(
     }
 
     override fun getInntektId(request: InntektRequest): InntektId? {
-        return if (unleash.isEnabled("dp-regel-api.PostgresqlStore")) {
+        return if (unleash.isEnabled(toggle)) {
             postgresInntektStore.getInntektId(request)
         } else {
             voidInntektStore.getInntektId(request)
