@@ -36,9 +36,11 @@ internal class PostgresTest {
 
     @Test
     fun `JDBC url is set correctly from  config values `() {
+        System.setProperty("oidc.sts.issuerurl", "test")
         with(hikariConfigFrom(Configuration())) {
             assertEquals("jdbc:postgresql://localhost:5432/dp-inntekt-db", jdbcUrl)
         }
+        System.clearProperty("oidc.sts.issuerurl")
     }
 }
 

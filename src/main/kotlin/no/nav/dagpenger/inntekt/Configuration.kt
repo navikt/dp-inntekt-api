@@ -19,7 +19,7 @@ private val localProperties = ConfigurationMap(
                 "application.profile" to "LOCAL",
                 "application.httpPort" to "8099",
                 "hentinntektliste.url" to "https://localhost/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
-                "oidc.sts.issueurl" to "https://localhost/",
+                "oidc.sts.issuerurl" to "https://localhost/",
                 "srvdp.inntekt.api.username" to "username",
                 "srvdp.inntekt.api.password" to "password"
         )
@@ -31,10 +31,7 @@ private val devProperties = ConfigurationMap(
                 "database.name" to "dp-inntekt-db-preprod",
                 "vault.mountpath" to "postgresql/preprod-fss/",
                 "application.profile" to "DEV",
-                "application.httpPort" to "8099",
-                "hentinntektliste.url" to "https://app-t6.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
-                "oidc.sts.issueurl" to "https://security-token-service-t10.nais.preprod.local/"
-
+                "application.httpPort" to "8099"
         )
 )
 private val prodProperties = ConfigurationMap(
@@ -73,7 +70,7 @@ data class Configuration(
         val username: String = config()[Key("srvdp.inntekt.api.username", stringType)],
         val password: String = config()[Key("srvdp.inntekt.api.password", stringType)],
         val hentinntektListeUrl: String = config()[Key("hentinntektliste.url", stringType)],
-        val oicdStsUrl: String = config()[Key("oidc.sts.issueurl", stringType)]
+        val oicdStsUrl: String = config()[Key("oidc.sts.issuerurl", stringType)]
     )
 }
 
