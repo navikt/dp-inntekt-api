@@ -35,9 +35,9 @@ fun Routing.inntekt(inntektskomponentClient: InntektskomponentClient, inntektSto
 private const val MAX_INNTEKT_PERIODE = 38L
 
 data class InntektRequest(
-        val aktørId: String,
-        val vedtakId: Long,
-        val beregningsDato: LocalDate
+    val aktørId: String,
+    val vedtakId: Long,
+    val beregningsDato: LocalDate
 )
 
 val TO_INNTEKTKOMPONENT_REQUEST: (InntektRequest) -> InntektkomponentRequest = {
