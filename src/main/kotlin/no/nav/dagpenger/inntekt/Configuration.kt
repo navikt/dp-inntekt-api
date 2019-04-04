@@ -73,7 +73,7 @@ data class Configuration(
         val password: String = config()[Key("srvdp.inntekt.api.password", stringType)],
         val hentinntektListeUrl: String = config()[Key("hentinntektliste.url", stringType)],
         val oicdStsUrl: String = config()[Key("oidc.sts.issuerurl", stringType)],
-        val name: String = "dp-regel-api",
+        val name: String = "dp-inntekt-api",
         val instance: String = config()[Key("host", stringType)],
         val unleashUrl: String = config()[Key("unleash.url", stringType)]
 
