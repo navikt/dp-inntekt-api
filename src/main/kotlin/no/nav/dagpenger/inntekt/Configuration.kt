@@ -32,10 +32,8 @@ private val devProperties = ConfigurationMap(
                 "vault.mountpath" to "postgresql/preprod-fss/",
                 "application.profile" to "DEV",
                 "application.httpPort" to "8099",
-                "hentinntektliste.url" to "https://localhost/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
-                "oidc.sts.issueurl" to "https://localhost/",
-                "srvdp.inntekt.api.username" to "username",
-                "srvdp.inntekt.api.password" to "password"
+                "hentinntektliste.url" to "https://app-t6.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
+                "oidc.sts.issueurl" to "https://security-token-service-t10.nais.preprod.local/"
 
         )
 )
@@ -46,11 +44,7 @@ private val prodProperties = ConfigurationMap(
                 "database.name" to "dp-inntekt-db",
                 "vault.mountpath" to "postgresql/prod-fss/",
                 "application.profile" to "PROD",
-                "application.httpPort" to "8099",
-                "hentinntektliste.url" to "https://localhost/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
-                "oidc.sts.issueurl" to "https://localhost/",
-                "srvdp.inntekt.api.username" to "username",
-                "srvdp.inntekt.api.password" to "password"
+                "application.httpPort" to "8099"
         )
 )
 

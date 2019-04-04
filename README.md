@@ -24,7 +24,7 @@ docker-compose -f docker-compose.yml up
 Etter at containerene er startet kan man starte applikasjonen ved å kjøre main metoden.
 
 
-Stoppe Kafka og Postgres:
+Stoppe Postgres:
 
 ```
 ctrl-c og docker-compose -f docker-compose.yml down 
@@ -56,14 +56,14 @@ vault login -method=oidc
 Preprod credentials:
 
 ```
-vault read postgresql/preprod-fss/creds/dp-regel-api-preprod-admin
+vault read postgresql/preprod-fss/creds/dp-inntekt-api-preprod-admin
 
 ```
 
 Prod credentials:
 
 ```
-vault read postgresql/prod-fss/creds/dp-regel-api-admin
+vault read postgresql/prod-fss/creds/dp-inntekt-api-admin
 
 ```
 
