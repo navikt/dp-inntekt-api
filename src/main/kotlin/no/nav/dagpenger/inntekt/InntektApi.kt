@@ -39,8 +39,6 @@ import no.nav.dagpenger.inntekt.db.InntektStore
 private val LOGGER = KotlinLogging.logger {}
 
 fun main() {
-    println(System.getenv())
-
     val config = Configuration()
 
     migrate(config)
