@@ -18,6 +18,8 @@ import io.ktor.server.netty.Netty
 import io.prometheus.client.hotspot.DefaultExports
 import mu.KotlinLogging
 import no.finn.unleash.DefaultUnleash
+import no.finn.unleash.util.UnleashConfig
+import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
 import no.nav.dagpenger.inntekt.db.UnleashInntektStore
 import no.nav.dagpenger.inntekt.db.VoidInntektStore
@@ -30,12 +32,10 @@ import no.nav.dagpenger.inntekt.oidc.StsOidcClient
 import no.nav.dagpenger.inntekt.v1.MissingInntektsIdException
 import no.nav.dagpenger.inntekt.v1.beregningsdato
 import no.nav.dagpenger.inntekt.v1.inntekt
+import no.nav.dagpenger.inntekt.v1.inntjeningsperiodeApi
 import org.slf4j.event.Level
 import java.net.URI
 import java.util.concurrent.TimeUnit
-import no.finn.unleash.util.UnleashConfig
-import no.nav.dagpenger.inntekt.db.InntektStore
-import no.nav.dagpenger.inntekt.v1.inntjeningsperiodeApi
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -46,7 +46,6 @@ fun main() {
 
     val unleashConfig = UnleashConfig.builder()
             .appName(config.application.name)
-            .instanceId(config.application.instance)
             .unleashAPI(config.application.unleashUrl)
             .build()
 

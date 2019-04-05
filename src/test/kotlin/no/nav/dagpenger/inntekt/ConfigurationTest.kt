@@ -6,7 +6,6 @@ class ConfigurationTest {
 
     private val dummyConfigs = listOf(
         "srvdp.inntekt.api.username",
-        "host",
         "unleash.url",
         "srvdp.inntekt.api.password",
         "hentinntektliste.url",

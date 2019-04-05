@@ -7,7 +7,6 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
-import java.util.UUID
 
 private val localProperties = ConfigurationMap(
     mapOf(
@@ -23,8 +22,7 @@ private val localProperties = ConfigurationMap(
         "oidc.sts.issuerurl" to "http://localhost/",
         "srvdp.inntekt.api.username" to "postgres",
         "srvdp.inntekt.api.password" to "postgres",
-        "unleash.url" to "http://localhost",
-        "host" to "local"
+        "unleash.url" to "http://localhost"
     )
 )
 private val devProperties = ConfigurationMap(
@@ -75,7 +73,6 @@ data class Configuration(
         val hentinntektListeUrl: String = config()[Key("hentinntektliste.url", stringType)],
         val oicdStsUrl: String = config()[Key("oidc.sts.issuerurl", stringType)],
         val name: String = "dp-inntekt-api",
-        val instance: String = config().getOrNull(Key("host", stringType)) ?: name + UUID.randomUUID().toString(),
         val unleashUrl: String = config()[Key("unleash.url", stringType)]
 
     )
