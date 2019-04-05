@@ -21,7 +21,7 @@ class InntjeningsperiodeApiSpec {
                 mockk()
             )
         }) {
-            handleRequest(HttpMethod.Post, "/v1/inntjeningsperiode") {
+            handleRequest(HttpMethod.Post, "/v1/is-samme-inntjeningsperiode") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
                     """

@@ -14,7 +14,7 @@ import java.time.LocalDate
 
 fun Route.inntjeningsperiodeApi() {
 
-    route("/v1/inntjeningsperiode") {
+    route("/v1/is-samme-inntjeningsperiode") {
         post {
             val parametere = call.receive<InntjeningsperiodeParametre>()
 
