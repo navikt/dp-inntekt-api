@@ -35,6 +35,7 @@ import java.net.URI
 import java.util.concurrent.TimeUnit
 import no.finn.unleash.util.UnleashConfig
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.v1.inntjeningsperiodeApi
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -129,6 +130,7 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient,
     routing {
         inntekt(inntektskomponentHttpClient, inntektStore)
         beregningsdato()
+        inntjeningsperiodeApi()
         naischecks()
     }
 }
