@@ -56,14 +56,14 @@ vault login -method=oidc
 Preprod credentials:
 
 ```
-vault read postgresql/preprod-fss/creds/dp-inntekt-api-preprod-admin
+vault read postgresql/preprod-fss/creds/dp-inntekt-db-preprod-admin
 
 ```
 
 Prod credentials:
 
 ```
-vault read postgresql/prod-fss/creds/dp-inntekt-api-admin
+vault read postgresql/prod-fss/creds/dp-inntekt-db-admin
 
 ```
 
