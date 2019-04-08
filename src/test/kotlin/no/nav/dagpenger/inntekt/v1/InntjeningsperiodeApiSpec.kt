@@ -6,19 +6,29 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
+import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektApi
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 import kotlin.test.assertEquals
 
 class InntjeningsperiodeApiSpec {
     @Test
     fun `Inntjeningsperiode API specification test - Should match json field names and formats`() {
 
+        val inntektStore: InntektStore = mockk()
+
+        every { runBlocking {
+            inntektStore.getBeregningsdato(any())
+        } } returns LocalDate.of(2019, 2, 27)
+
         withTestApplication({
             inntektApi(
                 mockk(),
-                mockk()
+                inntektStore
             )
         }) {
             handleRequest(HttpMethod.Post, "/v1/is-samme-inntjeningsperiode") {
@@ -29,7 +39,7 @@ class InntjeningsperiodeApiSpec {
                       "aktorId": "1234",
                       "vedtakId": 5678,
                       "beregningsdato": "2019-02-27",
-                      "inntektsId": "12345"
+                      "inntektsId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
                     }
                     """.trimIndent()
                 )
@@ -41,5 +51,5 @@ class InntjeningsperiodeApiSpec {
     }
 
     private val expectedJson =
-        """{"sammeInntjeningsPeriode":true,"parametere":{"aktorId":"1234","vedtakId":5678,"beregningsdato":"2019-02-27","inntektsId":"12345"}}"""
+        """{"sammeInntjeningsPeriode":true,"parametere":{"aktorId":"1234","vedtakId":5678,"beregningsdato":"2019-02-27","inntektsId":"01ARZ3NDEKTSV4RRFFQ69G5FAV"}}"""
 }

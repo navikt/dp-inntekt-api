@@ -19,6 +19,7 @@ import io.prometheus.client.hotspot.DefaultExports
 import mu.KotlinLogging
 import no.finn.unleash.DefaultUnleash
 import no.finn.unleash.util.UnleashConfig
+import no.nav.dagpenger.inntekt.db.InntektIdNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
 import no.nav.dagpenger.inntekt.db.UnleashInntektStore
@@ -29,8 +30,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oidc.StsOidcClient
-import no.nav.dagpenger.inntekt.v1.MissingInntektsIdException
-import no.nav.dagpenger.inntekt.v1.beregningsdato
 import no.nav.dagpenger.inntekt.v1.inntekt
 import no.nav.dagpenger.inntekt.v1.inntjeningsperiodeApi
 import org.slf4j.event.Level
@@ -85,6 +84,15 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient,
             )
             call.respond(HttpStatusCode.InternalServerError, error)
         }
+        exception<InntektIdNotFoundException> { cause ->
+            LOGGER.error("Request failed!", cause)
+            val error = Problem(
+                type = URI("urn:dp:error:inntekt"),
+                title = "Kunne ikke finne inntekIden i databasen",
+                status = 404
+            )
+            call.respond(HttpStatusCode.InternalServerError, error)
+        }
         exception<InntektskomponentenHttpClientException> { cause ->
             LOGGER.error("Request failed against inntektskomponenten", cause)
             val error = Problem(
@@ -99,15 +107,6 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient,
             val error = Problem(
                 type = URI("urn:dp:error:inntekt:parameter"),
                 title = "Klarte ikke å lese parameterene",
-                status = 400
-            )
-            call.respond(HttpStatusCode.BadRequest, error)
-        }
-        exception<MissingInntektsIdException> { cause ->
-            LOGGER.error("Request was malformed", cause)
-            val error = Problem(
-                type = URI("urn:dp:error:inntekt:beregningsdato:parameter"),
-                title = "Klarte ikke å lese inntektsid",
                 status = 400
             )
             call.respond(HttpStatusCode.BadRequest, error)
@@ -128,8 +127,7 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient,
 
     routing {
         inntekt(inntektskomponentHttpClient, inntektStore)
-        beregningsdato()
-        inntjeningsperiodeApi()
+        inntjeningsperiodeApi(inntektStore)
         naischecks()
     }
 }
