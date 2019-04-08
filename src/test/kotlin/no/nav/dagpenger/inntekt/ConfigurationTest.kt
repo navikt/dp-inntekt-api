@@ -24,28 +24,21 @@ class ConfigurationTest {
 
     @Test
     fun `Configuration is loaded based on application profile`() {
-        setUpDummyConfigs()
-        withProps(mapOf("NAIS_CLUSTER_NAME" to "dev-fss")) {
+        val dummyConfigs = dummyConfigs.associate { it to "test" }
+
+        withProps(dummyConfigs + mapOf("NAIS_CLUSTER_NAME" to "dev-fss")) {
             with(Configuration()) {
                 kotlin.test.assertEquals(Profile.DEV, this.application.profile)
             }
         }
 
-        withProps(mapOf("NAIS_CLUSTER_NAME" to "prod-fss")) {
+        withProps(dummyConfigs + mapOf("NAIS_CLUSTER_NAME" to "prod-fss")) {
             with(Configuration()) {
                 kotlin.test.assertEquals(Profile.PROD, this.application.profile)
             }
         }
-        clearDummyConfigs()
     }
 
-    private fun clearDummyConfigs() {
-        dummyConfigs.forEach { System.clearProperty(it) }
-    }
-
-    private fun setUpDummyConfigs() {
-        dummyConfigs.forEach { System.setProperty(it, "test") }
-    }
 
     @Test
     fun `Default configuration is LOCAL `() {
