@@ -2,13 +2,13 @@ package no.nav.dagpenger.inntekt.db
 
 import com.zaxxer.hikari.HikariDataSource
 import no.nav.dagpenger.inntekt.Configuration
-
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.v1.InntektRequest
 import org.junit.Test
 import org.testcontainers.containers.PostgreSQLContainer
+import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -110,6 +110,41 @@ internal class PostgresInntektStoreTest {
             with(PostgresInntektStore(DataSource.instance)) {
                 val inntektId = getInntektId(InntektRequest("7890", 7890, java.time.LocalDate.now()))
                 assertNull(inntektId)
+            }
+        }
+    }
+
+    @Test
+    fun ` Sucessfully get beregningsdato`() {
+
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+                val hentInntektListeResponse = InntektkomponentResponse(
+                    emptyList(),
+                    Aktoer(AktoerType.AKTOER_ID, "1234")
+                )
+                val inntekt = insertInntekt(
+                    InntektRequest("1234", 12345, LocalDate.of(2019, 4, 14)),
+                    hentInntektListeResponse)
+
+                val beregningsdato = getBeregningsdato(inntekt.inntektId)
+
+                assertNotNull(beregningsdato)
+                assertEquals(LocalDate.of(2019, 4, 14), beregningsdato)
+            }
+        }
+    }
+
+    @Test
+    fun ` Getting beregningsdato for unknown inntektId should throw error`() {
+
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+                val result = kotlin.runCatching {
+                    getBeregningsdato(InntektId("12ARZ3NDEKTSV4RRFFQ69G5FBY"))
+                }
+                assertTrue("Result is not failure") { result.isFailure }
+                assertTrue("Result is $result") { result.exceptionOrNull() is InntektIdNotFoundException }
             }
         }
     }

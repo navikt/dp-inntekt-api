@@ -3,6 +3,7 @@ package no.nav.dagpenger.inntekt.db
 import de.huxhorn.sulky.ulid.ULID
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.v1.InntektRequest
+import java.time.LocalDate
 
 class VoidInntektStore : InntektStore {
 
@@ -18,5 +19,9 @@ class VoidInntektStore : InntektStore {
 
     override fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt {
         return StoredInntekt(InntektId(ulidGenetor.nextULID()), inntekt)
+    }
+
+    override fun getBeregningsdato(inntektId: InntektId): LocalDate {
+        return LocalDate.now()
     }
 }

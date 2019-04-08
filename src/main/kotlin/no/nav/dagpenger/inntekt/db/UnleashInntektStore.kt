@@ -3,6 +3,7 @@ package no.nav.dagpenger.inntekt.db
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.v1.InntektRequest
+import java.time.LocalDate
 
 class UnleashInntektStore(
     val postgresInntektStore: InntektStore,
@@ -33,6 +34,14 @@ class UnleashInntektStore(
             postgresInntektStore.getInntektId(request)
         } else {
             voidInntektStore.getInntektId(request)
+        }
+    }
+
+    override fun getBeregningsdato(inntektId: InntektId): LocalDate {
+        return if (unleash.isEnabled(toggle)) {
+            postgresInntektStore.getBeregningsdato(inntektId)
+        } else {
+            voidInntektStore.getBeregningsdato(inntektId)
         }
     }
 }

@@ -10,6 +10,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.v1.InntektRequest
 import org.postgresql.util.PSQLException
+import java.time.LocalDate
 import javax.sql.DataSource
 
 class PostgresInntektStore(private val dataSource: DataSource) : InntektStore {
@@ -31,6 +32,21 @@ class PostgresInntektStore(private val dataSource: DataSource) : InntektStore {
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
+        }
+    }
+
+    override fun getBeregningsdato(inntektId: InntektId): LocalDate {
+        return using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    """SELECT beregningsdato
+                                FROM inntekt_V1_arena_mapping
+                                WHERE inntektId = ?
+                        """.trimMargin(), inntektId.id
+                ).map { row ->
+                    row.localDate("beregningsdato")
+                }.asSingle
+            ) ?: throw InntektIdNotFoundException("Inntekt with id $inntektId not found.")
         }
     }
 
