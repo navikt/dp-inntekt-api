@@ -30,7 +30,7 @@ internal class UnleashInntektStoreTest {
     private val inntektId = InntektId(ULID().nextULID())
 
     @Test
-    fun ` Should direct to voidInntektStore when toggle is off `() {
+    fun ` Should direct to postgresInntektStore when toggle is off `() {
 
         val unleash = mockk<Unleash>()
         every { unleash.isEnabled(any()) } returns false
@@ -46,14 +46,14 @@ internal class UnleashInntektStoreTest {
         unleashInntektStore.getInntekt(inntektId)
 
         verify(ordering = Ordering.ORDERED) {
-            voidInntektStore.insertInntekt(request, inntektkomponentResponse)
-            voidInntektStore.getInntektId(request)
-            voidInntektStore.getInntekt(inntektId)
+            postgresInntektStore.insertInntekt(request, inntektkomponentResponse)
+            postgresInntektStore.getInntektId(request)
+            postgresInntektStore.getInntekt(inntektId)
         }
     }
 
     @Test
-    fun ` Should direct to postgresInntektStore when toggle is on `() {
+    fun ` Should direct to voidInntektStore when toggle is on `() {
 
         val unleash = mockk<Unleash>()
         every { unleash.isEnabled(any()) } returns true
@@ -69,9 +69,9 @@ internal class UnleashInntektStoreTest {
         unleashInntektStore.getInntekt(inntektId)
 
         verify(ordering = Ordering.ORDERED) {
-            postgresInntektStore.insertInntekt(request, inntektkomponentResponse)
-            postgresInntektStore.getInntektId(request)
-            postgresInntektStore.getInntekt(inntektId)
+            voidInntektStore.insertInntekt(request, inntektkomponentResponse)
+            voidInntektStore.getInntektId(request)
+            voidInntektStore.getInntekt(inntektId)
         }
     }
 }
