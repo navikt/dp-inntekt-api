@@ -39,7 +39,6 @@ class ConfigurationTest {
         }
     }
 
-
     @Test
     fun `Default configuration is LOCAL `() {
         with(Configuration()) {
