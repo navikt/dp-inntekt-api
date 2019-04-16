@@ -22,7 +22,8 @@ private val localProperties = ConfigurationMap(
         "oidc.sts.issuerurl" to "http://localhost/",
         "srvdp.inntekt.api.username" to "postgres",
         "srvdp.inntekt.api.password" to "postgres",
-        "unleash.url" to "http://localhost"
+        "unleash.url" to "http://localhost",
+        "flyway.locations" to "db/migration,db/testdata"
     )
 )
 private val devProperties = ConfigurationMap(
@@ -57,7 +58,9 @@ data class Configuration(
         val port: String = config()[Key("database.port", stringType)],
         val name: String = config()[Key("database.name", stringType)],
         val user: String? = config().getOrNull(Key("database.user", stringType)),
-        val password: String? = config().getOrNull(Key("database.password", stringType))
+        val password: String? = config().getOrNull(Key("database.password", stringType)),
+        val flywayLocations: List<String> = config().getOrNull(Key("flyway.locations", stringType))?.split(",")
+            ?: listOf("db/migration")
 
     )
 

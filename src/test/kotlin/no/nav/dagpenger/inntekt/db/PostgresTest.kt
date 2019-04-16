@@ -35,6 +35,14 @@ internal class PostgresTest {
     }
 
     @Test
+    fun `Migration of testdata `() {
+        withCleanDb {
+            val migrations = migrate(DataSource.instance, locations = listOf("db/migration", "db/testdata"))
+            assertEquals(5, migrations, "Wrong number of migrations")
+        }
+    }
+
+    @Test
     fun `JDBC url is set correctly from  config values `() {
         System.setProperty("oidc.sts.issuerurl", "test")
         with(hikariConfigFrom(Configuration())) {
@@ -49,7 +57,7 @@ internal class PostgresInntektStoreTest {
     fun `Successful insert of inntekter`() {
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
-                val request = InntektRequest("1234", 1234, java.time.LocalDate.now())
+                val request = InntektRequest("1234", 1234, LocalDate.now())
                 val hentInntektListeResponse = InntektkomponentResponse(
                         emptyList(),
                         Aktoer(AktoerType.AKTOER_ID, "1234")
@@ -69,13 +77,13 @@ internal class PostgresInntektStoreTest {
 
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
-                val request = InntektRequest("98765", 1234, java.time.LocalDate.now())
+                val request = InntektRequest("98765", 1234, LocalDate.now())
                 val hentInntektListeResponse = InntektkomponentResponse(
                         emptyList(),
                         Aktoer(AktoerType.AKTOER_ID, "98765")
                 )
                 insertInntekt(request, hentInntektListeResponse)
-                val result = kotlin.runCatching {
+                val result = runCatching {
                     insertInntekt(request, hentInntektListeResponse)
                 }
                 assertTrue { result.isFailure }
@@ -93,9 +101,9 @@ internal class PostgresInntektStoreTest {
                         emptyList(),
                         Aktoer(AktoerType.AKTOER_ID, "1234")
                 )
-                insertInntekt(InntektRequest("1234", 12345, java.time.LocalDate.now()), hentInntektListeResponse)
+                insertInntekt(InntektRequest("1234", 12345, LocalDate.now()), hentInntektListeResponse)
 
-                val inntektId = getInntektId(InntektRequest("1234", 12345, java.time.LocalDate.now()))
+                val inntektId = getInntektId(InntektRequest("1234", 12345, LocalDate.now()))
                 val storedInntekt = inntektId?.let { getInntekt(it) }
                 assertNotNull(storedInntekt?.inntektId)
                 assertTrue("Inntekstliste should be in the same state") { hentInntektListeResponse == storedInntekt?.inntekt }
@@ -108,7 +116,7 @@ internal class PostgresInntektStoreTest {
 
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
-                val inntektId = getInntektId(InntektRequest("7890", 7890, java.time.LocalDate.now()))
+                val inntektId = getInntektId(InntektRequest("7890", 7890, LocalDate.now()))
                 assertNull(inntektId)
             }
         }
@@ -140,7 +148,7 @@ internal class PostgresInntektStoreTest {
 
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
-                val result = kotlin.runCatching {
+                val result = runCatching {
                     getBeregningsdato(InntektId("12ARZ3NDEKTSV4RRFFQ69G5FBY"))
                 }
                 assertTrue("Result is not failure") { result.isFailure }

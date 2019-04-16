@@ -11,37 +11,37 @@ class UnleashInntektStore(
     val unleash: Unleash
 ) : InntektStore {
 
-    private val toggle = "dp-inntekt-api.PostgresqlStore"
+    private val useVoidStore = "dp-inntekt-api.UseVoidStore"
 
     override fun getInntekt(inntektId: InntektId): StoredInntekt {
-        return if (unleash.isEnabled(toggle)) {
-            postgresInntektStore.getInntekt(inntektId)
-        } else {
+        return if (unleash.isEnabled(useVoidStore)) {
             voidInntektStore.getInntekt(inntektId)
+        } else {
+            postgresInntektStore.getInntekt(inntektId)
         }
     }
 
     override fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt {
-        return if (unleash.isEnabled(toggle)) {
-            postgresInntektStore.insertInntekt(request, inntekt)
-        } else {
+        return if (unleash.isEnabled(useVoidStore)) {
             voidInntektStore.insertInntekt(request, inntekt)
+        } else {
+            postgresInntektStore.insertInntekt(request, inntekt)
         }
     }
 
     override fun getInntektId(request: InntektRequest): InntektId? {
-        return if (unleash.isEnabled(toggle)) {
-            postgresInntektStore.getInntektId(request)
-        } else {
+        return if (unleash.isEnabled(useVoidStore)) {
             voidInntektStore.getInntektId(request)
+        } else {
+            postgresInntektStore.getInntektId(request)
         }
     }
 
     override fun getBeregningsdato(inntektId: InntektId): LocalDate {
-        return if (unleash.isEnabled(toggle)) {
-            postgresInntektStore.getBeregningsdato(inntektId)
-        } else {
+        return if (unleash.isEnabled(useVoidStore)) {
             voidInntektStore.getBeregningsdato(inntektId)
+        } else {
+            postgresInntektStore.getBeregningsdato(inntektId)
         }
     }
 }

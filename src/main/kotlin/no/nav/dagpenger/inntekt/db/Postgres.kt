@@ -2,14 +2,19 @@ package no.nav.dagpenger.inntekt.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import no.nav.dagpenger.inntekt.Profile
 import no.nav.dagpenger.inntekt.Configuration
+import no.nav.dagpenger.inntekt.Profile
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
 
 fun migrate(config: Configuration): Int {
     return when (config.application.profile) {
-        Profile.LOCAL -> HikariDataSource(hikariConfigFrom(config)).use { migrate(it) }
+        Profile.LOCAL -> HikariDataSource(hikariConfigFrom(config)).use {
+            migrate(
+                it,
+                locations = config.database.flywayLocations
+            )
+        }
         else -> hikariDataSourceWithVaultIntegration(config, Role.ADMIN).use {
             migrate(it, "SET ROLE \"${config.database.name}-${Role.ADMIN}\"")
         }
@@ -40,8 +45,8 @@ fun hikariConfigFrom(config: Configuration) =
             config.database.password?.let { password = it }
         }
 
-fun migrate(dataSource: HikariDataSource, initSql: String = ""): Int =
-        Flyway.configure().dataSource(dataSource).initSql(initSql).load().migrate()
+fun migrate(dataSource: HikariDataSource, initSql: String = "", locations: List<String> = listOf("db/migration")): Int =
+    Flyway.configure().locations(*locations.toTypedArray()).dataSource(dataSource).initSql(initSql).load().migrate()
 
 fun clean(dataSource: HikariDataSource) = Flyway.configure().dataSource(dataSource).load().clean()
 
