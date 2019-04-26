@@ -46,7 +46,7 @@ class PostgresInntektStore(private val dataSource: DataSource) : InntektStore {
                 ).map { row ->
                     row.localDate("beregningsdato")
                 }.asSingle
-            ) ?: throw InntektIdNotFoundException("Inntekt with id $inntektId not found.")
+            ) ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
         }
     }
 

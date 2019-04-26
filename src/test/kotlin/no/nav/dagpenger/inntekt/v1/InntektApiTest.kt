@@ -27,7 +27,7 @@ import java.time.YearMonth
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-val validJson = """
+private val validJson = """
 {
 	"aktørId": "1234",
     "vedtakId": 1,
@@ -35,7 +35,7 @@ val validJson = """
 }
 """.trimIndent()
 
-val jsonMissingFields = """
+private val jsonMissingFields = """
 {
 	"aktørId": "1234",
 }
@@ -44,6 +44,7 @@ val jsonMissingFields = """
 class InntektApiTest {
 
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
+    private val inntektPath = "/v1/inntekt"
 
     init {
         every { inntektskomponentClientMock.getInntekt(InntektkomponentRequest("1234", YearMonth.of(2015, 11), YearMonth.of(2019, 1))) } returns InntektkomponentResponse(
@@ -71,8 +72,8 @@ class InntektApiTest {
             }
 
     @Test
-    fun `post request with good json`() = testApp {
-        handleRequest(HttpMethod.Post, "/v1/inntekt") {
+    fun `Get klassifisert inntekt should return 200 ok`() = testApp {
+        handleRequest(HttpMethod.Post, inntektPath) {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(validJson)
         }.apply {
@@ -83,7 +84,7 @@ class InntektApiTest {
 
     @Test
     fun ` Should respond on unhandled errors and return in rfc7807 problem details standard `() = testApp {
-        handleRequest(HttpMethod.Post, "/v1/inntekt") {
+        handleRequest(HttpMethod.Post, inntektPath) {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(
                     """
@@ -106,7 +107,7 @@ class InntektApiTest {
 
     @Test
     fun ` should forward Http status from inntektskomponenten and return in rfc7807 problem details standard `() = testApp {
-        handleRequest(HttpMethod.Post, "/v1/inntekt") {
+        handleRequest(HttpMethod.Post, inntektPath) {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(
                     """
@@ -129,7 +130,7 @@ class InntektApiTest {
 
     @Test
     fun `post request with bad json`() = testApp {
-        handleRequest(HttpMethod.Post, "/v1/inntekt") {
+        handleRequest(HttpMethod.Post, inntektPath) {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(jsonMissingFields)
         }.apply {
@@ -140,7 +141,7 @@ class InntektApiTest {
 
     @Test
     fun ` Errors should return in rfc7807 problem details standard on bad request`() = testApp {
-        handleRequest(HttpMethod.Post, "/v1/inntekt") {
+        handleRequest(HttpMethod.Post, inntektPath) {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(jsonMissingFields)
         }.apply {

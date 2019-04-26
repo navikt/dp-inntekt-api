@@ -152,7 +152,7 @@ internal class PostgresInntektStoreTest {
                     getBeregningsdato(InntektId("12ARZ3NDEKTSV4RRFFQ69G5FBY"))
                 }
                 assertTrue("Result is not failure") { result.isFailure }
-                assertTrue("Result is $result") { result.exceptionOrNull() is InntektIdNotFoundException }
+                assertTrue("Result is $result") { result.exceptionOrNull() is InntektNotFoundException }
             }
         }
     }
