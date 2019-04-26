@@ -7,6 +7,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.post
 import io.ktor.routing.route
+import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
@@ -16,18 +17,31 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 fun Routing.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore: InntektStore) {
+
     route("v1/inntekt") {
         post {
             val request = call.receive<InntektRequest>()
 
             val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
-                    ?: inntektStore.insertInntekt(request, inntektskomponentClient.getInntekt(request.let(TO_INNTEKTKOMPONENT_REQUEST)))
+                ?: inntektStore.insertInntekt(
+                    request,
+                    inntektskomponentClient.getInntekt(request.let(TO_INNTEKTKOMPONENT_REQUEST))
+                )
 
             val klassifisertInntekt = storedInntekt.let {
                 Inntekt(it.inntektId.id, klassifiserInntekter(it.inntekt))
             }
 
             call.respond(HttpStatusCode.OK, klassifisertInntekt)
+        }
+    }
+
+    route("v1/inntekt/uklassifisert") {
+        post {
+            val request = call.receive<InntektRequest>()
+            val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
+                ?: throw InntektNotFoundException("Inntekt with for $request not found.")
+            call.respond(HttpStatusCode.OK, storedInntekt)
         }
     }
 }

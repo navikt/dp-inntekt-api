@@ -19,7 +19,7 @@ import io.prometheus.client.hotspot.DefaultExports
 import mu.KotlinLogging
 import no.finn.unleash.DefaultUnleash
 import no.finn.unleash.util.UnleashConfig
-import no.nav.dagpenger.inntekt.db.InntektIdNotFoundException
+import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
 import no.nav.dagpenger.inntekt.db.UnleashInntektStore
@@ -84,14 +84,15 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient,
             )
             call.respond(HttpStatusCode.InternalServerError, error)
         }
-        exception<InntektIdNotFoundException> { cause ->
-            LOGGER.error("Request failed!", cause)
-            val error = Problem(
+        exception<InntektNotFoundException> { cause ->
+            LOGGER.warn("Request failed!", cause)
+            val problem = Problem(
                 type = URI("urn:dp:error:inntekt"),
-                title = "Kunne ikke finne inntekIden i databasen",
-                status = 404
+                title = "Kunne ikke finne inntekt i databasen",
+                status = 404,
+                detail = cause.message
             )
-            call.respond(HttpStatusCode.InternalServerError, error)
+            call.respond(HttpStatusCode.NotFound, problem)
         }
         exception<InntektskomponentenHttpClientException> { cause ->
             LOGGER.error("Request failed against inntektskomponenten", cause)
