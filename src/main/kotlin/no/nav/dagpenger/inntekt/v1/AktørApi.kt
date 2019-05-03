@@ -1,8 +1,10 @@
 package no.nav.dagpenger.inntekt.v1
 
 import io.ktor.application.call
+import io.ktor.http.CacheControl
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
+import io.ktor.response.cacheControl
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
@@ -27,6 +29,8 @@ fun Route.aktørApi(
 
             val response = AktørInfoResponse(name, request.aktørType, request.id)
 
+            val cache = CacheControl.MaxAge(maxAgeSeconds = 86400, visibility = CacheControl.Visibility.Public)
+            call.response.cacheControl(cache)
             call.respond(HttpStatusCode.OK, response)
         }
     }
