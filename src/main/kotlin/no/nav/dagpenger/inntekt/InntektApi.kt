@@ -1,6 +1,7 @@
 package no.nav.dagpenger.inntekt
 
 import com.ryanharter.ktor.moshi.moshi
+import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonEncodingException
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -12,6 +13,7 @@ import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.path
 import io.ktor.response.respond
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -19,6 +21,7 @@ import io.prometheus.client.hotspot.DefaultExports
 import mu.KotlinLogging
 import no.finn.unleash.DefaultUnleash
 import no.finn.unleash.util.UnleashConfig
+import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
@@ -30,6 +33,8 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oidc.StsOidcClient
+import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
+import no.nav.dagpenger.inntekt.v1.aktørApi
 import no.nav.dagpenger.inntekt.v1.inntekt
 import no.nav.dagpenger.inntekt.v1.inntjeningsperiodeApi
 import org.slf4j.event.Level
@@ -61,9 +66,13 @@ fun main() {
             StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
     )
 
+    val enhetsregisteretHttpClient = EnhetsregisteretHttpClient(config.application.enhetsregisteretUrl)
+
+    val personNameHttpClient = PersonNameHttpClient(config.application.oppslagUrl)
+
     DefaultExports.initialize()
     val application = embeddedServer(Netty, port = config.application.httpPort) {
-        inntektApi(inntektskomponentHttpClient, unleashInntektStore)
+        inntektApi(inntektskomponentHttpClient, unleashInntektStore, enhetsregisteretHttpClient, personNameHttpClient)
     }
     application.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -71,7 +80,12 @@ fun main() {
     })
 }
 
-fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient, inntektStore: InntektStore) {
+fun Application.inntektApi(
+    inntektskomponentHttpClient: InntektskomponentClient,
+    inntektStore: InntektStore,
+    enhetsregisteretHttpClient: EnhetsregisteretHttpClient,
+    personNameHttpClient: PersonNameHttpClient
+) {
 
     install(DefaultHeaders)
 
@@ -104,10 +118,19 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient,
             call.respond(HttpStatusCode.fromValue(cause.status), error)
         }
         exception<JsonEncodingException> { cause ->
-            LOGGER.error("Request was malformed", cause)
+            LOGGER.warn("Request was malformed", cause)
             val error = Problem(
                 type = URI("urn:dp:error:inntekt:parameter"),
                 title = "Klarte ikke å lese parameterene",
+                status = 400
+            )
+            call.respond(HttpStatusCode.BadRequest, error)
+        }
+        exception<JsonDataException> { cause ->
+            LOGGER.warn("Request does not match expected json", cause)
+            val error = Problem(
+                type = URI("urn:dp:error:inntekt:parameter"),
+                title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
                 status = 400
             )
             call.respond(HttpStatusCode.BadRequest, error)
@@ -127,8 +150,11 @@ fun Application.inntektApi(inntektskomponentHttpClient: InntektskomponentClient,
     }
 
     routing {
-        inntekt(inntektskomponentHttpClient, inntektStore)
-        inntjeningsperiodeApi(inntektStore)
+        route("/v1") {
+            inntekt(inntektskomponentHttpClient, inntektStore)
+            inntjeningsperiodeApi(inntektStore)
+            aktørApi(enhetsregisteretHttpClient, personNameHttpClient)
+        }
         naischecks()
     }
 }

@@ -19,6 +19,8 @@ private val localProperties = ConfigurationMap(
         "application.profile" to "LOCAL",
         "application.httpPort" to "8099",
         "hentinntektliste.url" to "https://localhost/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
+        "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
+        "oppslag.url" to "https://localhost:8090",
         "oidc.sts.issuerurl" to "http://localhost/",
         "srvdp.inntekt.api.username" to "postgres",
         "srvdp.inntekt.api.password" to "postgres",
@@ -80,6 +82,8 @@ data class Configuration(
         val username: String = config()[Key("srvdp.inntekt.api.username", stringType)],
         val password: String = config()[Key("srvdp.inntekt.api.password", stringType)],
         val hentinntektListeUrl: String = config()[Key("hentinntektliste.url", stringType)],
+        val enhetsregisteretUrl: String = config()[Key("enhetsregisteret.url", stringType)],
+        val oppslagUrl: String = config()[Key("oppslag.url", stringType)],
         val oicdStsUrl: String = config()[Key("oidc.sts.issuerurl", stringType)],
         val name: String = "dp-inntekt-api",
         val unleashUrl: String = config()[Key("unleash.url", stringType)]

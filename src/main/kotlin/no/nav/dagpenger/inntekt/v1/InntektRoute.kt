@@ -4,7 +4,7 @@ import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
-import io.ktor.routing.Routing
+import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
@@ -16,9 +16,8 @@ import no.nav.dagpenger.inntekt.klassifisering.klassifiserInntekter
 import java.time.LocalDate
 import java.time.YearMonth
 
-fun Routing.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore: InntektStore) {
-
-    route("v1/inntekt") {
+fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore: InntektStore) {
+    route("inntekt") {
         post {
             val request = call.receive<InntektRequest>()
 
@@ -36,7 +35,7 @@ fun Routing.inntekt(inntektskomponentClient: InntektskomponentClient, inntektSto
         }
     }
 
-    route("v1/inntekt/uklassifisert") {
+    route("inntekt/uklassifisert") {
         post {
             val request = call.receive<InntektRequest>()
             val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }

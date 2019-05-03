@@ -9,6 +9,8 @@ class ConfigurationTest {
         "unleash.url",
         "srvdp.inntekt.api.password",
         "hentinntektliste.url",
+        "enhetsregisteret.url",
+        "oppslag.url",
         "oidc.sts.issuerurl"
     )
 
