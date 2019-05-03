@@ -28,7 +28,9 @@ class InntjeningsperiodeApiSpec {
         withTestApplication({
             inntektApi(
                 mockk(),
-                inntektStore
+                inntektStore,
+                mockk(),
+                mockk()
             )
         }) {
             handleRequest(HttpMethod.Post, "/v1/is-samme-inntjeningsperiode") {

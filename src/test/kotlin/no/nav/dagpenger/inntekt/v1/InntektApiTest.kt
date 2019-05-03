@@ -11,6 +11,7 @@ import io.mockk.every
 import io.mockk.mockk
 
 import no.nav.dagpenger.inntekt.Problem
+import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
 import no.nav.dagpenger.inntekt.db.VoidInntektStore
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
@@ -21,29 +22,31 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.moshiInstance
+import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.time.YearMonth
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-private val validJson = """
-{
-	"aktørId": "1234",
-    "vedtakId": 1,
-    "beregningsDato": "2019-01-08"
-}
-""".trimIndent()
-
-private val jsonMissingFields = """
-{
-	"aktørId": "1234",
-}
-""".trimIndent()
-
 class InntektApiTest {
+    val validJson = """
+        {
+        	"aktørId": "1234",
+            "vedtakId": 1,
+            "beregningsDato": "2019-01-08"
+        }
+        """.trimIndent()
+
+    val jsonMissingFields = """
+        {
+        	"aktørId": "1234",
+        }
+        """.trimIndent()
 
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
+    private val enhetsregisteretHttpClientMock: EnhetsregisteretHttpClient = mockk()
+    private val personNameHttpClientMock: PersonNameHttpClient = mockk()
     private val inntektPath = "/v1/inntekt"
 
     init {
@@ -156,7 +159,11 @@ class InntektApiTest {
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
-            (inntektApi(inntektskomponentClientMock, VoidInntektStore()))
+            (inntektApi(
+                inntektskomponentClientMock,
+                VoidInntektStore(),
+                enhetsregisteretHttpClientMock,
+                personNameHttpClientMock))
         }) { callback() }
     }
 }
