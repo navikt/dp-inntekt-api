@@ -32,6 +32,9 @@ private val devProperties = ConfigurationMap(
         "database.port" to "5432",
         "database.name" to "dp-inntekt-db-preprod",
         "vault.mountpath" to "postgresql/preprod-fss/",
+        "hentinntektliste.url" to "https://app-t6.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
+        "unleash.url" to "https://unleash.nais.preprod.local/api/",
+        "oidc.sts.issuerurl" to "https://security-token-service-t10.nais.preprod.local/",
         "application.profile" to "DEV",
         "application.httpPort" to "8099"
     )
@@ -42,6 +45,9 @@ private val prodProperties = ConfigurationMap(
         "database.port" to "5432",
         "database.name" to "dp-inntekt-db",
         "vault.mountpath" to "postgresql/prod-fss/",
+        "hentinntektliste.url" to "https://app.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
+        "unleash.url" to "https://unleash.nais.adeo.no/api/",
+        "oidc.sts.issuerurl" to "https://security-token-service.nais.adeo.no/",
         "application.profile" to "PROD",
         "application.httpPort" to "8099"
     )
