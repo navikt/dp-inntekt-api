@@ -9,6 +9,7 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.klassifisering.Inntekt
@@ -41,6 +42,20 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
             val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
                 ?: throw InntektNotFoundException("Inntekt with for $request not found.")
             call.respond(HttpStatusCode.OK, storedInntekt)
+        }
+    }
+
+    route("inntekt/uklassifisert/update") {
+        post {
+            val request = call.receive<StoredInntekt>()
+
+            val compoundKey = inntektStore.getInntektCompoundKey(request.inntektId)
+
+            inntektStore.insertInntekt(
+                InntektRequest(compoundKey.aktørId, compoundKey.vedtakId, compoundKey.beregningsDato),
+                request.inntekt)
+
+            call.respond(HttpStatusCode.OK)
         }
     }
 }

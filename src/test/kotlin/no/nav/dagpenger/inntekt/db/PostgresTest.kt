@@ -158,6 +158,43 @@ internal class PostgresInntektStoreTest {
             }
         }
     }
+
+    @Test
+    fun ` Sucessfully get compound key`() {
+
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+                val hentInntektListeResponse = InntektkomponentResponse(
+                    emptyList(),
+                    Aktoer(AktoerType.AKTOER_ID, "1234")
+                )
+                val inntekt = insertInntekt(
+                    InntektRequest("1234", 12345, LocalDate.of(2019, 4, 14)),
+                    hentInntektListeResponse)
+
+                val compoundKey = getInntektCompoundKey(inntekt.inntektId)
+
+                assertNotNull(compoundKey)
+                assertEquals("1234", compoundKey.aktørId)
+                assertEquals(12345, compoundKey.vedtakId)
+                assertEquals(LocalDate.of(2019, 4, 14), compoundKey.beregningsDato)
+            }
+        }
+    }
+
+    @Test
+    fun ` Getting compound key for unknown inntektId should throw error`() {
+
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+                val result = runCatching {
+                    getInntektCompoundKey(InntektId("12ARZ3NDEKTSV4RRFFQ69G5FBY"))
+                }
+                assertTrue("Result is not failure") { result.isFailure }
+                assertTrue("Result is $result") { result.exceptionOrNull() is InntektNotFoundException }
+            }
+        }
+    }
 }
 
 private fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }

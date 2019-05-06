@@ -11,6 +11,7 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.dagpenger.inntekt.Problem
+import no.nav.dagpenger.inntekt.db.InntektCompoundKey
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.StoredInntekt
@@ -30,13 +31,20 @@ class UklassifisertInntektApiTest {
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val inntektStorMock: InntektStore = mockk()
     private val inntektId = InntektId(ULID().nextULID())
-    private val reqAdapter = no.nav.dagpenger.inntekt.moshiInstance.adapter<InntektRequest>(InntektRequest::class.java)
+
+    private val reqAdapter = moshiInstance.adapter<InntektRequest>(InntektRequest::class.java)
+    private val storedInntektAdapter = moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java)
 
     private val notFoundRequest =
         InntektRequest(aktørId = "1234", vedtakId = 1, beregningsDato = LocalDate.of(2019, 1, 8))
 
     private val foundRequest =
         InntektRequest(aktørId = "1234", vedtakId = 1234, beregningsDato = LocalDate.of(2019, 1, 8))
+
+    private val storedInntekt = StoredInntekt(
+        inntektId,
+        InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234"))
+    )
 
     private val uklassifisertInntekt = "/v1/inntekt/uklassifisert"
 
@@ -48,6 +56,14 @@ class UklassifisertInntektApiTest {
         every {
             inntektStorMock.getInntektId(foundRequest)
         } returns inntektId
+
+        every {
+            inntektStorMock.getInntektCompoundKey(inntektId)
+        } returns InntektCompoundKey(foundRequest.aktørId, foundRequest.vedtakId, foundRequest.beregningsDato)
+
+        every {
+            inntektStorMock.insertInntekt(foundRequest, storedInntekt.inntekt)
+        } returns storedInntekt
 
         every {
             inntektStorMock.getInntekt(inntektId)
@@ -84,6 +100,17 @@ class UklassifisertInntektApiTest {
             val storedInntekt =
                 moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
             assertEquals(storedInntekt.inntektId, inntektId)
+        }
+    }
+
+    @Test
+    fun `Post uklassifisert inntekt should return 200 ok`() = testApp {
+        handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/update") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            setBody(storedInntektAdapter.toJson(storedInntekt))
+        }.apply {
+            assertTrue(requestHandled)
+            assertEquals(HttpStatusCode.OK, response.status())
         }
     }
 

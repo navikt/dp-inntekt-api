@@ -13,6 +13,10 @@ class VoidInntektStore : InntektStore {
         TODO("Not implemented")
     }
 
+    override fun getInntektCompoundKey(inntektId: InntektId): InntektCompoundKey {
+        TODO("not implemented")
+    }
+
     override fun getInntektId(request: InntektRequest): InntektId? {
         return null
     }
