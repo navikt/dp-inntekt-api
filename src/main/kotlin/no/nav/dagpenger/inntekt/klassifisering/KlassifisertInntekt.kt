@@ -10,6 +10,7 @@ data class Inntekt(
 
 data class KlassifisertInntektMåned(
     val årMåned: YearMonth,
+    val harAvvik: Boolean?,
     val klassifiserteInntekter: List<KlassifisertInntekt>
 )
 

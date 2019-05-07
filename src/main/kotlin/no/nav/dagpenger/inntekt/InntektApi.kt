@@ -11,6 +11,7 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.isSuccess
 import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.routing.route
@@ -109,13 +110,14 @@ fun Application.inntektApi(
             call.respond(HttpStatusCode.NotFound, problem)
         }
         exception<InntektskomponentenHttpClientException> { cause ->
+            val statusCode = if (HttpStatusCode.fromValue(cause.status).isSuccess()) HttpStatusCode.InternalServerError else HttpStatusCode.fromValue(cause.status)
             LOGGER.error("Request failed against inntektskomponenten", cause)
             val error = Problem(
                 type = URI("urn:dp:error:inntektskomponenten"),
                 title = "Feilet mot inntektskomponenten!",
-                status = cause.status
+                status = statusCode.value
             )
-            call.respond(HttpStatusCode.fromValue(cause.status), error)
+            call.respond(statusCode, error)
         }
         exception<JsonEncodingException> { cause ->
             LOGGER.warn("Request was malformed", cause)
