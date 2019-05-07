@@ -62,10 +62,6 @@ class InntektApiTest {
         every {
             inntektStoreMock.getInntektId(any())
         } returns null
-
-        every {
-            inntektStoreMock.getInntektId(any())
-        } returns null
     }
 
     @Test
