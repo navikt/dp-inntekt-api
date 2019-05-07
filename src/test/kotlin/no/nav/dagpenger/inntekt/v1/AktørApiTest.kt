@@ -10,7 +10,6 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
-import no.nav.dagpenger.inntekt.db.VoidInntektStore
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
@@ -68,7 +67,7 @@ class AktørApiTest {
         withTestApplication({
             (inntektApi(
                 inntektskomponentClientMock,
-                VoidInntektStore(),
+                mockk(relaxed = true),
                 enhetsregisteretHttpClientMock,
                 personNameHttpClientMock))
         }) { callback() }
