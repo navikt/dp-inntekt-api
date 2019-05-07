@@ -23,7 +23,7 @@ class PostgresInntektStore(private val dataSource: DataSource) : InntektStore {
             return using(sessionOf(dataSource)) { session ->
                 session.run(
                         queryOf(
-                                """SELECT inntektId
+                                """SELECT DISTINCT inntektId
                                     FROM inntekt_V1_arena_mapping
                                     WHERE aktørId = ? AND vedtakid = ? AND beregningsdato = ?
                             """.trimMargin(), request.aktørId, request.vedtakId, request.beregningsDato).map { row ->
