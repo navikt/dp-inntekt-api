@@ -21,6 +21,14 @@ class UnleashInntektStore(
         }
     }
 
+    override fun getInntektCompoundKey(inntektId: InntektId): InntektCompoundKey {
+        return if (unleash.isEnabled(useVoidStore)) {
+            voidInntektStore.getInntektCompoundKey(inntektId)
+        } else {
+            postgresInntektStore.getInntektCompoundKey(inntektId)
+        }
+    }
+
     override fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt {
         return if (unleash.isEnabled(useVoidStore)) {
             voidInntektStore.insertInntekt(request, inntekt)

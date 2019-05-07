@@ -26,12 +26,31 @@ class PostgresInntektStore(private val dataSource: DataSource) : InntektStore {
                                 """SELECT inntektId
                                     FROM inntekt_V1_arena_mapping
                                     WHERE aktørId = ? AND vedtakid = ? AND beregningsdato = ?
+                                    ORDER BY timestamp DESC LIMIT 1
                             """.trimMargin(), request.aktørId, request.vedtakId, request.beregningsDato).map { row ->
                             InntektId(row.string("inntektId"))
                         }.asSingle)
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
+        }
+    }
+
+    override fun getInntektCompoundKey(inntektId: InntektId): InntektCompoundKey {
+        return using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    """SELECT DISTINCT aktørId, vedtakId, beregningsdato
+                                FROM inntekt_V1_arena_mapping
+                                WHERE inntektId = ?
+                        """.trimMargin(), inntektId.id
+                ).map { row ->
+                    InntektCompoundKey(
+                        row.string("aktørId"),
+                        row.long("vedtakId"),
+                        row.localDate("beregningsdato"))
+                }.asSingle
+            ) ?: throw InntektNotFoundException("Inntekt compound key with id $inntektId not found.")
         }
     }
 

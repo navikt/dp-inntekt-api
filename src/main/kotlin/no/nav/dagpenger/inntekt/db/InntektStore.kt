@@ -10,6 +10,7 @@ interface InntektStore {
     fun getInntektId(request: InntektRequest): InntektId?
     fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt
     fun getBeregningsdato(inntektId: InntektId): LocalDate
+    fun getInntektCompoundKey(inntektId: InntektId): InntektCompoundKey
 }
 
 data class StoredInntekt(val inntektId: InntektId, val inntekt: InntektkomponentResponse)
@@ -23,6 +24,12 @@ data class InntektId(val id: String) {
         }
     }
 }
+
+data class InntektCompoundKey(
+    val aktørId: String,
+    val vedtakId: Long,
+    val beregningsDato: LocalDate
+)
 
 class InntektNotFoundException(override val message: String) : RuntimeException(message)
 

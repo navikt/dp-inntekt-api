@@ -20,7 +20,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(1, migrations, "Wrong number of migrations")
+            assertEquals(2, migrations, "Wrong number of migrations")
         }
     }
 
@@ -38,7 +38,7 @@ internal class PostgresTest {
     fun `Migration of testdata `() {
         withCleanDb {
             val migrations = migrate(DataSource.instance, locations = listOf("db/migration", "db/testdata"))
-            assertEquals(5, migrations, "Wrong number of migrations")
+            assertEquals(6, migrations, "Wrong number of migrations")
         }
     }
 
@@ -75,26 +75,6 @@ internal class PostgresInntektStoreTest {
     }
 
     @Test
-    fun ` Inserting inntekt that  already exist should throw error `() {
-
-        withMigratedDb {
-            with(PostgresInntektStore(DataSource.instance)) {
-                val request = InntektRequest("98765", 1234, LocalDate.now())
-                val hentInntektListeResponse = InntektkomponentResponse(
-                        emptyList(),
-                        Aktoer(AktoerType.AKTOER_ID, "98765")
-                )
-                insertInntekt(request, hentInntektListeResponse)
-                val result = runCatching {
-                    insertInntekt(request, hentInntektListeResponse)
-                }
-                assertTrue { result.isFailure }
-                assertTrue { result.exceptionOrNull() is StoreException }
-            }
-        }
-    }
-
-    @Test
     fun ` Sucessfully get inntekter`() {
 
         withMigratedDb {
@@ -120,6 +100,27 @@ internal class PostgresInntektStoreTest {
             with(PostgresInntektStore(DataSource.instance)) {
                 val inntektId = getInntektId(InntektRequest("7890", 7890, LocalDate.now()))
                 assertNull(inntektId)
+            }
+        }
+    }
+
+    @Test
+    fun `getInntektId should return latest InntektId`() {
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+                val hentInntektListeResponse = InntektkomponentResponse(
+                    emptyList(),
+                    Aktoer(AktoerType.AKTOER_ID, "1234")
+                )
+
+                val inntektRequest = InntektRequest("1234", 12345, LocalDate.now())
+
+                insertInntekt(inntektRequest, hentInntektListeResponse)
+                val lastStoredInntekt = insertInntekt(inntektRequest, hentInntektListeResponse)
+
+                val latestInntektId = getInntektId(inntektRequest)
+
+                assertEquals(lastStoredInntekt.inntektId, latestInntektId)
             }
         }
     }
@@ -152,6 +153,43 @@ internal class PostgresInntektStoreTest {
             with(PostgresInntektStore(DataSource.instance)) {
                 val result = runCatching {
                     getBeregningsdato(InntektId("12ARZ3NDEKTSV4RRFFQ69G5FBY"))
+                }
+                assertTrue("Result is not failure") { result.isFailure }
+                assertTrue("Result is $result") { result.exceptionOrNull() is InntektNotFoundException }
+            }
+        }
+    }
+
+    @Test
+    fun ` Sucessfully get compound key`() {
+
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+                val hentInntektListeResponse = InntektkomponentResponse(
+                    emptyList(),
+                    Aktoer(AktoerType.AKTOER_ID, "1234")
+                )
+                val inntekt = insertInntekt(
+                    InntektRequest("1234", 12345, LocalDate.of(2019, 4, 14)),
+                    hentInntektListeResponse)
+
+                val compoundKey = getInntektCompoundKey(inntekt.inntektId)
+
+                assertNotNull(compoundKey)
+                assertEquals("1234", compoundKey.aktørId)
+                assertEquals(12345, compoundKey.vedtakId)
+                assertEquals(LocalDate.of(2019, 4, 14), compoundKey.beregningsDato)
+            }
+        }
+    }
+
+    @Test
+    fun ` Getting compound key for unknown inntektId should throw error`() {
+
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+                val result = runCatching {
+                    getInntektCompoundKey(InntektId("12ARZ3NDEKTSV4RRFFQ69G5FBY"))
                 }
                 assertTrue("Result is not failure") { result.isFailure }
                 assertTrue("Result is $result") { result.exceptionOrNull() is InntektNotFoundException }
