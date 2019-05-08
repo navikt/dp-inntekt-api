@@ -2,6 +2,21 @@
   "arbeidsInntektMaaned": [
     {
       "aarMaaned": "2017-09",
+      "avvik" : [
+        {
+          "ident" : {
+            "identifikator": "99999999999",
+            "aktoerType": "NATURLIG_IDENT"
+          },
+          "opplysningspliktig" :  {
+            "identifikator": "1111111",
+            "aktoerType": "ORGANISASJON"
+          },
+          "avvikPeriode" : "2017-09",
+          "tekst" : "Avvik"
+        }
+      ],
+
       "arbeidsInntektInformasjon": {
         "inntektListe": [
           {
