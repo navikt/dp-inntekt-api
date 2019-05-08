@@ -12,7 +12,7 @@ import io.mockk.mockk
 
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
-import no.nav.dagpenger.inntekt.db.VoidInntektStore
+import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
@@ -47,6 +47,7 @@ class InntektApiTest {
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val enhetsregisteretHttpClientMock: EnhetsregisteretHttpClient = mockk()
     private val personNameHttpClientMock: PersonNameHttpClient = mockk()
+    private val inntektStoreMock: InntektStore = mockk(relaxed = true)
     private val inntektPath = "/v1/inntekt"
 
     init {
@@ -57,6 +58,10 @@ class InntektApiTest {
         every {
             inntektskomponentClientMock.getInntekt(InntektkomponentRequest("5678", YearMonth.of(2015, 11), YearMonth.of(2019, 1)))
         } throws InntektskomponentenHttpClientException(400, "Bad request")
+
+        every {
+            inntektStoreMock.getInntektId(any())
+        } returns null
     }
 
     @Test
@@ -161,7 +166,7 @@ class InntektApiTest {
         withTestApplication({
             (inntektApi(
                 inntektskomponentClientMock,
-                VoidInntektStore(),
+                inntektStoreMock,
                 enhetsregisteretHttpClientMock,
                 personNameHttpClientMock))
         }) { callback() }
