@@ -98,7 +98,7 @@ fun Application.inntektApi(
             val statusCode = if (HttpStatusCode.fromValue(cause.status).isSuccess()) HttpStatusCode.InternalServerError else HttpStatusCode.fromValue(cause.status)
             LOGGER.error("Request failed against inntektskomponenten", cause)
             val error = Problem(
-                type = URI("urn:dp:error:inntektskomponenten"),
+                type = URI("urn:dp:error:inntekt"),
                 title = "Feilet mot inntektskomponenten!",
                 status = statusCode.value
             )
@@ -107,7 +107,7 @@ fun Application.inntektApi(
         exception<JsonEncodingException> { cause ->
             LOGGER.warn("Request was malformed", cause)
             val error = Problem(
-                type = URI("urn:dp:error:inntekt:parameter"),
+                type = URI("urn:dp:error:inntekt"),
                 title = "Klarte ikke å lese parameterene",
                 status = 400
             )
@@ -116,7 +116,16 @@ fun Application.inntektApi(
         exception<JsonDataException> { cause ->
             LOGGER.warn("Request does not match expected json", cause)
             val error = Problem(
-                type = URI("urn:dp:error:inntekt:parameter"),
+                type = URI("urn:dp:error:inntekt"),
+                title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
+                status = 400
+            )
+            call.respond(HttpStatusCode.BadRequest, error)
+        }
+        exception<IllegalArgumentException> { cause ->
+            LOGGER.warn("Request does not match expected json", cause)
+            val error = Problem(
+                type = URI("urn:dp:error:inntekt"),
                 title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
                 status = 400
             )
