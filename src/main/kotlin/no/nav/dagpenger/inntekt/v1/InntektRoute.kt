@@ -5,6 +5,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
@@ -33,6 +34,24 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
             }
 
             call.respond(HttpStatusCode.OK, klassifisertInntekt)
+        }
+    }
+    route("inntekt/uklassifisert/{aktørId}/{vedtakId}/{beregningsDato}") {
+        get {
+
+            val request = try {
+                InntektRequest(
+                    aktørId = call.parameters["aktørId"]!!,
+                    vedtakId = call.parameters["vedtakId"]!!.toLong(),
+                    beregningsDato = LocalDate.parse(call.parameters["beregningsDato"]!!)
+                )
+            } catch (e: Exception) {
+                throw IllegalArgumentException("Failed to parse parameters", e)
+            }
+
+            val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
+                ?: throw InntektNotFoundException("Inntekt with for $request not found.")
+            call.respond(HttpStatusCode.OK, storedInntekt)
         }
     }
 
