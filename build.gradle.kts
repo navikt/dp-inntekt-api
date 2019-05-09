@@ -94,7 +94,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:$jupiterVersion")
-    testImplementation("com.github.tomakehurst:wiremock-standalone:2.23.2")
+    testImplementation("com.github.tomakehurst:wiremock-standalone:2.21.0")
     testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.0")
     testImplementation("org.testcontainers:postgresql:$testcontainers_version")
     testImplementation("io.mockk:mockk:$mockkVersion")
