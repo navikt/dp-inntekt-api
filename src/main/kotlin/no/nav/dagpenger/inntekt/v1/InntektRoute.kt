@@ -70,11 +70,11 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
 
             val compoundKey = inntektStore.getInntektCompoundKey(request.inntektId)
 
-            inntektStore.insertInntekt(
+            val storedInntekt = inntektStore.insertInntekt(
                 InntektRequest(compoundKey.aktørId, compoundKey.vedtakId, compoundKey.beregningsDato),
                 request.inntekt)
 
-            call.respond(HttpStatusCode.OK)
+            call.respond(HttpStatusCode.OK, storedInntekt)
         }
     }
 }

@@ -154,6 +154,9 @@ class UklassifisertInntektApiTest {
         }.apply {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
+            val storedInntekt =
+                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+            assertEquals(storedInntekt.inntektId, inntektId)
         }
     }
 
