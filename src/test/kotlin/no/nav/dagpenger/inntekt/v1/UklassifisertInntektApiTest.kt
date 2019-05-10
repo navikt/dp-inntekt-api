@@ -43,7 +43,8 @@ class UklassifisertInntektApiTest {
 
     private val storedInntekt = StoredInntekt(
         inntektId,
-        InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234"))
+        InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+        false
     )
 
     private val uklassifisertInntekt = "/v1/inntekt/uklassifisert"
@@ -66,8 +67,16 @@ class UklassifisertInntektApiTest {
         } returns storedInntekt
 
         every {
+            inntektStorMock.redigerInntekt(storedInntekt)
+        } returns storedInntekt
+
+        every {
             inntektStorMock.getInntekt(inntektId)
-        } returns StoredInntekt(inntektId, InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234")))
+        } returns StoredInntekt(
+            inntektId,
+            InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+            false
+        )
     }
 
     @Test
