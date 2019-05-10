@@ -13,7 +13,7 @@ import org.postgresql.util.PSQLException
 import java.time.LocalDate
 import javax.sql.DataSource
 
-class PostgresInntektStore(private val dataSource: DataSource) : InntektStore {
+internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore {
 
     private val adapter: JsonAdapter<InntektkomponentResponse> = moshiInstance.adapter(InntektkomponentResponse::class.java)
     private val ulidGenerator = ULID()
@@ -70,26 +70,64 @@ class PostgresInntektStore(private val dataSource: DataSource) : InntektStore {
     }
 
     override fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt {
+        return insertInntekt(request, inntekt, false)
+    }
+
+    override fun redigerInntekt(redigertInntekt: StoredInntekt): StoredInntekt {
+        val compoundKey = getInntektCompoundKey(redigertInntekt.inntektId)
+        val request = InntektRequest(compoundKey.aktørId, compoundKey.vedtakId, compoundKey.beregningsDato)
+        return insertInntekt(request, redigertInntekt.inntekt, true)
+    }
+
+    override fun getInntekt(inntektId: InntektId): StoredInntekt {
+        return using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    """ SELECT id, inntekt, manuelt_redigert from inntekt_V1 where id = ?""",
+                    inntektId.id
+                ).map { row ->
+                    StoredInntekt(
+                        InntektId(row.string("id")),
+                        adapter.fromJson(row.string("inntekt"))!!,
+                        row.boolean("manuelt_redigert")
+                    )
+                }
+                    .asSingle)
+                    ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
+        }
+    }
+
+    private fun insertInntekt(
+        request: InntektRequest,
+        inntekt: InntektkomponentResponse,
+        manueltRedigert: Boolean
+    ): StoredInntekt {
         try {
             val inntektId = InntektId(ulidGenerator.nextULID())
             using(sessionOf(dataSource)) { session ->
                 session.transaction { tx ->
-
-                    tx.run(queryOf("INSERT INTO inntekt_V1 VALUES (?, (to_json(?::json)))", inntektId.id, adapter.toJson(inntekt)).asUpdate)
-                    tx.run(queryOf("INSERT INTO inntekt_V1_arena_mapping VALUES (?, ?, ?, ?)", inntektId.id, request.aktørId, request.vedtakId, request.beregningsDato).asUpdate)
+                    tx.run(
+                        queryOf(
+                            "INSERT INTO inntekt_V1 (id, inntekt, manuelt_redigert) VALUES (?, (to_json(?::json)), ?)",
+                            inntektId.id,
+                            adapter.toJson(inntekt),
+                            manueltRedigert
+                        ).asUpdate
+                    )
+                    tx.run(
+                        queryOf(
+                            "INSERT INTO inntekt_V1_arena_mapping VALUES (?, ?, ?, ?)",
+                            inntektId.id,
+                            request.aktørId,
+                            request.vedtakId,
+                            request.beregningsDato
+                        ).asUpdate
+                    )
                 }
             }
             return getInntekt(inntektId)
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
-        }
-    }
-
-    override fun getInntekt(inntektId: InntektId): StoredInntekt {
-        return using(sessionOf(dataSource)) { session ->
-            session.run(queryOf(""" SELECT id, inntekt from inntekt_V1 where id = ?""", inntektId.id).map { row -> StoredInntekt(InntektId(row.string("id")), adapter.fromJson(row.string("inntekt"))!!) }
-                    .asSingle)
-                    ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
         }
     }
 }

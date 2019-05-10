@@ -9,11 +9,12 @@ interface InntektStore {
     fun getInntekt(inntektId: InntektId): StoredInntekt
     fun getInntektId(request: InntektRequest): InntektId?
     fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt
+    fun redigerInntekt(redigertInntekt: StoredInntekt): StoredInntekt
     fun getBeregningsdato(inntektId: InntektId): LocalDate
     fun getInntektCompoundKey(inntektId: InntektId): InntektCompoundKey
 }
 
-data class StoredInntekt(val inntektId: InntektId, val inntekt: InntektkomponentResponse)
+data class StoredInntekt(val inntektId: InntektId, val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean)
 
 data class InntektId(val id: String) {
     init {

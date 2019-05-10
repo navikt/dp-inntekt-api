@@ -10,6 +10,7 @@ import org.junit.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -20,7 +21,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(2, migrations, "Wrong number of migrations")
+            assertEquals(3, migrations, "Wrong number of migrations")
         }
     }
 
@@ -38,7 +39,7 @@ internal class PostgresTest {
     fun `Migration of testdata `() {
         withCleanDb {
             val migrations = migrate(DataSource.instance, locations = listOf("db/migration", "db/testdata"))
-            assertEquals(6, migrations, "Wrong number of migrations")
+            assertEquals(7, migrations, "Wrong number of migrations")
         }
     }
 
@@ -86,9 +87,32 @@ internal class PostgresInntektStoreTest {
                 insertInntekt(InntektRequest("1234", 12345, LocalDate.now()), hentInntektListeResponse)
 
                 val inntektId = getInntektId(InntektRequest("1234", 12345, LocalDate.now()))
-                val storedInntekt = inntektId?.let { getInntekt(it) }
-                assertNotNull(storedInntekt?.inntektId)
-                assertTrue("Inntekstliste should be in the same state") { hentInntektListeResponse == storedInntekt?.inntekt }
+                val storedInntekt = inntektId?.let { getInntekt(it) }!!
+                assertNotNull(storedInntekt.inntektId)
+                assertTrue("Inntekstliste should be in the same state") { hentInntektListeResponse == storedInntekt.inntekt }
+                assertFalse("Inntekt is manually edited") { storedInntekt.manueltRedigert }
+            }
+        }
+    }
+
+    @Test
+    fun `Successful rediger of inntekter`() {
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+                val request = InntektRequest("1234", 1234, LocalDate.now())
+                val hentInntektListeResponse = InntektkomponentResponse(
+                    emptyList(),
+                    Aktoer(AktoerType.AKTOER_ID, "1234")
+                )
+                val storedInntekt = insertInntekt(request, hentInntektListeResponse)
+                assertNotNull(storedInntekt.inntektId)
+                assertTrue("Inntekstliste should be in the same state") { hentInntektListeResponse == storedInntekt.inntekt }
+
+                val updatedInntekt = redigerInntekt(storedInntekt.copy())
+
+                val storedInntektByRequest = getInntekt(updatedInntekt.inntektId)
+                assertTrue("Inntekstliste should be in the same state") { updatedInntekt == storedInntektByRequest }
+                assertTrue("Inntekt is manually edited") { storedInntektByRequest.manueltRedigert }
             }
         }
     }

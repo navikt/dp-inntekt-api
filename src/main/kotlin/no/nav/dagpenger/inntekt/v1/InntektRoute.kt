@@ -30,7 +30,7 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
                 )
 
             val klassifisertInntekt = storedInntekt.let {
-                Inntekt(it.inntektId.id, klassifiserInntekter(it.inntekt))
+                Inntekt(it.inntektId.id, klassifiserInntekter(it.inntekt), it.manueltRedigert)
             }
 
             call.respond(HttpStatusCode.OK, klassifisertInntekt)
@@ -67,13 +67,7 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
     route("inntekt/uklassifisert/update") {
         post {
             val request = call.receive<StoredInntekt>()
-
-            val compoundKey = inntektStore.getInntektCompoundKey(request.inntektId)
-
-            val storedInntekt = inntektStore.insertInntekt(
-                InntektRequest(compoundKey.aktørId, compoundKey.vedtakId, compoundKey.beregningsDato),
-                request.inntekt)
-
+            val storedInntekt = inntektStore.redigerInntekt(request)
             call.respond(HttpStatusCode.OK, storedInntekt)
         }
     }
