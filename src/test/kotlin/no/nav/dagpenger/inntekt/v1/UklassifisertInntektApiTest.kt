@@ -49,9 +49,11 @@ class UklassifisertInntektApiTest {
         YearMonth.of(2019, 1)
     )
 
+    private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234"))
+
     private val storedInntekt = StoredInntekt(
         inntektId,
-        InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+        emptyInntekt,
         false
     )
 
@@ -88,7 +90,7 @@ class UklassifisertInntektApiTest {
 
         every {
             inntektskomponentClientMock.getInntekt(inntektkomponentenFoundRequest)
-        } returns storedInntekt.inntekt
+        } returns emptyInntekt
     }
 
     @Test
@@ -179,7 +181,7 @@ class UklassifisertInntektApiTest {
             assertEquals(HttpStatusCode.OK, response.status())
             val uncachedInntekt =
                 moshiInstance.adapter<InntektkomponentResponse>(InntektkomponentResponse::class.java).fromJson(response.content!!)!!
-            assertEquals(storedInntekt.inntekt.ident, uncachedInntekt.ident)
+            assertEquals(emptyInntekt.ident, uncachedInntekt.ident)
         }
     }
 
