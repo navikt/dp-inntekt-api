@@ -18,12 +18,14 @@ import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.moshiInstance
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.YearMonth
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -40,6 +42,12 @@ class UklassifisertInntektApiTest {
 
     private val foundRequest =
         InntektRequest(aktørId = "1234", vedtakId = 1234, beregningsDato = LocalDate.of(2019, 1, 8))
+
+    private val inntektkomponentenFoundRequest = InntektkomponentRequest(
+        "1234",
+        YearMonth.of(2015, 11),
+        YearMonth.of(2019, 1)
+    )
 
     private val storedInntekt = StoredInntekt(
         inntektId,
@@ -77,6 +85,10 @@ class UklassifisertInntektApiTest {
             InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234")),
             false
         )
+
+        every {
+            inntektskomponentClientMock.getInntekt(inntektkomponentenFoundRequest)
+        } returns storedInntekt.inntekt
     }
 
     @Test
@@ -140,6 +152,7 @@ class UklassifisertInntektApiTest {
             assertEquals(HttpStatusCode.BadRequest, response.status())
         }
     }
+
     @Test
     fun `Get request for uklassifisert inntekt should return 200 ok`() = testApp {
         handleRequest(
@@ -152,6 +165,21 @@ class UklassifisertInntektApiTest {
             val storedInntekt =
                 moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
             assertEquals(storedInntekt.inntektId, inntektId)
+        }
+    }
+
+    @Test
+    fun `Get request for uncached uklassifisert inntekt should return 200 ok`() = testApp {
+        handleRequest(
+            HttpMethod.Get,
+            "$uklassifisertInntekt/uncached/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
+        ) {
+        }.apply {
+            assertTrue(requestHandled)
+            assertEquals(HttpStatusCode.OK, response.status())
+            val uncachedInntekt =
+                moshiInstance.adapter<InntektkomponentResponse>(InntektkomponentResponse::class.java).fromJson(response.content!!)!!
+            assertEquals(storedInntekt.inntekt.ident, uncachedInntekt.ident)
         }
     }
 

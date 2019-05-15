@@ -36,6 +36,7 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
             call.respond(HttpStatusCode.OK, klassifisertInntekt)
         }
     }
+
     route("inntekt/uklassifisert/{aktørId}/{vedtakId}/{beregningsDato}") {
         get {
 
@@ -52,6 +53,25 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
             val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
                 ?: throw InntektNotFoundException("Inntekt with for $request not found.")
             call.respond(HttpStatusCode.OK, storedInntekt)
+        }
+    }
+
+    route("inntekt/uklassifisert/uncached/{aktørId}/{vedtakId}/{beregningsDato}") {
+        get {
+
+            val request = try {
+                InntektRequest(
+                    aktørId = call.parameters["aktørId"]!!,
+                    vedtakId = call.parameters["vedtakId"]!!.toLong(),
+                    beregningsDato = LocalDate.parse(call.parameters["beregningsDato"]!!)
+                )
+            } catch (e: Exception) {
+                throw IllegalArgumentException("Failed to parse parameters", e)
+            }
+
+            val uncachedInntekt = inntektskomponentClient.getInntekt(request.let(TO_INNTEKTKOMPONENT_REQUEST))
+
+            call.respond(HttpStatusCode.OK, uncachedInntekt)
         }
     }
 
