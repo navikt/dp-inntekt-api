@@ -6,6 +6,7 @@ metadata:
 spec:
   image: repo.adeo.no:5443/dp-inntekt-api:latest
   port: 8099
+  webproxy: true
   liveness:
     path: /isAlive
   readiness:
