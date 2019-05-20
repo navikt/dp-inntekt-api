@@ -20,6 +20,7 @@ apply {
 
 repositories {
     jcenter()
+    maven("https://jitpack.io")
 }
 
 application {
@@ -32,7 +33,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
-val ktorVersion = "1.1.1"
+val ktorVersion = "1.2.0"
 val fuelVersion = "2.0.1"
 val kotlinLoggingVersion = "1.6.22"
 val jupiterVersion = "5.3.2"
@@ -49,6 +50,7 @@ val kotliqueryVersion = "1.3.0"
 val vaultJavaDriverVersion = "3.1.0"
 val konfigVersion = "1.6.10.0"
 val testcontainers_version = "1.10.6"
+val dpBibliotekerVersion = "2019.05.16-15.01.9c87faf52e8d"
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -73,6 +75,9 @@ dependencies {
     implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
 
     implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
+
+    implementation("com.github.navikt.dp-biblioteker:sts-klient:$dpBibliotekerVersion")
+    implementation("com.github.navikt.dp-biblioteker:ktor-utils:$dpBibliotekerVersion")
 
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")

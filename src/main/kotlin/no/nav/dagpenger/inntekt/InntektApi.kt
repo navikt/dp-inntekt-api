@@ -29,11 +29,12 @@ import no.nav.dagpenger.inntekt.db.migrate
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
-import no.nav.dagpenger.inntekt.oidc.StsOidcClient
+
 import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
 import no.nav.dagpenger.inntekt.v1.aktørApi
 import no.nav.dagpenger.inntekt.v1.inntekt
 import no.nav.dagpenger.inntekt.v1.inntjeningsperiodeApi
+import no.nav.dagpenger.oidc.StsOidcClient
 import org.slf4j.event.Level
 import java.net.URI
 import java.util.concurrent.TimeUnit
