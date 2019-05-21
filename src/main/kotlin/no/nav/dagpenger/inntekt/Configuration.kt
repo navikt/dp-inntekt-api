@@ -42,8 +42,7 @@ private val devProperties = ConfigurationMap(
         "unleash.url" to "https://unleash.nais.preprod.local/api/",
         "oidc.sts.issuerurl" to "https://security-token-service-t10.nais.preprod.local/",
         "application.profile" to "DEV",
-        "application.httpPort" to "8099",
-        "api.keys" to "dp-datalaster-inntekt"
+        "application.httpPort" to "8099"
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -58,8 +57,7 @@ private val prodProperties = ConfigurationMap(
         "unleash.url" to "https://unleash.nais.adeo.no/api/",
         "oidc.sts.issuerurl" to "https://security-token-service.nais.adeo.no/",
         "application.profile" to "PROD",
-        "application.httpPort" to "8099",
-        "api.keys" to "dp-datalaster-inntekt"
+        "application.httpPort" to "8099"
     )
 )
 
