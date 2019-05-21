@@ -2,26 +2,6 @@
 Holder kopi av inntekter fra inntektskomponenten for regelkjøring av dagpenger-behov
 
 
-## Tilgangskontroll
-
-Endepunktet `/inntekt` er sikret med api nøkler. 
-
-Klienter må ha registrert en api nøkkel og ha kjennskap til felles hemmelighet. Hemmelighet og api nøkkel må ligge et sikkert sted (vault)
-
-Lag en ny api nøkkel ved å kjøre: 
-
-```bash
-cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1
-```
-
-
-Eksempel på å generere hemmelighet: 
-
-```bash
-openssl rand -base64 8 |md5 |head -c15;echo
-```
-
-
 ## Utvikling av applikasjonen
 
 For å kjøre enkelte av testene kreves det at Docker kjører.

@@ -201,7 +201,7 @@ class UklassifisertInntektApiTest {
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
-            (inntektApi(inntektskomponentClientMock, inntektStorMock, mockk(), mockk(), mockk(relaxed = true)))
+            (inntektApi(inntektskomponentClientMock, inntektStorMock, mockk(), mockk()))
         }) { callback() }
     }
 }

@@ -69,8 +69,7 @@ class AktørApiTest {
                 inntektskomponentClientMock,
                 mockk(relaxed = true),
                 enhetsregisteretHttpClientMock,
-                personNameHttpClientMock,
-                mockk(relaxed = true)))
+                personNameHttpClientMock))
         }) { callback() }
     }
 }

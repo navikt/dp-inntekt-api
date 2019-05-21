@@ -5,7 +5,7 @@ import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import com.github.kittinunf.result.Result
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.moshiInstance
-import no.nav.dagpenger.oidc.OidcClient
+import no.nav.dagpenger.inntekt.oidc.OidcClient
 import java.time.YearMonth
 
 private val LOGGER = KotlinLogging.logger {}

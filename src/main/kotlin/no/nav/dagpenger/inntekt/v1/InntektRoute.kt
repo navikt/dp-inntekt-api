@@ -1,7 +1,6 @@
 package no.nav.dagpenger.inntekt.v1
 
 import io.ktor.application.call
-import io.ktor.auth.authenticate
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
@@ -20,23 +19,21 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore: InntektStore) {
-    authenticate {
-        route("inntekt") {
-            post {
-                val request = call.receive<InntektRequest>()
+    route("inntekt") {
+        post {
+            val request = call.receive<InntektRequest>()
 
-                val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
-                    ?: inntektStore.insertInntekt(
-                        request,
-                        inntektskomponentClient.getInntekt(request.let(TO_INNTEKTKOMPONENT_REQUEST))
-                    )
+            val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
+                ?: inntektStore.insertInntekt(
+                    request,
+                    inntektskomponentClient.getInntekt(request.let(TO_INNTEKTKOMPONENT_REQUEST))
+                )
 
-                val klassifisertInntekt = storedInntekt.let {
-                    Inntekt(it.inntektId.id, klassifiserInntekter(it.inntekt), it.manueltRedigert)
-                }
-
-                call.respond(HttpStatusCode.OK, klassifisertInntekt)
+            val klassifisertInntekt = storedInntekt.let {
+                Inntekt(it.inntektId.id, klassifiserInntekter(it.inntekt), it.manueltRedigert)
             }
+
+            call.respond(HttpStatusCode.OK, klassifisertInntekt)
         }
     }
 
