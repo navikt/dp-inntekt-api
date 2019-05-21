@@ -4,8 +4,8 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import com.github.tomakehurst.wiremock.matching.RegexPattern
-import no.nav.dagpenger.inntekt.oidc.OidcClient
-import no.nav.dagpenger.inntekt.oidc.OidcToken
+import no.nav.dagpenger.oidc.OidcClient
+import no.nav.dagpenger.oidc.OidcToken
 import org.junit.Rule
 import org.junit.Test
 import java.time.YearMonth

@@ -48,6 +48,7 @@ internal class PostgresTest {
         System.setProperty("oidc.sts.issuerurl", "test")
         System.setProperty("enhetsregisteret.url", "test")
         System.setProperty("oppslag.url", "test")
+        System.setProperty("api.secret", "test")
         with(hikariConfigFrom(Configuration())) {
             assertEquals("jdbc:postgresql://localhost:5432/dp-inntekt-db", jdbcUrl)
         }

@@ -9,6 +9,7 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
@@ -23,6 +24,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
+import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.time.YearMonth
@@ -44,6 +46,9 @@ class InntektApiTest {
         }
         """.trimIndent()
 
+    private val apiKeyVerifier = ApiKeyVerifier("secret")
+    private val authApiKeyVerifier = AuthApiKeyVerifier(apiKeyVerifier, listOf("test-client"))
+    private val apiKey = apiKeyVerifier.generate("test-client")
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val enhetsregisteretHttpClientMock: EnhetsregisteretHttpClient = mockk()
     private val personNameHttpClientMock: PersonNameHttpClient = mockk()
@@ -83,6 +88,7 @@ class InntektApiTest {
     fun `Get klassifisert inntekt should return 200 ok`() = testApp {
         handleRequest(HttpMethod.Post, inntektPath) {
             addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
             setBody(validJson)
         }.apply {
             assertTrue(requestHandled)
@@ -94,6 +100,7 @@ class InntektApiTest {
     fun ` Should respond on unhandled errors and return in rfc7807 problem details standard `() = testApp {
         handleRequest(HttpMethod.Post, inntektPath) {
             addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
             setBody(
                     """
                 {
@@ -117,6 +124,7 @@ class InntektApiTest {
     fun ` should forward Http status from inntektskomponenten and return in rfc7807 problem details standard `() = testApp {
         handleRequest(HttpMethod.Post, inntektPath) {
             addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
             setBody(
                     """
                 {
@@ -140,6 +148,7 @@ class InntektApiTest {
     fun `post request with bad json`() = testApp {
         handleRequest(HttpMethod.Post, inntektPath) {
             addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
             setBody(jsonMissingFields)
         }.apply {
             assertTrue(requestHandled)
@@ -151,6 +160,7 @@ class InntektApiTest {
     fun ` Errors should return in rfc7807 problem details standard on bad request`() = testApp {
         handleRequest(HttpMethod.Post, inntektPath) {
             addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
             setBody(jsonMissingFields)
         }.apply {
             assertTrue(requestHandled)
@@ -162,13 +172,37 @@ class InntektApiTest {
         }
     }
 
+    @Test
+    fun `Should get unauthorized without api key header`() = testApp {
+        handleRequest(HttpMethod.Post, inntektPath) {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            setBody(validJson)
+        }.apply {
+            assertTrue(requestHandled)
+            Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
+        }
+    }
+
+    @Test
+    fun `Should get unauthorized without api wrong api key`() = testApp {
+        handleRequest(HttpMethod.Post, inntektPath) {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", "blabla")
+            setBody(validJson)
+        }.apply {
+            assertTrue(requestHandled)
+            Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
+        }
+    }
+
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
             (inntektApi(
                 inntektskomponentClientMock,
                 inntektStoreMock,
                 enhetsregisteretHttpClientMock,
-                personNameHttpClientMock))
+                personNameHttpClientMock,
+                authApiKeyVerifier))
         }) { callback() }
     }
 }
