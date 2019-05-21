@@ -12,7 +12,8 @@ class ConfigurationTest {
         "enhetsregisteret.url",
         "oppslag.url",
         "oidc.sts.issuerurl",
-        "api.secret"
+        "api.secret",
+        "api.keys"
     )
 
     private fun withProps(props: Map<String, String>, test: () -> Unit) {
