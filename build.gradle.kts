@@ -50,7 +50,7 @@ val kotliqueryVersion = "1.3.0"
 val vaultJavaDriverVersion = "3.1.0"
 val konfigVersion = "1.6.10.0"
 val testcontainers_version = "1.10.6"
-val dpBibliotekerVersion = "2019.05.16-15.01.9c87faf52e8d"
+val dpBibliotekerVersion = "2019.05.21-09.57.669ffe8e266f"
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -108,11 +108,11 @@ dependencies {
 
 spotless {
     kotlin {
-        ktlint()
+        ktlint("0.31.0")
     }
     kotlinGradle {
         target("*.gradle.kts", "additionalScripts/*.gradle.kts")
-        ktlint()
+        ktlint("0.31.0")
     }
 }
 
