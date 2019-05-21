@@ -6,6 +6,7 @@ import com.squareup.moshi.JsonEncodingException
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.auth.Authentication
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
@@ -29,11 +30,15 @@ import no.nav.dagpenger.inntekt.db.migrate
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
-import no.nav.dagpenger.inntekt.oidc.StsOidcClient
 import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
 import no.nav.dagpenger.inntekt.v1.aktørApi
 import no.nav.dagpenger.inntekt.v1.inntekt
 import no.nav.dagpenger.inntekt.v1.inntjeningsperiodeApi
+import no.nav.dagpenger.ktor.auth.ApiKeyCredential
+import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
+import no.nav.dagpenger.ktor.auth.ApiPrincipal
+import no.nav.dagpenger.ktor.auth.apiKeyAuth
+import no.nav.dagpenger.oidc.StsOidcClient
 import org.slf4j.event.Level
 import java.net.URI
 import java.util.concurrent.TimeUnit
@@ -45,11 +50,14 @@ fun main() {
 
     migrate(config)
 
+    val apiKeyVerifier = ApiKeyVerifier(config.application.apiSecret)
+    val allowedApiKeys = config.application.allowedApiKeys
+
     val postgresInntektStore = PostgresInntektStore(dataSourceFrom(config))
 
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
-            config.application.hentinntektListeUrl,
-            StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
+        config.application.hentinntektListeUrl,
+        StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
     )
 
     val enhetsregisteretHttpClient = EnhetsregisteretHttpClient(config.application.enhetsregisteretUrl)
@@ -58,7 +66,7 @@ fun main() {
 
     DefaultExports.initialize()
     val application = embeddedServer(Netty, port = config.application.httpPort) {
-        inntektApi(inntektskomponentHttpClient, postgresInntektStore, enhetsregisteretHttpClient, personNameHttpClient)
+        inntektApi(inntektskomponentHttpClient, postgresInntektStore, enhetsregisteretHttpClient, personNameHttpClient, AuthApiKeyVerifier(apiKeyVerifier, allowedApiKeys))
     }
     application.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -70,10 +78,23 @@ fun Application.inntektApi(
     inntektskomponentHttpClient: InntektskomponentClient,
     inntektStore: InntektStore,
     enhetsregisteretHttpClient: EnhetsregisteretHttpClient,
-    personNameHttpClient: PersonNameHttpClient
+    personNameHttpClient: PersonNameHttpClient,
+    apiAuthApiKeyVerifier: AuthApiKeyVerifier
 ) {
 
     install(DefaultHeaders)
+
+    install(Authentication) {
+        apiKeyAuth {
+            apiKeyName = "X-API-KEY"
+            validate { apikeyCredential: ApiKeyCredential ->
+                when {
+                    apiAuthApiKeyVerifier.verify(apikeyCredential.value) -> ApiPrincipal(apikeyCredential)
+                    else -> null
+                }
+            }
+        }
+    }
 
     install(StatusPages) {
         exception<Throwable> { cause ->
@@ -95,7 +116,10 @@ fun Application.inntektApi(
             call.respond(HttpStatusCode.NotFound, problem)
         }
         exception<InntektskomponentenHttpClientException> { cause ->
-            val statusCode = if (HttpStatusCode.fromValue(cause.status).isSuccess()) HttpStatusCode.InternalServerError else HttpStatusCode.fromValue(cause.status)
+            val statusCode =
+                if (HttpStatusCode.fromValue(cause.status).isSuccess()) HttpStatusCode.InternalServerError else HttpStatusCode.fromValue(
+                    cause.status
+                )
             LOGGER.error("Request failed against inntektskomponenten", cause)
             val error = Problem(
                 type = URI("urn:dp:error:inntektskomponenten"),
@@ -152,5 +176,11 @@ fun Application.inntektApi(
             aktørApi(enhetsregisteretHttpClient, personNameHttpClient)
         }
         naischecks()
+    }
+}
+
+data class AuthApiKeyVerifier(private val apiKeyVerifier: ApiKeyVerifier, private val clients: List<String>) {
+    fun verify(payload: String): Boolean {
+        return clients.map { apiKeyVerifier.verify(payload, it) }.firstOrNull { it } ?: false
     }
 }
