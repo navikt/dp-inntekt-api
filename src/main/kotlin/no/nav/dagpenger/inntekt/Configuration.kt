@@ -25,7 +25,9 @@ private val localProperties = ConfigurationMap(
         "srvdp.inntekt.api.username" to "postgres",
         "srvdp.inntekt.api.password" to "postgres",
         "unleash.url" to "http://localhost",
-        "flyway.locations" to "db/migration,db/testdata"
+        "flyway.locations" to "db/migration,db/testdata",
+        "api.secret" to "secret",
+        "api.keys" to "dp-datalaster-inntekt"
     )
 )
 private val devProperties = ConfigurationMap(
@@ -90,8 +92,9 @@ data class Configuration(
         val oppslagUrl: String = config()[Key("oppslag.url", stringType)],
         val oicdStsUrl: String = config()[Key("oidc.sts.issuerurl", stringType)],
         val name: String = "dp-inntekt-api",
-        val unleashUrl: String = config()[Key("unleash.url", stringType)]
-
+        val unleashUrl: String = config()[Key("unleash.url", stringType)],
+        val apiSecret: String = config()[Key("api.secret", stringType)],
+        val allowedApiKeys: List<String> = config()[Key("api.keys", stringType)].split(",").toList()
     )
 }
 
