@@ -6,7 +6,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 import kotlin.reflect.KFunction
 
-// todo - TEST THIS!!! MISSING UNIT TEST
 fun klassifiserInntekter(uklassifiserteInntekter: InntektkomponentResponse): List<KlassifisertInntektMåned> {
 
     return uklassifiserteInntekter.arbeidsInntektMaaned?.map { måned ->

@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.inntektskomponenten.v1
 
+import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import com.github.kittinunf.result.Result
@@ -30,7 +31,7 @@ class InntektskomponentHttpClient(
         val jsonBody = jsonRequestRequestAdapter.toJson(requestBody)
 
         val (_, response, result) = with(hentInntektlisteUrl.httpPost()) {
-            header("Authorization" to oidcClient.oidcToken().access_token.toBearerToken())
+            authentication().bearer(oidcClient.oidcToken().access_token)
             header("Nav-Call-Id" to "dp-inntekt-api")
             body(jsonBody)
             responseObject(moshiDeserializerOf(jsonResponseAdapter))
@@ -51,8 +52,6 @@ data class HentInntektListeRequest(
     val maanedFom: YearMonth,
     val maanedTom: YearMonth
 )
-
-fun String.toBearerToken() = "Bearer $this"
 
 class InntektskomponentenHttpClientException(
     val status: Int,
