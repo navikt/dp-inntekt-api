@@ -15,9 +15,9 @@ fun klassifiserInntekter(uklassifiserteInntekter: InntektkomponentResponse): Lis
                 ?.inntektListe
                 ?.partition { inntekt -> avvik.any { avvik -> avvik.first == inntekt.inntektsmottaker && avvik.second == inntekt.utbetaltIMaaned } }
         val klassifiserteInntekter = inntektSplitt?.second?.map { inntekt ->
-                val datagrunnlagKlassifisering = DatagrunnlagKlassifisering(
-                    inntekt.inntektType, inntekt.beskrivelse
-                )
+            val datagrunnlagKlassifisering = DatagrunnlagKlassifisering(
+                inntekt.inntektType, inntekt.beskrivelse, inntekt.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold
+            )
 
                 val inntektKlasse = klassifiserInntekt(datagrunnlagKlassifisering)
                 KlassifisertInntekt(inntekt.beloep, inntektKlasse)

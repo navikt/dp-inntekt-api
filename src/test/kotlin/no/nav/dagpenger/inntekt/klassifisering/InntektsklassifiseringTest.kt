@@ -10,6 +10,9 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.YearMonth
@@ -81,6 +84,41 @@ internal class InntektsklassifiseringTest {
         val klassifisertInntekt = klassifiserInntekter(inntektkomponentResponse)
         klassifisertInntekt.first().årMåned shouldBe now
         klassifisertInntekt.first().klassifiserteInntekter shouldBe listOf(KlassifisertInntekt(100.toBigDecimal(), InntektKlasse.ARBEIDSINNTEKT))
+    }
+
+    @Test
+    fun `Klassifiser inntekt med spesielleIntjeningsforhold `() {
+        val now = YearMonth.now()
+        val aktør = Aktoer(AktoerType.AKTOER_ID, "1234")
+        val inntektkomponentResponse = InntektkomponentResponse(
+            arbeidsInntektMaaned = listOf(
+                ArbeidsInntektMaaned(
+                    now,
+                    null,
+                    arbeidsInntektInformasjon = ArbeidsInntektInformasjon(
+                        inntektListe = listOf(
+                            Inntekt(
+                                beloep = 100.toBigDecimal(),
+                                beskrivelse = InntektBeskrivelse.FASTLOENN,
+                                fordel = "",
+                                inntektType = InntektType.LOENNSINNTEKT,
+                                inntektskilde = "",
+                                inntektsperiodetype = "",
+                                inntektsstatus = "",
+                                utbetaltIMaaned = now,
+                                tilleggsinformasjon = TilleggInformasjon("", TilleggInformasjonsDetaljer("", SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK))
+                            )
+                        )
+                    )
+                )
+            ),
+            ident = aktør
+
+        )
+
+        val klassifisertInntekt = klassifiserInntekter(inntektkomponentResponse)
+        klassifisertInntekt.first().årMåned shouldBe now
+        klassifisertInntekt.first().klassifiserteInntekter shouldBe listOf(KlassifisertInntekt(100.toBigDecimal(), InntektKlasse.TILTAKSLØNN))
     }
 
     @Test

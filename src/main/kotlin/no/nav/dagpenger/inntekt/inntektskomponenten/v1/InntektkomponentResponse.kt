@@ -53,7 +53,8 @@ data class Inntekt(
     val inngaarIGrunnlagForTrekk: Boolean? = null,
     val utloeserArbeidsgiveravgift: Boolean? = null,
     val informasjonsstatus: String? = null,
-    val inntektType: InntektType
+    val inntektType: InntektType,
+    val tilleggsinformasjon: TilleggInformasjon? = null
 )
 
 data class Periode(
@@ -78,6 +79,16 @@ data class Avvik(
     val virksomhet: Aktoer?,
     val avvikPeriode: YearMonth,
     val tekst: String
+)
+
+data class TilleggInformasjon(
+    val kategori: String?,
+    val tilleggsinformasjonDetaljer: TilleggInformasjonsDetaljer?
+)
+
+data class TilleggInformasjonsDetaljer(
+    val detaljerType: String?,
+    val spesielleInntjeningsforhold: SpesielleInntjeningsforhold?
 )
 
 enum class InntektType {
