@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.klassifisering
+package no.nav.dagpenger.inntekt.mapping
 
 import de.huxhorn.sulky.ulid.ULID
 import no.nav.dagpenger.inntekt.db.InntektId
@@ -18,6 +18,7 @@ import no.nav.dagpenger.inntekt.moshiInstance
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.skyscreamer.jsonassert.Customization
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
@@ -27,7 +28,6 @@ import org.skyscreamer.jsonassert.comparator.JSONCompareUtil.getKeys
 import org.skyscreamer.jsonassert.comparator.JSONCompareUtil.qualify
 import java.math.BigDecimal
 import java.time.YearMonth
-import kotlin.reflect.full.memberProperties
 
 val rawInntekt = InntektkomponentResponse(
     listOf(
@@ -93,7 +93,8 @@ internal class KategoriseringTest {
 
     @Test
     fun `mapToGUIInntekt adds correct kategori`() {
-        val storedInntekt = StoredInntekt(InntektId(ULID().nextULID()), rawInntekt, false)
+        val storedInntekt = StoredInntekt(InntektId(ULID().nextULID()),
+            rawInntekt, false)
         val guiInntekt = mapToGUIInntekt(storedInntekt)
         assertEquals(
             "Aksjer/grunnfondsbevis til underkurs",
@@ -121,7 +122,8 @@ internal class KategoriseringTest {
 
     @Test
     fun `mapToGUIInntekt does not modify other fields than kategori`() {
-        val storedInntekt = StoredInntekt(InntektId(ULID().nextULID()), rawInntekt, false)
+        val storedInntekt = StoredInntekt(InntektId(ULID().nextULID()),
+            rawInntekt, false)
         val guiInntekt = mapToGUIInntekt(storedInntekt)
 
         val beforeJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(rawInntekt)
@@ -131,11 +133,21 @@ internal class KategoriseringTest {
             mappedJson, beforeJson,
             AttributeIgnoringComparator(
                 JSONCompareMode.STRICT,
-                setOf("kategori"), Customization("") {_, _ -> true}
+                setOf("kategori"), Customization("") { _, _ -> true }
             )
         )
     }
+
+    @Test
+    fun `mapToKategori throws exception for impossible mapping`() {
+        assertThrows<NoKategoriForInntektFound> {
+            mapToKategori(InntektType.YTELSE_FRA_OFFENTLIGE, InntektBeskrivelse.FASTLOENN, null)
+        }
+    }
 }
+
+
+
 /* Workaround to be able to use strict mode when one json is missing a field (like kategori)
     see https://stackoverflow.com/a/44328139
 */
