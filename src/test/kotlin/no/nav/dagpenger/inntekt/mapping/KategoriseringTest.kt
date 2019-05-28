@@ -18,7 +18,6 @@ import no.nav.dagpenger.inntekt.moshiInstance
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.skyscreamer.jsonassert.Customization
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
@@ -92,31 +91,31 @@ val rawInntekt = InntektkomponentResponse(
 internal class KategoriseringTest {
 
     @Test
-    fun `mapToGUIInntekt adds correct kategori`() {
+    fun `mapToGUIInntekt adds correct verdikode`() {
         val storedInntekt = StoredInntekt(InntektId(ULID().nextULID()),
             rawInntekt, false)
         val guiInntekt = mapToGUIInntekt(storedInntekt)
         assertEquals(
             "Aksjer/grunnfondsbevis til underkurs",
-            guiInntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.kategori
+            guiInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode
         )
         assertEquals(
             "Fastlønn",
-            guiInntekt.arbeidsInntektMaaned?.filter {
+            guiInntekt.inntekt.arbeidsInntektMaaned?.filter {
                 it.aarMaaned == YearMonth.of(
                     2019,
                     6
                 )
-            }?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.kategori
+            }?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode
         )
         assertEquals(
             "Hyre - Annet",
-            guiInntekt.arbeidsInntektMaaned?.filter {
+            guiInntekt.inntekt.arbeidsInntektMaaned?.filter {
                 it.aarMaaned == YearMonth.of(
                     2019,
                     6
                 )
-            }?.first()?.arbeidsInntektInformasjon?.inntektListe?.last()?.kategori
+            }?.first()?.arbeidsInntektInformasjon?.inntektListe?.last()?.verdikode
         )
     }
 
@@ -127,22 +126,15 @@ internal class KategoriseringTest {
         val guiInntekt = mapToGUIInntekt(storedInntekt)
 
         val beforeJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(rawInntekt)
-        val mappedJson = moshiInstance.adapter(GUIInntekt::class.java).toJson(guiInntekt)
+        val mappedJson = moshiInstance.adapter(GUIInntektsKomponentResponse::class.java).toJson(guiInntekt.inntekt)
 
         JSONAssert.assertEquals(
             mappedJson, beforeJson,
             AttributeIgnoringComparator(
                 JSONCompareMode.STRICT,
-                setOf("kategori"), Customization("") { _, _ -> true }
+                setOf("verdikode"), Customization("") { _, _ -> true }
             )
         )
-    }
-
-    @Test
-    fun `mapToKategori throws exception for impossible mapping`() {
-        assertThrows<NoKategoriForInntektFound> {
-            mapToKategori(InntektType.YTELSE_FRA_OFFENTLIGE, InntektBeskrivelse.FASTLOENN, null)
-        }
     }
 }
 

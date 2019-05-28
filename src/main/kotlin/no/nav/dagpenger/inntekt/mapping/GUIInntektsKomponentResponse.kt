@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.mapping
 
+import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Avvik
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
@@ -10,6 +11,12 @@ import java.math.BigDecimal
 import java.time.YearMonth
 
 data class GUIInntekt(
+    val inntektId: InntektId,
+    val inntekt: GUIInntektsKomponentResponse,
+    val manueltRedigert: Boolean
+)
+
+data class GUIInntektsKomponentResponse(
     val arbeidsInntektMaaned: List<GUIArbeidsInntektMaaned>?,
     val ident: Aktoer
 )
@@ -21,10 +28,10 @@ data class GUIArbeidsInntektMaaned(
 )
 
 data class GUIArbeidsInntektInformasjon(
-    val inntektListe: List<InntektMedKategori>?
+    val inntektListe: List<InntektMedVerdikode>?
 )
 
-data class InntektMedKategori(
+data class InntektMedVerdikode(
     val beloep: BigDecimal,
     val fordel: String,
     val beskrivelse: InntektBeskrivelse,
@@ -45,6 +52,6 @@ data class InntektMedKategori(
     val informasjonsstatus: String? = null,
     val inntektType: InntektType,
     val tilleggsinformasjon: TilleggInformasjon? = null,
-    val kategori: String
+    val verdikode: String
 )
 

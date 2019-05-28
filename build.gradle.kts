@@ -96,6 +96,8 @@ dependencies {
 
     implementation("no.bekk.bekkopen:nocommons:0.8.2")
 
+    implementation("com.uchuhimo:kotlinx-bimap:1.2")
+
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
