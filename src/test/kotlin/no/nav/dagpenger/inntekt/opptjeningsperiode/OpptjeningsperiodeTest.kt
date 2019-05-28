@@ -71,7 +71,7 @@ class OpptjeningsperiodeTest {
         val inntjeningsperiode1 = Opptjeningsperiode(LocalDate.of(2019, 7, 6))
         val inntjeningsperiode2 = Opptjeningsperiode(LocalDate.of(2019, 7, 31))
 
-        assertTrue { inntjeningsperiode1.sammmeInntjeningsPeriode(inntjeningsperiode2) }
+        assertTrue { inntjeningsperiode1.sammeOpptjeningsPeriode(inntjeningsperiode2) }
     }
 
     @Test
@@ -79,6 +79,6 @@ class OpptjeningsperiodeTest {
         val inntjeningsperiode1 = Opptjeningsperiode(LocalDate.of(2019, 7, 6))
         val inntjeningsperiode2 = Opptjeningsperiode(LocalDate.of(2019, 8, 6))
 
-        assertFalse { inntjeningsperiode1.sammmeInntjeningsPeriode(inntjeningsperiode2) }
+        assertFalse { inntjeningsperiode1.sammeOpptjeningsPeriode(inntjeningsperiode2) }
     }
 }

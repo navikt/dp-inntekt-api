@@ -33,7 +33,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpCl
 import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
 import no.nav.dagpenger.inntekt.v1.aktørApi
 import no.nav.dagpenger.inntekt.v1.inntekt
-import no.nav.dagpenger.inntekt.v1.inntjeningsperiodeApi
+import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
 import no.nav.dagpenger.ktor.auth.ApiKeyCredential
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import no.nav.dagpenger.ktor.auth.ApiPrincipal
@@ -172,7 +172,7 @@ fun Application.inntektApi(
     routing {
         route("/v1") {
             inntekt(inntektskomponentHttpClient, inntektStore)
-            inntjeningsperiodeApi(inntektStore)
+            opptjeningsperiodeApi(inntektStore)
             aktørApi(enhetsregisteretHttpClient, personNameHttpClient)
         }
         naischecks()
