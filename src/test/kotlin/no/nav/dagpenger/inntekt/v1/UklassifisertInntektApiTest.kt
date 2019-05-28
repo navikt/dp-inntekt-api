@@ -45,8 +45,8 @@ class UklassifisertInntektApiTest {
 
     private val inntektkomponentenFoundRequest = InntektkomponentRequest(
         "1234",
-        YearMonth.of(2015, 11),
-        YearMonth.of(2019, 1)
+        YearMonth.of(2015, 12),
+        YearMonth.of(2018, 12)
     )
 
     private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234"))

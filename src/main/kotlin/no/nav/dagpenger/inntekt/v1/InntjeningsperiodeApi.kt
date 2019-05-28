@@ -9,12 +9,12 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
-import no.nav.dagpenger.inntekt.inntjeningsperiode.isSammeInntjeningsPeriode
+import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import no.nav.dagpenger.inntekt.v1.models.InntjeningsperiodeParametre
 import no.nav.dagpenger.inntekt.v1.models.InntjeningsperiodeResultat
 import java.time.LocalDate
 
-fun Route.inntjeningsperiodeApi(inntektStore: InntektStore) {
+fun Route.opptjeningsperiodeApi(inntektStore: InntektStore) {
 
     route("is-samme-inntjeningsperiode") {
         post {
@@ -22,7 +22,11 @@ fun Route.inntjeningsperiodeApi(inntektStore: InntektStore) {
 
             val gammelBeregningsdato = inntektStore.getBeregningsdato(InntektId(parametere.inntektsId))
 
-            val resultat = isSammeInntjeningsPeriode(gammelBeregningsdato, LocalDate.parse(parametere.beregningsdato))
+            val resultat = Opptjeningsperiode(gammelBeregningsdato).sammeOpptjeningsPeriode(
+                Opptjeningsperiode(
+                    LocalDate.parse(parametere.beregningsdato)
+                )
+            )
 
             val response = InntjeningsperiodeResultat(resultat, parametere)
 

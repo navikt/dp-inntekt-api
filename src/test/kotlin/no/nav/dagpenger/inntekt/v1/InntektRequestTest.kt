@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.v1
 
+import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -13,10 +14,11 @@ internal class InntektRequestTest {
                 beregningsDato = LocalDate.of(2019, 4, 3)
         )
 
-        val inntektskomponentRequest = request.let(TO_INNTEKTKOMPONENT_REQUEST)
+        val opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
+        val inntektskomponentRequest = toInntektskomponentRequest(request, opptjeningsperiode)
 
         assertEquals("1234", inntektskomponentRequest.aktørId)
         assertEquals("2016-02", inntektskomponentRequest.månedFom.toString())
-        assertEquals("2019-04", inntektskomponentRequest.månedTom.toString())
+        assertEquals("2019-02", inntektskomponentRequest.månedTom.toString())
     }
 }

@@ -56,12 +56,26 @@ class InntektApiTest {
     private val inntektPath = "/v1/inntekt"
 
     init {
-        every { inntektskomponentClientMock.getInntekt(InntektkomponentRequest("1234", YearMonth.of(2015, 11), YearMonth.of(2019, 1))) } returns InntektkomponentResponse(
+        every {
+            inntektskomponentClientMock.getInntekt(
+                InntektkomponentRequest(
+                    "1234",
+                    YearMonth.of(2015, 12),
+                    YearMonth.of(2018, 12)
+                )
+            )
+        } returns InntektkomponentResponse(
                 emptyList(),
                 Aktoer(AktoerType.AKTOER_ID, "1234")
         )
         every {
-            inntektskomponentClientMock.getInntekt(InntektkomponentRequest("5678", YearMonth.of(2015, 11), YearMonth.of(2019, 1)))
+            inntektskomponentClientMock.getInntekt(
+                InntektkomponentRequest(
+                    "5678",
+                    YearMonth.of(2015, 12),
+                    YearMonth.of(2018, 12)
+                )
+            )
         } throws InntektskomponentenHttpClientException(400, "Bad request")
 
         every {

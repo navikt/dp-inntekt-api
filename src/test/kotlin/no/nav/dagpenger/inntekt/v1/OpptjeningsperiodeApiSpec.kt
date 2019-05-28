@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
-class InntjeningsperiodeApiSpec {
+class OpptjeningsperiodeApiSpec {
     @Test
     fun `Inntjeningsperiode API specification test - Should match json field names and formats`() {
 

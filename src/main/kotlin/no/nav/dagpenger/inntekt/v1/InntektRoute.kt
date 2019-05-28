@@ -16,8 +16,8 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.klassifisering.Inntekt
 import no.nav.dagpenger.inntekt.klassifisering.klassifiserInntekter
+import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
-import java.time.YearMonth
 
 fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore: InntektStore) {
     authenticate {
@@ -25,14 +25,21 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
             post {
                 val request = call.receive<InntektRequest>()
 
+                val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
+
                 val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
                     ?: inntektStore.insertInntekt(
                         request,
-                        inntektskomponentClient.getInntekt(request.let(TO_INNTEKTKOMPONENT_REQUEST))
+                        inntektskomponentClient.getInntekt(toInntektskomponentRequest(request, opptjeningsperiode))
                     )
 
                 val klassifisertInntekt = storedInntekt.let {
-                    Inntekt(it.inntektId.id, klassifiserInntekter(it.inntekt), it.manueltRedigert)
+                    Inntekt(
+                        it.inntektId.id,
+                        klassifiserInntekter(it.inntekt),
+                        it.manueltRedigert,
+                        opptjeningsperiode.sisteAvsluttendeKalenderMåned
+                    )
                 }
 
                 call.respond(HttpStatusCode.OK, klassifisertInntekt)
@@ -72,7 +79,9 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
                 throw IllegalArgumentException("Failed to parse parameters", e)
             }
 
-            val uncachedInntekt = inntektskomponentClient.getInntekt(request.let(TO_INNTEKTKOMPONENT_REQUEST))
+            val opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
+            val uncachedInntekt =
+                inntektskomponentClient.getInntekt(toInntektskomponentRequest(request, opptjeningsperiode))
 
             call.respond(HttpStatusCode.OK, uncachedInntekt)
         }
@@ -96,16 +105,15 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
     }
 }
 
-private const val MAX_INNTEKT_PERIODE = 38L
-
 data class InntektRequest(
     val aktørId: String,
     val vedtakId: Long,
     val beregningsDato: LocalDate
 )
 
-val TO_INNTEKTKOMPONENT_REQUEST: (InntektRequest) -> InntektkomponentRequest = {
-    val beregningsDatoMonth = YearMonth.of(it.beregningsDato.year, it.beregningsDato.month)
-    val earliestMonth = beregningsDatoMonth.minusMonths(MAX_INNTEKT_PERIODE)
-    InntektkomponentRequest(it.aktørId, earliestMonth, beregningsDatoMonth)
+val toInntektskomponentRequest: (InntektRequest, Opptjeningsperiode) -> InntektkomponentRequest =
+    { inntektRequest: InntektRequest, opptjeningsperiode: Opptjeningsperiode ->
+        val sisteAvsluttendeKalendermåned = opptjeningsperiode.sisteAvsluttendeKalenderMåned
+        val førsteMåned = opptjeningsperiode.førsteMåned
+        InntektkomponentRequest(inntektRequest.aktørId, førsteMåned, sisteAvsluttendeKalendermåned)
 }

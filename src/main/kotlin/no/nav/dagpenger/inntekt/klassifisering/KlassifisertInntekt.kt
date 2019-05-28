@@ -6,7 +6,8 @@ import java.time.YearMonth
 data class Inntekt(
     val inntektsId: String,
     val inntektsListe: List<KlassifisertInntektMåned>,
-    val manueltRedigert: Boolean
+    val manueltRedigert: Boolean,
+    val sisteAvsluttendeKalenderMåned: YearMonth
 )
 
 data class KlassifisertInntektMåned(
