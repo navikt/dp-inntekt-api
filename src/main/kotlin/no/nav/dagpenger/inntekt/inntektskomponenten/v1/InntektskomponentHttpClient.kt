@@ -2,7 +2,6 @@ package no.nav.dagpenger.inntekt.inntektskomponenten.v1
 
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.httpPost
-import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import com.github.kittinunf.result.Result
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.moshiInstance
