@@ -2,6 +2,7 @@ package no.nav.dagpenger.inntekt.inntektskomponenten.v1
 
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.httpPost
+import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import com.github.kittinunf.result.Result
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.moshiInstance
@@ -33,14 +34,14 @@ class InntektskomponentHttpClient(
             authentication().bearer(oidcClient.oidcToken().access_token)
             header("Nav-Call-Id" to "dp-inntekt-api")
             body(jsonBody)
-            responseString()
+            responseObject(moshiDeserializerOf(jsonResponseAdapter))
         }
-        LOGGER.info { "Debugging inntektskomponentresponse: ${result.get()}" }
+
         return when (result) {
             is Result.Failure -> throw InntektskomponentenHttpClientException(response.statusCode,
                     "Failed to fetch inntekt. Response message: ${response.responseMessage}. Problem message: ${result.error.message}"
             )
-            is Result.Success -> jsonResponseAdapter.fromJson(result.get())!!
+            is Result.Success -> result.get()
         }
     }
 }
