@@ -34,13 +34,14 @@ class InntektskomponentHttpClient(
             authentication().bearer(oidcClient.oidcToken().access_token)
             header("Nav-Call-Id" to "dp-inntekt-api")
             body(jsonBody)
-            responseObject(moshiDeserializerOf(jsonResponseAdapter))
+            responseString()
         }
+        LOGGER.info { "Debugging inntektskomponentresponse: ${result.get()}" }
         return when (result) {
             is Result.Failure -> throw InntektskomponentenHttpClientException(response.statusCode,
                     "Failed to fetch inntekt. Response message: ${response.responseMessage}. Problem message: ${result.error.message}"
             )
-            is Result.Success -> result.get()
+            is Result.Success -> jsonResponseAdapter.fromJson(result.get())!!
         }
     }
 }

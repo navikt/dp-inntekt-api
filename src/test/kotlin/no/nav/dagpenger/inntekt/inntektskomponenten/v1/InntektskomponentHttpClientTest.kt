@@ -50,6 +50,32 @@ class InntektskomponentHttpClientTest {
     }
 
     @Test
+    fun `fetch uklassifisert inntekt with spesielleinntjeningsforhold 200 ok`() {
+        val body = InntektskomponentHttpClientTest::class.java
+            .getResource("/test-data/example-inntekt-spesielleinntjeningsforhold.json").readText()
+
+        WireMock.stubFor(
+            WireMock.post(WireMock.urlEqualTo("/v1/hentinntektliste"))
+                .withHeader("Authorization", RegexPattern("Bearer\\s[\\d|a-f]{8}-([\\d|a-f]{4}-){3}[\\d|a-f]{12}"))
+                .willReturn(
+                    WireMock.aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(body)
+                )
+        )
+
+        val inntektskomponentClient = InntektskomponentHttpClient(
+            wireMockRule.url("/v1/hentinntektliste"),
+            DummyOidcClient()
+        )
+
+        val hentInntektListeResponse =
+            inntektskomponentClient.getInntekt(InntektkomponentRequest("", YearMonth.of(2017, 3), YearMonth.of(2019, 1)))
+
+        assertEquals("8888888888", hentInntektListeResponse.ident.identifikator)
+        assertEquals(SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY, hentInntektListeResponse.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold)
+    }
+    @Test
     fun `fetch uklassifisert inntekt on 500 server error`() {
 
         WireMock.stubFor(
