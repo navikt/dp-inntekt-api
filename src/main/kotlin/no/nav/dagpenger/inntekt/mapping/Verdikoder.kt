@@ -20,7 +20,6 @@ class VerdiKodeMappingException(message: String) : RuntimeException(message)
 val dataGrunnlagKlassifiseringToVerdikode = biMapOf(
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.AKSJER_GRUNNFONDSBEVIS_TIL_UNDERKURS, null ) to "Aksjer/grunnfondsbevis til underkurs",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, null) to "Annen arbeidsinntekt",
-    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, null) to "Arbeidsopphold kost",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ARBEIDSOPPHOLD_KOST, null) to "Arbeidsopphold kost",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ARBEIDSOPPHOLD_LOSJI, null) to "Arbeidsopphold losji",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.BEREGNET_SKATT, null) to "Beregnet skatt",
@@ -82,8 +81,10 @@ val dataGrunnlagKlassifiseringToVerdikode = biMapOf(
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.FAST_TILLEGG, SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY) to "Hyre - Faste tillegg",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.FASTLOENN, SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY) to "Hyre - Fastlønn",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.FERIEPENGER, SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY) to "Hyre - Feriepenger",
+    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.HELLIGDAGSTILLEGG, SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY) to "Hyre - Helligdagstillegg",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.OVERTIDSGODTGJOERELSE, SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY) to "Hyre - Overtidsgodtgjørelse",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.SLUTTVEDERLAG, SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY) to "Hyre - Sluttvederlag",
+    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TIMELOENN, SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY) to "Hyre - Timelønn",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_ARBEIDET_TID, SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY) to "Hyre - Uregelmessige tillegg knyttet til arbeidet tid",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_IKKE_ARBEIDET_TID, SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY) to "Hyre - Uregelmessige tillegg knyttet til ikke-arbeidet tid",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.FERIEPENGER, SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY) to "Hyre - Feriepenger",
