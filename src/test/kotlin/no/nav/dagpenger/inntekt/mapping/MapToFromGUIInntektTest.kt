@@ -92,8 +92,10 @@ internal class KategoriseringTest {
 
     @Test
     fun `mapToGUIInntekt adds correct verdikode`() {
-        val storedInntekt = StoredInntekt(InntektId(ULID().nextULID()),
-            rawInntekt, false)
+        val storedInntekt = StoredInntekt(
+            InntektId(ULID().nextULID()),
+            rawInntekt, false
+        )
         val guiInntekt = mapToGUIInntekt(storedInntekt)
         assertEquals(
             "Aksjer/grunnfondsbevis til underkurs",
@@ -121,8 +123,10 @@ internal class KategoriseringTest {
 
     @Test
     fun `mapToGUIInntekt does not modify other fields than kategori`() {
-        val storedInntekt = StoredInntekt(InntektId(ULID().nextULID()),
-            rawInntekt, false)
+        val storedInntekt = StoredInntekt(
+            InntektId(ULID().nextULID()),
+            rawInntekt, false
+        )
         val guiInntekt = mapToGUIInntekt(storedInntekt)
 
         val beforeJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(rawInntekt)
@@ -136,9 +140,17 @@ internal class KategoriseringTest {
             )
         )
     }
+
+    @Test
+    fun `map to and from GUIInntekt results in original inntekt`() {
+        val storedInntekt = StoredInntekt(
+            InntektId(ULID().nextULID()),
+            rawInntekt, false
+        )
+
+        assertEquals(storedInntekt, mapFromGUIInntekt(mapToGUIInntekt(storedInntekt)))
+    }
 }
-
-
 
 /* Workaround to be able to use strict mode when one json is missing a field (like kategori)
     see https://stackoverflow.com/a/44328139

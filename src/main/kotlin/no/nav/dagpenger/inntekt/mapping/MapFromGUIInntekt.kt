@@ -17,29 +17,29 @@ fun mapFromGUIInntekt(guiInntekt: GUIInntekt) : StoredInntekt {
             GUIarbeidsInntektMaaned.aarMaaned,
             GUIarbeidsInntektMaaned.avvikListe,
             ArbeidsInntektInformasjon(
-                GUIarbeidsInntektMaaned.arbeidsInntektInformasjon?.inntektListe?.map {
-                    val datagrunnlagForVerdikode = dataGrunnlag(it.verdikode)
+                GUIarbeidsInntektMaaned.arbeidsInntektInformasjon?.inntektListe?.map { inntekt ->
+                    val datagrunnlagForVerdikode = dataGrunnlag(inntekt.verdikode)
                     Inntekt(
-                        it.beloep,
-                        it.fordel,
+                        inntekt.beloep,
+                        inntekt.fordel,
                         datagrunnlagForVerdikode.beskrivelse,
-                        it.inntektskilde,
-                        it.inntektsstatus,
-                        it.inntektsperiodetype,
-                        it.leveringstidspunkt,
-                        it.opptjeningsland,
-                        it.opptjeningsperiode,
-                        it.skattemessigBosattLand,
-                        it.utbetaltIMaaned,
-                        it.opplysningspliktig,
-                        it.inntektsinnsender,
-                        it.virksomhet,
-                        it.inntektsmottaker,
-                        it.inngaarIGrunnlagForTrekk,
-                        it.utloeserArbeidsgiveravgift,
-                        it.informasjonsstatus,
+                        inntekt.inntektskilde,
+                        inntekt.inntektsstatus,
+                        inntekt.inntektsperiodetype,
+                        inntekt.leveringstidspunkt,
+                        inntekt.opptjeningsland,
+                        inntekt.opptjeningsperiode,
+                        inntekt.skattemessigBosattLand,
+                        inntekt.utbetaltIMaaned,
+                        inntekt.opplysningspliktig,
+                        inntekt.inntektsinnsender,
+                        inntekt.virksomhet,
+                        inntekt.inntektsmottaker,
+                        inntekt.inngaarIGrunnlagForTrekk,
+                        inntekt.utloeserArbeidsgiveravgift,
+                        inntekt.informasjonsstatus,
                         datagrunnlagForVerdikode.type,
-                        datagrunnlagForVerdikode.forhold?.let { TilleggInformasjon("SpesielleInntjeningsforhold", TilleggInformasjonsDetaljer("INNTJENINGSFORHOLD", it)) }
+                        datagrunnlagForVerdikode.forhold?.let { TilleggInformasjon(inntekt.tilleggsinformasjon?.kategori, TilleggInformasjonsDetaljer(inntekt.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.detaljerType, it)) }
                     )
                 } ?: emptyList()))
     } ?: emptyList()
