@@ -1,20 +1,40 @@
 package no.nav.dagpenger.inntekt.brreg.enhetsregisteret
 
+import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
-import com.github.tomakehurst.wiremock.junit.WireMockRule
-import org.junit.Rule
-import org.junit.Test
+
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
 
 class EnhetsregisteretHttpClientTest {
 
     val validJsonBody = """{"navn" : "NAVN"}"""
 
-    @Rule
-    @JvmField
-    var wireMockRule = WireMockRule(WireMockConfiguration.wireMockConfig().dynamicPort())
+    companion object {
+        val server: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
+
+        @BeforeAll
+        @JvmStatic
+        fun start() {
+            server.start()
+        }
+
+        @AfterAll
+        @JvmStatic
+        fun stop() {
+            server.stop()
+        }
+    }
+
+    @BeforeEach
+    fun configure() {
+        WireMock.configureFor(server.port())
+    }
 
     @Test
     fun `fetch organization name on 200 ok`() {
@@ -25,7 +45,7 @@ class EnhetsregisteretHttpClientTest {
                 .willReturn(WireMock.aResponse().withBody(validJsonBody))
         )
 
-        val enhetsregisteretHttpClient = EnhetsregisteretHttpClient(wireMockRule.url(""))
+        val enhetsregisteretHttpClient = EnhetsregisteretHttpClient(server.url(""))
 
         val responseName = enhetsregisteretHttpClient.getOrgName(testOrgNr)
 
@@ -43,7 +63,7 @@ class EnhetsregisteretHttpClientTest {
                 )
         )
 
-        val enhetsregisteretHttpClient = EnhetsregisteretHttpClient(wireMockRule.url(""))
+        val enhetsregisteretHttpClient = EnhetsregisteretHttpClient(server.url(""))
 
         val result = kotlin.runCatching {
             enhetsregisteretHttpClient.getOrgName(testOrgNr)

@@ -4,6 +4,7 @@ import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import com.github.kittinunf.result.Result
+import de.huxhorn.sulky.ulid.ULID
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.oidc.OidcClient
@@ -12,6 +13,7 @@ import java.time.YearMonth
 private val LOGGER = KotlinLogging.logger {}
 private val jsonResponseAdapter = moshiInstance.adapter(InntektkomponentResponse::class.java)
 private val jsonRequestRequestAdapter = moshiInstance.adapter(HentInntektListeRequest::class.java)
+private val ulid = ULID()
 
 class InntektskomponentHttpClient(
     private val hentInntektlisteUrl: String,
@@ -28,11 +30,12 @@ class InntektskomponentHttpClient(
                 request.månedFom,
                 request.månedTom
         )
-        val jsonBody = jsonRequestRequestAdapter.toJson(requestBody)
 
+        val jsonBody = jsonRequestRequestAdapter.toJson(requestBody)
         val (_, response, result) = with(hentInntektlisteUrl.httpPost()) {
             authentication().bearer(oidcClient.oidcToken().access_token)
-            header("Nav-Call-Id" to "dp-inntekt-api")
+            header("Nav-Consumer-Id" to "dp-inntekt-api")
+            header("Nav-Call-Id" to ulid.nextULID())
             body(jsonBody)
             responseObject(moshiDeserializerOf(jsonResponseAdapter))
         }

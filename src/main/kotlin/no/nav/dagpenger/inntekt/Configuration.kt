@@ -24,7 +24,6 @@ private val localProperties = ConfigurationMap(
         "oidc.sts.issuerurl" to "http://localhost/",
         "srvdp.inntekt.api.username" to "postgres",
         "srvdp.inntekt.api.password" to "postgres",
-        "unleash.url" to "http://localhost",
         "flyway.locations" to "db/migration,db/testdata",
         "api.secret" to "secret",
         "api.keys" to "dp-datalaster-inntekt"
@@ -39,7 +38,6 @@ private val devProperties = ConfigurationMap(
         "hentinntektliste.url" to "https://app-t6.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
         "oppslag.url" to "http://dagpenger-oppslag",
-        "unleash.url" to "https://unleash.nais.preprod.local/api/",
         "oidc.sts.issuerurl" to "https://security-token-service-t4.nais.preprod.local/",
         "application.profile" to "DEV",
         "application.httpPort" to "8099"
@@ -54,7 +52,6 @@ private val prodProperties = ConfigurationMap(
         "hentinntektliste.url" to "https://app.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
         "oppslag.url" to "http://dagpenger-oppslag",
-        "unleash.url" to "https://unleash.nais.adeo.no/api/",
         "oidc.sts.issuerurl" to "https://security-token-service.nais.adeo.no/",
         "application.profile" to "PROD",
         "application.httpPort" to "8099"
@@ -92,7 +89,6 @@ data class Configuration(
         val oppslagUrl: String = config()[Key("oppslag.url", stringType)],
         val oicdStsUrl: String = config()[Key("oidc.sts.issuerurl", stringType)],
         val name: String = "dp-inntekt-api",
-        val unleashUrl: String = config()[Key("unleash.url", stringType)],
         val apiSecret: String = config()[Key("api.secret", stringType)],
         val allowedApiKeys: List<String> = config()[Key("api.keys", stringType)].split(",").toList()
     )
