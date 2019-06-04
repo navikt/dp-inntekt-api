@@ -40,7 +40,7 @@ private val devProperties = ConfigurationMap(
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
         "oppslag.url" to "http://dagpenger-oppslag",
         "unleash.url" to "https://unleash.nais.preprod.local/api/",
-        "oidc.sts.issuerurl" to "https://security-token-service-t10.nais.preprod.local/",
+        "oidc.sts.issuerurl" to "https://security-token-service-t4.nais.preprod.local/",
         "application.profile" to "DEV",
         "application.httpPort" to "8099"
     )
