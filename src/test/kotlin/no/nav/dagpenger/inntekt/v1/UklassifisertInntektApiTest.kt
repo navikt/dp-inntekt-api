@@ -180,8 +180,8 @@ class UklassifisertInntektApiTest {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
             val uncachedInntekt =
-                moshiInstance.adapter<InntektkomponentResponse>(InntektkomponentResponse::class.java).fromJson(response.content!!)!!
-            assertEquals(emptyInntekt.ident, uncachedInntekt.ident)
+                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+            assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
         }
     }
 
