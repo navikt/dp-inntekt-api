@@ -11,11 +11,13 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
-import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.klassifisering.Inntekt
 import no.nav.dagpenger.inntekt.klassifisering.klassifiserInntekter
+import no.nav.dagpenger.inntekt.mapping.GUIInntekt
+import no.nav.dagpenger.inntekt.mapping.mapFromGUIInntekt
+import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
 
@@ -49,7 +51,6 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
 
     route("inntekt/uklassifisert/{aktørId}/{vedtakId}/{beregningsDato}") {
         get {
-
             val request = try {
                 InntektRequest(
                     aktørId = call.parameters["aktørId"]!!,
@@ -62,13 +63,13 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
 
             val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
                 ?: throw InntektNotFoundException("Inntekt with for $request not found.")
-            call.respond(HttpStatusCode.OK, storedInntekt)
+            val mappedInntekt = mapToGUIInntekt(storedInntekt)
+            call.respond(HttpStatusCode.OK, mappedInntekt)
         }
     }
 
     route("inntekt/uklassifisert/uncached/{aktørId}/{vedtakId}/{beregningsDato}") {
         get {
-
             val request = try {
                 InntektRequest(
                     aktørId = call.parameters["aktørId"]!!,
@@ -82,24 +83,17 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
             val opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
             val uncachedInntekt =
                 inntektskomponentClient.getInntekt(toInntektskomponentRequest(request, opptjeningsperiode))
-
-            call.respond(HttpStatusCode.OK, uncachedInntekt)
-        }
-    }
-
-    route("inntekt/uklassifisert") {
-        post {
-            val request = call.receive<InntektRequest>()
-            val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
-                ?: throw InntektNotFoundException("Inntekt with for $request not found.")
-            call.respond(HttpStatusCode.OK, storedInntekt)
+            val storedInntekt = inntektStore.insertInntekt(request, uncachedInntekt)
+            val mappedInntekt = mapToGUIInntekt(storedInntekt)
+            call.respond(HttpStatusCode.OK, mappedInntekt)
         }
     }
 
     route("inntekt/uklassifisert/update") {
         post {
-            val request = call.receive<StoredInntekt>()
-            val storedInntekt = inntektStore.redigerInntekt(request)
+            val request = call.receive<GUIInntekt>()
+            val mappedInntekt = mapFromGUIInntekt(request)
+            val storedInntekt = inntektStore.redigerInntekt(mappedInntekt)
             call.respond(HttpStatusCode.OK, storedInntekt)
         }
     }

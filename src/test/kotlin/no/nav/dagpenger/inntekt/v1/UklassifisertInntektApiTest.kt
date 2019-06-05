@@ -114,39 +114,6 @@ class UklassifisertInntektApiTest {
     }
 
     @Test
-    fun `POST unknown uklassifisert inntekt should return 404 not found`() = testApp {
-        handleRequest(HttpMethod.Post, uklassifisertInntekt) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            setBody(reqAdapter.toJson(notFoundRequest))
-        }.apply {
-            assertTrue(requestHandled)
-            Assertions.assertEquals(HttpStatusCode.NotFound, response.status())
-            val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
-            assertEquals("Kunne ikke finne inntekt i databasen", problem?.title)
-            assertEquals("urn:dp:error:inntekt", problem?.type.toString())
-            assertEquals(404, problem?.status)
-            assertEquals(
-                "Inntekt with for InntektRequest(aktørId=1234, vedtakId=1, beregningsDato=2019-01-08) not found.",
-                problem?.detail
-            )
-        }
-    }
-
-    @Test
-    fun `Get uklassifisert inntekt should return 200 ok`() = testApp {
-        handleRequest(HttpMethod.Post, uklassifisertInntekt) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            setBody(reqAdapter.toJson(foundRequest))
-        }.apply {
-            assertTrue(requestHandled)
-            assertEquals(HttpStatusCode.OK, response.status())
-            val storedInntekt =
-                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
-            assertEquals(storedInntekt.inntektId, inntektId)
-        }
-    }
-
-    @Test
     fun `GET uklassifisert inntekt with malformed parameters should return bad request`() = testApp {
         handleRequest(HttpMethod.Get, "$uklassifisertInntekt/${foundRequest.aktørId}/${foundRequest.vedtakId}/blabla") {
         }.apply {
@@ -180,8 +147,8 @@ class UklassifisertInntektApiTest {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
             val uncachedInntekt =
-                moshiInstance.adapter<InntektkomponentResponse>(InntektkomponentResponse::class.java).fromJson(response.content!!)!!
-            assertEquals(emptyInntekt.ident, uncachedInntekt.ident)
+                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+            assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
         }
     }
 

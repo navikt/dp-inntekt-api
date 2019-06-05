@@ -50,6 +50,7 @@ val kotliqueryVersion = "1.3.0"
 val vaultJavaDriverVersion = "3.1.0"
 val konfigVersion = "1.6.10.0"
 val testcontainers_version = "1.10.6"
+val jsonassertVersion = "1.5.0"
 val dpBibliotekerVersion = "2019.05.21-15.46.697023d907a7"
 
 dependencies {
@@ -95,6 +96,8 @@ dependencies {
 
     implementation("no.bekk.bekkopen:nocommons:0.8.2")
 
+    implementation("com.uchuhimo:kotlinx-bimap:1.2")
+
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
@@ -105,6 +108,7 @@ dependencies {
     testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.0")
     testImplementation("org.testcontainers:postgresql:$testcontainers_version")
     testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("org.skyscreamer:jsonassert:$jsonassertVersion")
 }
 
 spotless {
