@@ -89,15 +89,6 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
         }
     }
 
-    route("inntekt/uklassifisert") {
-        post {
-            val request = call.receive<InntektRequest>()
-            val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
-                ?: throw InntektNotFoundException("Inntekt with for $request not found.")
-            call.respond(HttpStatusCode.OK, storedInntekt)
-        }
-    }
-
     route("inntekt/uklassifisert/update") {
         post {
             val request = call.receive<GUIInntekt>()
