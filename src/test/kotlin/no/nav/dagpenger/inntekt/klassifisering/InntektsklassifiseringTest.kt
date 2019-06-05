@@ -10,9 +10,11 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClientTest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
+import no.nav.dagpenger.inntekt.moshiInstance
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.YearMonth
@@ -122,49 +124,7 @@ internal class InntektsklassifiseringTest {
     }
 
     @Test
-    fun `Skal skille ut avvik fra inntekt før en klassifiserer`() {
-        val now = YearMonth.now()
-        val aktør = Aktoer(AktoerType.AKTOER_ID, "1234")
-        val inntektkomponentResponse = InntektkomponentResponse(
-            arbeidsInntektMaaned = listOf(
-                ArbeidsInntektMaaned(
-                    now,
-                    listOf(Avvik(
-                        ident = aktør,
-                        opplysningspliktig = Aktoer(AktoerType.ORGANISASJON, "12345678"),
-                        virksomhet = Aktoer(AktoerType.ORGANISASJON, "12345678"),
-                        avvikPeriode = now,
-                        tekst = "Avvik"
-
-                    )),
-                    arbeidsInntektInformasjon = ArbeidsInntektInformasjon(
-                        inntektListe = listOf(
-                            Inntekt(
-                                beloep = 100.toBigDecimal(),
-                                beskrivelse = InntektBeskrivelse.FASTLOENN,
-                                fordel = "",
-                                inntektType = InntektType.LOENNSINNTEKT,
-                                inntektskilde = "",
-                                inntektsperiodetype = "",
-                                inntektsstatus = "",
-                                utbetaltIMaaned = now,
-                                inntektsmottaker = aktør
-
-                            )
-                        )
-                    )
-                )
-            ),
-            ident = aktør
-
-        )
-
-        val klassifisertInntekt = klassifiserInntekter(inntektkomponentResponse)
-        klassifisertInntekt.first().årMåned shouldBe now
-        klassifisertInntekt.first().klassifiserteInntekter shouldBe emptyList()
-    }
-    @Test
-    fun `Skal kun skille ut avvik fra inntekt hvis avvik info korrosponderer med inntektliste`() {
+    fun `Skal gi indikasjon på avvik om måneden inneholder avvik `() {
         val now = YearMonth.now()
         val aktør = Aktoer(AktoerType.AKTOER_ID, "1234")
         val inntektkomponentResponse = InntektkomponentResponse(
@@ -173,7 +133,7 @@ internal class InntektsklassifiseringTest {
                     now,
                     listOf(
                         Avvik(
-                            ident = Aktoer(AktoerType.AKTOER_ID, "ikke den samme som i inntektslista"),
+                            ident = Aktoer(AktoerType.AKTOER_ID, "123456789"),
                             opplysningspliktig = Aktoer(AktoerType.ORGANISASJON, "12345678"),
                             virksomhet = Aktoer(AktoerType.ORGANISASJON, "12345678"),
                             avvikPeriode = now,
@@ -206,6 +166,18 @@ internal class InntektsklassifiseringTest {
         val klassifisertInntekt = klassifiserInntekter(inntektkomponentResponse)
         klassifisertInntekt.first().årMåned shouldBe now
         klassifisertInntekt.first().klassifiserteInntekter shouldBe listOf(KlassifisertInntekt(100.toBigDecimal(), InntektKlasse.ARBEIDSINNTEKT))
+    }
+
+    @Test
+    fun ` Test avvik med eksempel response`() {
+        val jsonResponseAdapter = moshiInstance.adapter(InntektkomponentResponse::class.java)
+        val body = InntektskomponentHttpClientTest::class.java
+            .getResource("/test-data/example-inntekt-avvik.json").readText()
+        val inntektkomponentResponse = jsonResponseAdapter.fromJson(body)!!
+        val klassifisertInntekt = klassifiserInntekter(inntektkomponentResponse)
+
+        klassifisertInntekt.first().harAvvik shouldBe true
+        klassifisertInntekt.first().klassifiserteInntekter shouldBe listOf(KlassifisertInntekt(1212.toBigDecimal(), InntektKlasse.ARBEIDSINNTEKT))
     }
 
     @Test
