@@ -7,18 +7,18 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforho
 import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
 import java.lang.RuntimeException
 
-fun verdiKode(datagrunnlagKlassifisering: DatagrunnlagKlassifisering) : String {
-    return dataGrunnlagKlassifiseringToVerdikode[datagrunnlagKlassifisering] ?: throw VerdiKodeMappingException("No verdikode found for datagrunnlagKlassifisering=${datagrunnlagKlassifisering}")
+fun verdiKode(datagrunnlagKlassifisering: DatagrunnlagKlassifisering): String {
+    return dataGrunnlagKlassifiseringToVerdikode[datagrunnlagKlassifisering] ?: throw VerdiKodeMappingException("No verdikode found for datagrunnlagKlassifisering=$datagrunnlagKlassifisering")
 }
 
-fun dataGrunnlag(verdiKode: String): DatagrunnlagKlassifisering{
-    return dataGrunnlagKlassifiseringToVerdikode.inverse[verdiKode] ?: throw VerdiKodeMappingException("No datagrunnlag found for verdikode=${verdiKode}")
+fun dataGrunnlag(verdiKode: String): DatagrunnlagKlassifisering {
+    return dataGrunnlagKlassifiseringToVerdikode.inverse[verdiKode] ?: throw VerdiKodeMappingException("No datagrunnlag found for verdikode=$verdiKode")
 }
 
 class VerdiKodeMappingException(message: String) : RuntimeException(message)
 
 val dataGrunnlagKlassifiseringToVerdikode = biMapOf(
-    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.AKSJER_GRUNNFONDSBEVIS_TIL_UNDERKURS, null ) to "Aksjer/grunnfondsbevis til underkurs",
+    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.AKSJER_GRUNNFONDSBEVIS_TIL_UNDERKURS, null) to "Aksjer/grunnfondsbevis til underkurs",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, null) to "Annen arbeidsinntekt",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ARBEIDSOPPHOLD_KOST, null) to "Arbeidsopphold kost",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ARBEIDSOPPHOLD_LOSJI, null) to "Arbeidsopphold losji",
@@ -108,5 +108,3 @@ val dataGrunnlagKlassifiseringToVerdikode = biMapOf(
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_IKKE_ARBEIDET_TID, SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK) to "Tiltak - Uregelmessige tillegg knyttet til ikke-arbeidet tid",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TREKK_I_LOENN_FOR_FERIE, SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK) to "Trekk i lønn for ferie - Tiltak"
 )
-
-

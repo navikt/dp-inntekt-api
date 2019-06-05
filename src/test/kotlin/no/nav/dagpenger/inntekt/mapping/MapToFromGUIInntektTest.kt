@@ -88,6 +88,19 @@ val rawInntekt = InntektkomponentResponse(
     Aktoer(AktoerType.AKTOER_ID, "aktorId")
 )
 
+val inntektMedVerdikode = GUIArbeidsInntektInformasjon(
+        listOf(InntektMedVerdikode(
+                BigDecimal.ONE,
+                "fordel",
+                InntektBeskrivelse.FASTLOENN,
+                "kilde",
+                "status",
+                "periodetype",
+                inntektType = InntektType.NAERINGSINNTEKT,
+                utbetaltIMaaned = YearMonth.of(2019, 6),
+                verdikode = "Hyre - Annet"))
+)
+
 internal class KategoriseringTest {
 
     @Test
@@ -142,6 +155,55 @@ internal class KategoriseringTest {
     }
 
     @Test
+    fun `mapFromGUIInntekt removes verdikode and updates to beskrivelse, type and tilleggsinformasjon correctly`() {
+        val guiInntekt = GUIInntekt(InntektId(ULID().nextULID()), GUIInntektsKomponentResponse(listOf(
+                GUIArbeidsInntektMaaned(
+                        YearMonth.of(2019, 6),
+                        listOf(Avvik(Aktoer(AktoerType.AKTOER_ID, "1111111"), Aktoer(AktoerType.AKTOER_ID, "2222222222"), null, YearMonth.of(2019, 6), "tekst")),
+                        inntektMedVerdikode
+                )
+        ),
+                Aktoer(AktoerType.AKTOER_ID, "3333333333")
+        ), false)
+
+        val mappedInntekt = mapFromGUIInntekt(guiInntekt)
+
+        assertEquals(InntektBeskrivelse.ANNET, mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.beskrivelse)
+        assertEquals(InntektType.LOENNSINNTEKT, mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.inntektType)
+        assertEquals(
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+                mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold)
+    }
+
+    @Test
+    fun `mapFromGUIInntekt does not modify other fields than beskrivelse, type and tilleggsinformasjon`() {
+        val guiInntekt = GUIInntekt(InntektId(ULID().nextULID()), GUIInntektsKomponentResponse(listOf(
+                GUIArbeidsInntektMaaned(
+                        YearMonth.of(2019, 6),
+                        listOf(Avvik(Aktoer(AktoerType.AKTOER_ID, "1111111"), Aktoer(AktoerType.AKTOER_ID, "2222222222"), null, YearMonth.of(2019, 6), "tekst")),
+                        inntektMedVerdikode
+                )
+        ),
+                Aktoer(AktoerType.AKTOER_ID, "3333333333")
+        ), false)
+
+        val mappedInntekt = mapFromGUIInntekt(guiInntekt)
+
+        val beforeJson = moshiInstance.adapter(GUIInntektsKomponentResponse::class.java).toJson(guiInntekt.inntekt)
+        val mappedJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(mappedInntekt.inntekt)
+
+        JSONAssert.assertEquals(
+                beforeJson, mappedJson,
+                AttributeIgnoringComparator(
+                        JSONCompareMode.LENIENT,
+                        setOf("verdikode"),
+                        Customization("**.beskrivelse") { _, _ -> true },
+                        Customization("**.inntektType") { _, _ -> true }
+                )
+        )
+    }
+
+    @Test
     fun `map to and from GUIInntekt results in original inntekt`() {
         val storedInntekt = StoredInntekt(
             InntektId(ULID().nextULID()),
@@ -158,7 +220,7 @@ internal class KategoriseringTest {
 class AttributeIgnoringComparator(
     mode: JSONCompareMode,
     var attributesToIgnore: Set<String>,
-    customization: Customization
+    vararg customizations: Customization
 ) : CustomComparator(
     mode,
     customization

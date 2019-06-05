@@ -30,4 +30,3 @@ enum class InntektKlasse {
     SYKEPENGER,
     TILTAKSLØNN
 }
-

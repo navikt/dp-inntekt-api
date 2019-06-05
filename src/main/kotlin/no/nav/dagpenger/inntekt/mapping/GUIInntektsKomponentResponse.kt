@@ -54,4 +54,3 @@ data class InntektMedVerdikode(
     val tilleggsinformasjon: TilleggInformasjon? = null,
     val verdikode: String
 )
-

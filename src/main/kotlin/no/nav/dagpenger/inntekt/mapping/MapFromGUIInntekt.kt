@@ -4,14 +4,11 @@ import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
 
-fun mapFromGUIInntekt(guiInntekt: GUIInntekt) : StoredInntekt {
+fun mapFromGUIInntekt(guiInntekt: GUIInntekt): StoredInntekt {
     val unMappedInntekt = guiInntekt.inntekt.arbeidsInntektMaaned?.map { GUIarbeidsInntektMaaned ->
         ArbeidsInntektMaaned(
             GUIarbeidsInntektMaaned.aarMaaned,
@@ -45,4 +42,3 @@ fun mapFromGUIInntekt(guiInntekt: GUIInntekt) : StoredInntekt {
     } ?: emptyList()
     return StoredInntekt(guiInntekt.inntektId, InntektkomponentResponse(unMappedInntekt, guiInntekt.inntekt.ident), guiInntekt.manueltRedigert)
 }
-
