@@ -12,19 +12,18 @@ fun klassifiserInntekter(uklassifiserteInntekter: InntektkomponentResponse): Lis
 
     return uklassifiserteInntekter.arbeidsInntektMaaned?.map { måned ->
         val årMåned = måned.aarMaaned
-        val avvik = måned.avvikListe?.map { avvik -> Pair(avvik.ident, avvik.avvikPeriode) } ?: emptyList()
-        val inntektSplitt: InntektSplitt = måned.arbeidsInntektInformasjon
-            ?.inntektListe
-            ?.partition { inntekt -> avvik.any { avvik -> avvik.first == inntekt.inntektsmottaker && avvik.second == inntekt.utbetaltIMaaned } }
-        val klassifiserteInntekter = inntektSplitt?.second?.map { inntekt ->
+        val avvik = måned.avvikListe ?: emptyList()
+        val klassifiserteInntekter = måned.arbeidsInntektInformasjon?.inntektListe?.map { inntekt ->
             val datagrunnlagKlassifisering = DatagrunnlagKlassifisering(
-                inntekt.inntektType, inntekt.beskrivelse, inntekt.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold
+                inntekt.inntektType,
+                inntekt.beskrivelse,
+                inntekt.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold
             )
 
             val inntektKlasse = klassifiserInntekt(datagrunnlagKlassifisering)
             KlassifisertInntekt(inntekt.beloep, inntektKlasse)
         } ?: emptyList()
-        KlassifisertInntektMåned(årMåned, inntektSplitt?.first?.isNotEmpty(), klassifiserteInntekter)
+        KlassifisertInntektMåned(årMåned, avvik.isNotEmpty(), klassifiserteInntekter)
     } ?: emptyList()
 }
 
@@ -81,5 +80,3 @@ data class DatagrunnlagKlassifisering(
 class KlassifiseringException(override val message: String) : RuntimeException(message)
 
 class MultipleMatchingPredicatesException(override val message: String) : RuntimeException(message)
-
-typealias InntektSplitt = Pair<List<no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt>, List<no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt>>?

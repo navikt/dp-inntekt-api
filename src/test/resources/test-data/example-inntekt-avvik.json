@@ -1,0 +1,59 @@
+{
+  "arbeidsInntektMaaned": [
+    {
+      "aarMaaned": "2019-06",
+      "avvikListe": [
+        {
+          "ident": {
+            "identifikator": "12345678910",
+            "aktoerType": "NATURLIG_IDENT"
+          },
+          "opplysningspliktig": {
+            "identifikator": "123456789",
+            "aktoerType": "ORGANISASJON"
+          },
+          "virksomhet": {
+            "identifikator": "123456789",
+            "aktoerType": "ORGANISASJON"
+          },
+          "avvikPeriode": "2019-06",
+          "tekst": "Feil på innsendt a-melding."
+        }
+      ],
+      "arbeidsInntektInformasjon": {
+        "inntektListe": [
+          {
+            "inntektType": "LOENNSINNTEKT",
+            "beloep": 1212,
+            "fordel": "kontantytelse",
+            "inntektskilde": "A-ordningen",
+            "inntektsperiodetype": "Maaned",
+            "inntektsstatus": "LoependeInnrapportert",
+            "leveringstidspunkt": "2019-06",
+            "utbetaltIMaaned": "2019-06",
+            "opplysningspliktig": {
+              "identifikator": "12345678",
+              "aktoerType": "ORGANISASJON"
+            },
+            "virksomhet": {
+              "identifikator": "12345678",
+              "aktoerType": "ORGANISASJON"
+            },
+            "inntektsmottaker": {
+              "identifikator": "12345678910",
+              "aktoerType": "NATURLIG_IDENT"
+            },
+            "inngaarIGrunnlagForTrekk": true,
+            "utloeserArbeidsgiveravgift": true,
+            "informasjonsstatus": "InngaarAlltid",
+            "beskrivelse": "fastloenn"
+          }
+        ]
+      }
+    }
+  ],
+  "ident": {
+    "identifikator": "12345678910",
+    "aktoerType": "AKTOER_ID"
+  }
+}
