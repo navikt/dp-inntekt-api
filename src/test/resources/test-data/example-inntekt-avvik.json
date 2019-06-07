@@ -32,11 +32,37 @@
             "leveringstidspunkt": "2019-06",
             "utbetaltIMaaned": "2019-06",
             "opplysningspliktig": {
-              "identifikator": "12345678",
+              "identifikator": "123456789",
               "aktoerType": "ORGANISASJON"
             },
             "virksomhet": {
-              "identifikator": "12345678",
+              "identifikator": "123456789",
+              "aktoerType": "ORGANISASJON"
+            },
+            "inntektsmottaker": {
+              "identifikator": "12345678910",
+              "aktoerType": "NATURLIG_IDENT"
+            },
+            "inngaarIGrunnlagForTrekk": true,
+            "utloeserArbeidsgiveravgift": true,
+            "informasjonsstatus": "InngaarAlltid",
+            "beskrivelse": "fastloenn"
+          },
+          {
+            "inntektType": "LOENNSINNTEKT",
+            "beloep": 4321,
+            "fordel": "kontantytelse",
+            "inntektskilde": "A-ordningen",
+            "inntektsperiodetype": "Maaned",
+            "inntektsstatus": "LoependeInnrapportert",
+            "leveringstidspunkt": "2019-06",
+            "utbetaltIMaaned": "2019-06",
+            "opplysningspliktig": {
+              "identifikator": "987654321",
+              "aktoerType": "ORGANISASJON"
+            },
+            "virksomhet": {
+              "identifikator": "987654321",
               "aktoerType": "ORGANISASJON"
             },
             "inntektsmottaker": {
