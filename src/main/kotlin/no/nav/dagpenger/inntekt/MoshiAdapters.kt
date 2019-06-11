@@ -8,7 +8,6 @@ import com.squareup.moshi.Types
 import com.squareup.moshi.adapters.EnumJsonAdapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
-import no.nav.dagpenger.inntekt.v1.InntektKlassifiseringsKoder
 import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
@@ -25,10 +24,10 @@ val moshiInstance: Moshi = Moshi.Builder()
         EnumJsonAdapter.create(SpesielleInntjeningsforhold::class.java).withUnknownFallback(SpesielleInntjeningsforhold.UNKNOWN).nullSafe())
     .build()!!
 
-val inntektKlassifiseringsKoderJsonAdapter: JsonAdapter<List<InntektKlassifiseringsKoder>> = moshiInstance.adapter<List<InntektKlassifiseringsKoder>>(
+val inntektKlassifiseringsKoderJsonAdapter: JsonAdapter<Set<String>> = moshiInstance.adapter<Set<String>>(
     Types.newParameterizedType(
-        List::class.java,
-        InntektKlassifiseringsKoder::class.java
+        Set::class.java,
+        String::class.java
     )).nullSafe()
 
 class YearMonthJsonAdapter {

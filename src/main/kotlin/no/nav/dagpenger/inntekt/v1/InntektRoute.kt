@@ -108,18 +108,8 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
     route("inntekt/verdikoder") {
 
         get {
-            val koder: List<InntektKlassifiseringsKoder> =
-                dataGrunnlagKlassifiseringToVerdikode.entries.map { (value, key) ->
-                    InntektKlassifiseringsKoder(
-                        value.type,
-                        value.beskrivelse,
-                        key,
-                        value.forhold
-                    )
-                }
-
             call.respondText(
-                inntektKlassifiseringsKoderJsonAdapter.toJson(koder),
+                inntektKlassifiseringsKoderJsonAdapter.toJson(dataGrunnlagKlassifiseringToVerdikode.values),
                 ContentType.Application.Json,
                 HttpStatusCode.OK
             )
