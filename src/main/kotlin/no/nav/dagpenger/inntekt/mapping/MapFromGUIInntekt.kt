@@ -7,6 +7,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
+import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
 
 fun mapFromGUIInntekt(guiInntekt: GUIInntekt): StoredInntekt {
     val unMappedInntekt = guiInntekt.inntekt.arbeidsInntektMaaned?.map { GUIarbeidsInntektMaaned ->
@@ -15,14 +16,14 @@ fun mapFromGUIInntekt(guiInntekt: GUIInntekt): StoredInntekt {
             GUIarbeidsInntektMaaned.avvikListe,
             ArbeidsInntektInformasjon(
                 GUIarbeidsInntektMaaned.arbeidsInntektInformasjon?.inntektListe?.map { inntekt ->
-                    val datagrunnlagForVerdikode = dataGrunnlag(inntekt.verdikode)
+                    val datagrunnlagForVerdikode: DatagrunnlagKlassifisering = dataGrunnlag(inntekt.verdikode)
                     Inntekt(
                         inntekt.beloep,
-                        inntekt.fordel,
+                        inntekt.fordel ?: "",
                         datagrunnlagForVerdikode.beskrivelse,
                         inntekt.inntektskilde,
-                        inntekt.inntektsstatus,
-                        inntekt.inntektsperiodetype,
+                        inntekt.inntektsstatus ?: "LoependeInnrapportert",
+                        inntekt.inntektsperiodetype ?: "Maaned",
                         inntekt.leveringstidspunkt,
                         inntekt.opptjeningsland,
                         inntekt.opptjeningsperiode,
