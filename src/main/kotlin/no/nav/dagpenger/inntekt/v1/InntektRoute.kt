@@ -14,11 +14,8 @@ import io.ktor.routing.route
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 import no.nav.dagpenger.inntekt.klassifisering.Inntekt
 import no.nav.dagpenger.inntekt.klassifisering.klassifiserInntekter
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
