@@ -6,23 +6,24 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 import kotlin.reflect.KFunction
 
-// todo - TEST THIS!!! MISSING UNIT TEST
-
 fun klassifiserInntekter(uklassifiserteInntekter: InntektkomponentResponse): List<KlassifisertInntektMåned> {
 
     return uklassifiserteInntekter.arbeidsInntektMaaned?.map { måned ->
         val årMåned = måned.aarMaaned
         val avvik = måned.avvikListe ?: emptyList()
-        val klassifiserteInntekter = måned.arbeidsInntektInformasjon?.inntektListe?.map { inntekt ->
-            val datagrunnlagKlassifisering = DatagrunnlagKlassifisering(
-                inntekt.inntektType,
-                inntekt.beskrivelse,
-                inntekt.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold
-            )
+        val klassifiserteInntekter = måned.arbeidsInntektInformasjon
+                ?.inntektListe
+                ?.filterNot { inntekt -> avvik.any { it.ident == inntekt.inntektsmottaker && it.opplysningspliktig == inntekt.opplysningspliktig } }
+                ?.map { inntekt ->
+                val datagrunnlagKlassifisering = DatagrunnlagKlassifisering(
+                    inntekt.inntektType,
+                    inntekt.beskrivelse,
+                    inntekt.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold
+                )
 
-            val inntektKlasse = klassifiserInntekt(datagrunnlagKlassifisering)
-            KlassifisertInntekt(inntekt.beloep, inntektKlasse)
-        } ?: emptyList()
+                val inntektKlasse = klassifiserInntekt(datagrunnlagKlassifisering)
+                KlassifisertInntekt(inntekt.beloep, inntektKlasse)
+            } ?: emptyList()
         KlassifisertInntektMåned(årMåned, avvik.isNotEmpty(), klassifiserteInntekter)
     } ?: emptyList()
 }

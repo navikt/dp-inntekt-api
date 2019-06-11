@@ -85,7 +85,12 @@ internal class InntektsklassifiseringTest {
 
         val klassifisertInntekt = klassifiserInntekter(inntektkomponentResponse)
         klassifisertInntekt.first().årMåned shouldBe now
-        klassifisertInntekt.first().klassifiserteInntekter shouldBe listOf(KlassifisertInntekt(100.toBigDecimal(), InntektKlasse.ARBEIDSINNTEKT))
+        klassifisertInntekt.first().klassifiserteInntekter shouldBe listOf(
+            KlassifisertInntekt(
+                100.toBigDecimal(),
+                InntektKlasse.ARBEIDSINNTEKT
+            )
+        )
     }
 
     @Test
@@ -108,7 +113,13 @@ internal class InntektsklassifiseringTest {
                                 inntektsperiodetype = "",
                                 inntektsstatus = "",
                                 utbetaltIMaaned = now,
-                                tilleggsinformasjon = TilleggInformasjon("", TilleggInformasjonsDetaljer("", SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK))
+                                tilleggsinformasjon = TilleggInformasjon(
+                                    "",
+                                    TilleggInformasjonsDetaljer(
+                                        "",
+                                        SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK
+                                    )
+                                )
                             )
                         )
                     )
@@ -120,7 +131,12 @@ internal class InntektsklassifiseringTest {
 
         val klassifisertInntekt = klassifiserInntekter(inntektkomponentResponse)
         klassifisertInntekt.first().årMåned shouldBe now
-        klassifisertInntekt.first().klassifiserteInntekter shouldBe listOf(KlassifisertInntekt(100.toBigDecimal(), InntektKlasse.TILTAKSLØNN))
+        klassifisertInntekt.first().klassifiserteInntekter shouldBe listOf(
+            KlassifisertInntekt(
+                100.toBigDecimal(),
+                InntektKlasse.TILTAKSLØNN
+            )
+        )
     }
 
     @Test
@@ -165,7 +181,109 @@ internal class InntektsklassifiseringTest {
 
         val klassifisertInntekt = klassifiserInntekter(inntektkomponentResponse)
         klassifisertInntekt.first().årMåned shouldBe now
-        klassifisertInntekt.first().klassifiserteInntekter shouldBe listOf(KlassifisertInntekt(100.toBigDecimal(), InntektKlasse.ARBEIDSINNTEKT))
+        klassifisertInntekt.first().klassifiserteInntekter shouldBe listOf(
+            KlassifisertInntekt(
+                100.toBigDecimal(),
+                InntektKlasse.ARBEIDSINNTEKT
+            )
+        )
+    }
+
+    @Test
+    fun `Skal skille ut avvik fra der avvik-info korrosponderer i inntektlista inntekt før en klassifiserer`() {
+        val now = YearMonth.now()
+        val aktør = Aktoer(AktoerType.AKTOER_ID, "1234")
+        val opplysningspliktig = Aktoer(AktoerType.ORGANISASJON, "12345678")
+        val inntektkomponentResponse = InntektkomponentResponse(
+            arbeidsInntektMaaned = listOf(
+                ArbeidsInntektMaaned(
+                    now,
+                    listOf(
+                        Avvik(
+                            ident = aktør,
+                            opplysningspliktig = opplysningspliktig,
+                            virksomhet = Aktoer(AktoerType.ORGANISASJON, "12345678"),
+                            avvikPeriode = now,
+                            tekst = "Avvik"
+
+                        )
+                    ),
+                    arbeidsInntektInformasjon = ArbeidsInntektInformasjon(
+                        inntektListe = listOf(
+                            Inntekt(
+                                beloep = 100.toBigDecimal(),
+                                beskrivelse = InntektBeskrivelse.FASTLOENN,
+                                opplysningspliktig = opplysningspliktig,
+                                fordel = "",
+                                inntektType = InntektType.LOENNSINNTEKT,
+                                inntektskilde = "",
+                                inntektsperiodetype = "",
+                                inntektsstatus = "",
+                                utbetaltIMaaned = now,
+                                inntektsmottaker = aktør
+
+                            )
+                        )
+                    )
+                )
+            ),
+            ident = aktør
+
+        )
+
+        val klassifisertInntekt = klassifiserInntekter(inntektkomponentResponse)
+        klassifisertInntekt.first().årMåned shouldBe now
+        klassifisertInntekt.first().klassifiserteInntekter shouldBe emptyList()
+    }
+
+    @Test
+    fun `Skal kun skille ut avvik fra inntekt hvis avvik info korrosponderer med inntektliste`() {
+        val now = YearMonth.now()
+        val aktør = Aktoer(AktoerType.AKTOER_ID, "1234")
+        val inntektkomponentResponse = InntektkomponentResponse(
+            arbeidsInntektMaaned = listOf(
+                ArbeidsInntektMaaned(
+                    now,
+                    listOf(
+                        Avvik(
+                            ident = Aktoer(AktoerType.AKTOER_ID, "ikke den samme som i inntektslista"),
+                            opplysningspliktig = Aktoer(AktoerType.ORGANISASJON, "12345678"),
+                            virksomhet = Aktoer(AktoerType.ORGANISASJON, "12345678"),
+                            avvikPeriode = now,
+                            tekst = "Avvik"
+
+                        )
+                    ),
+                    arbeidsInntektInformasjon = ArbeidsInntektInformasjon(
+                        inntektListe = listOf(
+                            Inntekt(
+                                beloep = 100.toBigDecimal(),
+                                beskrivelse = InntektBeskrivelse.FASTLOENN,
+                                fordel = "",
+                                inntektType = InntektType.LOENNSINNTEKT,
+                                inntektskilde = "",
+                                inntektsperiodetype = "",
+                                inntektsstatus = "",
+                                utbetaltIMaaned = now,
+                                inntektsmottaker = aktør
+
+                            )
+                        )
+                    )
+                )
+            ),
+            ident = aktør
+
+        )
+
+        val klassifisertInntekt = klassifiserInntekter(inntektkomponentResponse)
+        klassifisertInntekt.first().årMåned shouldBe now
+        klassifisertInntekt.first().klassifiserteInntekter shouldBe listOf(
+            KlassifisertInntekt(
+                100.toBigDecimal(),
+                InntektKlasse.ARBEIDSINNTEKT
+            )
+        )
     }
 
     @Test
@@ -177,7 +295,12 @@ internal class InntektsklassifiseringTest {
         val klassifisertInntekt = klassifiserInntekter(inntektkomponentResponse)
 
         klassifisertInntekt.first().harAvvik shouldBe true
-        klassifisertInntekt.first().klassifiserteInntekter shouldBe listOf(KlassifisertInntekt(1212.toBigDecimal(), InntektKlasse.ARBEIDSINNTEKT))
+        klassifisertInntekt.first().klassifiserteInntekter shouldBe listOf(
+            KlassifisertInntekt(
+                4321.toBigDecimal(),
+                InntektKlasse.ARBEIDSINNTEKT
+            )
+        )
     }
 
     @Test
