@@ -21,7 +21,6 @@ val moshiInstance: Moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
     .add(BigDecimalJsonAdapter())
     .add(URIJsonAdapter())
-    .add(BimapJsonAdapter())
     .add(SpesielleInntjeningsforhold::class.java,
         EnumJsonAdapter.create(SpesielleInntjeningsforhold::class.java).withUnknownFallback(SpesielleInntjeningsforhold.UNKNOWN).nullSafe())
     .build()!!
