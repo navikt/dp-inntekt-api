@@ -106,7 +106,6 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
     }
 
     route("inntekt/verdikoder") {
-
         get {
             call.respondText(
                 inntektKlassifiseringsKoderJsonAdapter.toJson(dataGrunnlagKlassifiseringToVerdikode.values),
@@ -116,13 +115,6 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
         }
     }
 }
-
-data class InntektKlassifiseringsKoder(
-    val type: InntektType,
-    val beskrivelse: InntektBeskrivelse,
-    val verdikode: String,
-    val forhold: SpesielleInntjeningsforhold? = null
-)
 
 data class InntektRequest(
     val aktørId: String,
