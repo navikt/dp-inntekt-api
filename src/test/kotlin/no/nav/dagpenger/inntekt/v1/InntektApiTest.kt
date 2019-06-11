@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.v1
 
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -15,6 +16,7 @@ import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektApi
+import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
@@ -25,7 +27,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpCl
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.time.YearMonth
 import kotlin.test.assertEquals
@@ -65,8 +66,8 @@ class InntektApiTest {
                 )
             )
         } returns InntektkomponentResponse(
-                emptyList(),
-                Aktoer(AktoerType.AKTOER_ID, "1234")
+            emptyList(),
+            Aktoer(AktoerType.AKTOER_ID, "1234")
         )
         every {
             inntektskomponentClientMock.getInntekt(
@@ -85,18 +86,18 @@ class InntektApiTest {
 
     @Test
     fun ` should be able to Http GET isReady, isAlive and metrics endpoint `() =
-            testApp {
+        testApp {
 
-                with(handleRequest(HttpMethod.Get, "isAlive")) {
-                    Assertions.assertEquals(HttpStatusCode.OK, response.status())
-                }
-                with(handleRequest(HttpMethod.Get, "isReady")) {
-                    Assertions.assertEquals(HttpStatusCode.OK, response.status())
-                }
-                with(handleRequest(HttpMethod.Get, "metrics")) {
-                    Assertions.assertEquals(HttpStatusCode.OK, response.status())
-                }
+            with(handleRequest(HttpMethod.Get, "isAlive")) {
+                assertEquals(HttpStatusCode.OK, response.status())
             }
+            with(handleRequest(HttpMethod.Get, "isReady")) {
+                assertEquals(HttpStatusCode.OK, response.status())
+            }
+            with(handleRequest(HttpMethod.Get, "metrics")) {
+                assertEquals(HttpStatusCode.OK, response.status())
+            }
+        }
 
     @Test
     fun `Get klassifisert inntekt should return 200 ok`() = testApp {
@@ -106,7 +107,7 @@ class InntektApiTest {
             setBody(validJson)
         }.apply {
             assertTrue(requestHandled)
-            Assertions.assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(HttpStatusCode.OK, response.status())
         }
     }
 
@@ -116,7 +117,7 @@ class InntektApiTest {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader("X-API-KEY", apiKey)
             setBody(
-                    """
+                """
                 {
                     "aktørId": "5678",
                     "vedtakId": 1,
@@ -126,7 +127,7 @@ class InntektApiTest {
             )
         }.apply {
             assertTrue(requestHandled)
-            Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
+            assertEquals(HttpStatusCode.BadRequest, response.status())
             val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
             assertEquals("Feilet mot inntektskomponenten!", problem?.title)
             assertEquals("urn:dp:error:inntektskomponenten", problem?.type.toString())
@@ -135,11 +136,12 @@ class InntektApiTest {
     }
 
     @Test
-    fun ` should forward Http status from inntektskomponenten and return in rfc7807 problem details standard `() = testApp {
-        handleRequest(HttpMethod.Post, inntektPath) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader("X-API-KEY", apiKey)
-            setBody(
+    fun ` should forward Http status from inntektskomponenten and return in rfc7807 problem details standard `() =
+        testApp {
+            handleRequest(HttpMethod.Post, inntektPath) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader("X-API-KEY", apiKey)
+                setBody(
                     """
                 {
                     "aktørId": "5678",
@@ -147,16 +149,16 @@ class InntektApiTest {
                     "beregningsDato": "2019-01-08"
                 }
             """.trimIndent()
-            )
-        }.apply {
-            assertTrue(requestHandled)
-            Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
-            val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
-            assertEquals("Feilet mot inntektskomponenten!", problem?.title)
-            assertEquals("urn:dp:error:inntektskomponenten", problem?.type.toString())
-            assertEquals(400, problem?.status)
+                )
+            }.apply {
+                assertTrue(requestHandled)
+                assertEquals(HttpStatusCode.BadRequest, response.status())
+                val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
+                assertEquals("Feilet mot inntektskomponenten!", problem?.title)
+                assertEquals("urn:dp:error:inntektskomponenten", problem?.type.toString())
+                assertEquals(400, problem?.status)
+            }
         }
-    }
 
     @Test
     fun `post request with bad json`() = testApp {
@@ -166,7 +168,7 @@ class InntektApiTest {
             setBody(jsonMissingFields)
         }.apply {
             assertTrue(requestHandled)
-            Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
+            assertEquals(HttpStatusCode.BadRequest, response.status())
         }
     }
 
@@ -178,7 +180,7 @@ class InntektApiTest {
             setBody(jsonMissingFields)
         }.apply {
             assertTrue(requestHandled)
-            Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
+            assertEquals(HttpStatusCode.BadRequest, response.status())
             val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
             assertEquals("Klarte ikke å lese parameterene", problem?.title)
             assertEquals("urn:dp:error:inntekt:parameter", problem?.type.toString())
@@ -193,7 +195,7 @@ class InntektApiTest {
             setBody(validJson)
         }.apply {
             assertTrue(requestHandled)
-            Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
+            assertEquals(HttpStatusCode.Unauthorized, response.status())
         }
     }
 
@@ -205,7 +207,19 @@ class InntektApiTest {
             setBody(validJson)
         }.apply {
             assertTrue(requestHandled)
-            Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
+            assertEquals(HttpStatusCode.Unauthorized, response.status())
+        }
+    }
+
+    @Test
+    fun `Should get verdikode mapping`() = testApp {
+        handleRequest(HttpMethod.Get, "$inntektPath/verdikoder") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+        }.apply {
+            assertTrue(requestHandled)
+            assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertTrue(runCatching { inntektKlassifiseringsKoderJsonAdapter.fromJson(response.content!!) }.isSuccess)
         }
     }
 
@@ -216,7 +230,8 @@ class InntektApiTest {
                 inntektStoreMock,
                 enhetsregisteretHttpClientMock,
                 personNameHttpClientMock,
-                authApiKeyVerifier))
+                authApiKeyVerifier
+            ))
         }) { callback() }
     }
 }

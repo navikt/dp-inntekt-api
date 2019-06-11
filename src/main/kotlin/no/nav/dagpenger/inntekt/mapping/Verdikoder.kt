@@ -5,14 +5,15 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
-import java.lang.RuntimeException
 
 fun verdiKode(datagrunnlagKlassifisering: DatagrunnlagKlassifisering): String {
-    return dataGrunnlagKlassifiseringToVerdikode[datagrunnlagKlassifisering] ?: throw VerdiKodeMappingException("No verdikode found for datagrunnlagKlassifisering=$datagrunnlagKlassifisering")
+    return dataGrunnlagKlassifiseringToVerdikode[datagrunnlagKlassifisering]
+        ?: throw VerdiKodeMappingException("No verdikode found for datagrunnlagKlassifisering=$datagrunnlagKlassifisering")
 }
 
 fun dataGrunnlag(verdiKode: String): DatagrunnlagKlassifisering {
-    return dataGrunnlagKlassifiseringToVerdikode.inverse[verdiKode] ?: throw VerdiKodeMappingException("No datagrunnlag found for verdikode=$verdiKode")
+    return dataGrunnlagKlassifiseringToVerdikode.inverse[verdiKode]
+        ?: throw VerdiKodeMappingException("No datagrunnlag found for verdikode=$verdiKode")
 }
 
 class VerdiKodeMappingException(message: String) : RuntimeException(message)

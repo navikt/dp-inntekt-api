@@ -2,20 +2,27 @@ package no.nav.dagpenger.inntekt.v1
 
 import io.ktor.application.call
 import io.ktor.auth.authenticate
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
+import io.ktor.response.respondText
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 import no.nav.dagpenger.inntekt.klassifisering.Inntekt
 import no.nav.dagpenger.inntekt.klassifisering.klassifiserInntekter
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
+import no.nav.dagpenger.inntekt.mapping.dataGrunnlagKlassifiseringToVerdikode
 import no.nav.dagpenger.inntekt.mapping.mapFromGUIInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
@@ -94,10 +101,38 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
             val request = call.receive<GUIInntekt>()
             val mappedInntekt = mapFromGUIInntekt(request)
             val storedInntekt = inntektStore.redigerInntekt(mappedInntekt)
-            call.respond(HttpStatusCode.OK, storedInntekt)
+            call.respond(HttpStatusCode.OK, mapToGUIInntekt(storedInntekt))
+        }
+    }
+
+    route("inntekt/verdikoder") {
+
+        get {
+            val koder: List<InntektKlassifiseringsKoder> =
+                dataGrunnlagKlassifiseringToVerdikode.entries.map { (value, key) ->
+                    InntektKlassifiseringsKoder(
+                        value.type,
+                        value.beskrivelse,
+                        key,
+                        value.forhold
+                    )
+                }
+
+            call.respondText(
+                inntektKlassifiseringsKoderJsonAdapter.toJson(koder),
+                ContentType.Application.Json,
+                HttpStatusCode.OK
+            )
         }
     }
 }
+
+data class InntektKlassifiseringsKoder(
+    val type: InntektType,
+    val beskrivelse: InntektBeskrivelse,
+    val verdikode: String,
+    val forhold: SpesielleInntjeningsforhold? = null
+)
 
 data class InntektRequest(
     val aktørId: String,
@@ -110,4 +145,4 @@ val toInntektskomponentRequest: (InntektRequest, Opptjeningsperiode) -> Inntektk
         val sisteAvsluttendeKalendermåned = opptjeningsperiode.sisteAvsluttendeKalenderMåned
         val førsteMåned = opptjeningsperiode.førsteMåned
         InntektkomponentRequest(inntektRequest.aktørId, førsteMåned, sisteAvsluttendeKalendermåned)
-}
+    }
