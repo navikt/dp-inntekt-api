@@ -37,7 +37,7 @@ private val devProperties = ConfigurationMap(
         "vault.mountpath" to "postgresql/preprod-fss/",
         "hentinntektliste.url" to "https://app-t6.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
-        "oppslag.url" to "http://dagpenger-oppslag.default",
+        "oppslag.url" to "https://dagpenger-oppslag.nais.preprod.local",
         "oidc.sts.issuerurl" to "https://security-token-service-t4.nais.preprod.local/",
         "application.profile" to "DEV",
         "application.httpPort" to "8099"
