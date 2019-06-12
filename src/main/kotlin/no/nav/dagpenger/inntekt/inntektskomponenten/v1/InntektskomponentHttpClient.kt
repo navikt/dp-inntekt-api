@@ -13,6 +13,7 @@ import java.time.YearMonth
 private val LOGGER = KotlinLogging.logger {}
 private val jsonResponseAdapter = moshiInstance.adapter(InntektkomponentResponse::class.java)
 private val jsonRequestRequestAdapter = moshiInstance.adapter(HentInntektListeRequest::class.java)
+private val jsonMapAdapter = moshiInstance.adapter(Map::class.java)
 private val ulid = ULID()
 
 class InntektskomponentHttpClient(
@@ -24,11 +25,11 @@ class InntektskomponentHttpClient(
         LOGGER.info("Fetching new inntekt for $request")
 
         val requestBody = HentInntektListeRequest(
-                "DagpengerGrunnlagA-Inntekt",
-                "Dagpenger",
-                Aktoer(AktoerType.AKTOER_ID, request.aktørId),
-                request.månedFom,
-                request.månedTom
+            "DagpengerGrunnlagA-Inntekt",
+            "Dagpenger",
+            Aktoer(AktoerType.AKTOER_ID, request.aktørId),
+            request.månedFom,
+            request.månedTom
         )
 
         val jsonBody = jsonRequestRequestAdapter.toJson(requestBody)
@@ -41,9 +42,20 @@ class InntektskomponentHttpClient(
         }
 
         return when (result) {
-            is Result.Failure -> throw InntektskomponentenHttpClientException(response.statusCode,
-                    "Failed to fetch inntekt. Response message: ${response.responseMessage}. Problem message: ${result.error.message}"
-            )
+
+            is Result.Failure -> {
+                val resp = result.error.response.body().asString("application/json")
+                val message = runCatching {
+                    jsonMapAdapter.fromJson(resp)
+                }.let {
+                    it.getOrNull()?.get("message")?.toString() ?: result.error.message
+                }
+                throw InntektskomponentenHttpClientException(
+                    response.statusCode,
+                    "Failed to fetch inntekt. Response message: ${response.responseMessage}. Problem message: $message"
+                )
+            }
+
             is Result.Success -> result.get()
         }
     }

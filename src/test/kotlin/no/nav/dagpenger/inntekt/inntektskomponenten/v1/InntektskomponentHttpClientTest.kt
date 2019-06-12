@@ -139,7 +139,7 @@ internal class InntektskomponentHttpClientTest {
             DummyOidcClient()
         )
 
-        val result = kotlin.runCatching {
+        val result = runCatching {
             inntektskomponentClient.getInntekt(
                 InntektkomponentRequest(
                     "",
@@ -154,4 +154,53 @@ internal class InntektskomponentHttpClientTest {
         val inntektskomponentenHttpClientException = result.exceptionOrNull() as InntektskomponentenHttpClientException
         assertEquals(500, inntektskomponentenHttpClientException.status)
     }
+
+    @Test
+    fun `fetch uklassifisert inntekt on 500 server error with body`() {
+
+        stubFor(
+            post(urlEqualTo("/v1/hentinntektliste"))
+                .withHeader("Authorization", RegexPattern("Bearer\\s[\\d|a-f]{8}-([\\d|a-f]{4}-){3}[\\d|a-f]{12}"))
+                .withHeader("Nav-Consumer-Id", EqualToPattern("dp-inntekt-api"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
+                .willReturn(
+                    WireMock.serverError().withBody(errorFromInntekskomponenten)
+                )
+        )
+
+        val inntektskomponentClient = InntektskomponentHttpClient(
+            server.url("/v1/hentinntektliste"),
+            DummyOidcClient()
+        )
+
+        val result = runCatching {
+            inntektskomponentClient.getInntekt(
+                InntektkomponentRequest(
+                    "",
+                    YearMonth.of(2017, 3),
+                    YearMonth.of(2019, 1)
+                )
+            )
+        }
+
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull() is InntektskomponentenHttpClientException)
+        val inntektskomponentenHttpClientException = result.exceptionOrNull() as InntektskomponentenHttpClientException
+        assertEquals(500, inntektskomponentenHttpClientException.status)
+        assertEquals(
+            "Failed to fetch inntekt. Response message: Server Error. Problem message: Feil i filtrering: En feil oppstod i filteret DagpengerGrunnlagA-Inntekt, Regel no.nav.inntektskomponenten.filter.regler.dagpenger.DagpengerHovedregel støtter ikke inntekter av type no.nav.inntektskomponenten.domain.Loennsinntekt",
+            inntektskomponentenHttpClientException.message
+        )
+    }
+
+    private val errorFromInntekskomponenten =
+        """{
+              "timestamp": "2019-06-12T13:59:13.233+0200",
+              "status": "500",
+              "error": "Internal Server Error",
+              "message": "Feil i filtrering: En feil oppstod i filteret DagpengerGrunnlagA-Inntekt, Regel no.nav.inntektskomponenten.filter.regler.dagpenger.DagpengerHovedregel støtter ikke inntekter av type no.nav.inntektskomponenten.domain.Loennsinntekt",
+              "path": "/hentinntektliste"
+            }
+        """.trimIndent()
 }
+
