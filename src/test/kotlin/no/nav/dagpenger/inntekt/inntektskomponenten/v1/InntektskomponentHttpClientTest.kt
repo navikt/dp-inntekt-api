@@ -203,4 +203,3 @@ internal class InntektskomponentHttpClientTest {
             }
         """.trimIndent()
 }
-
