@@ -2,8 +2,9 @@ package no.nav.dagpenger.inntekt.mapping
 
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
+import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 
-fun mapToGUIInntekt(storedInntekt: StoredInntekt): GUIInntekt {
+fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjeningsperiode): GUIInntekt {
     val mappedInntekt = storedInntekt.inntekt.arbeidsInntektMaaned?.map { arbeidsInntektMaaned ->
         GUIArbeidsInntektMaaned(
             arbeidsInntektMaaned.aarMaaned,
@@ -44,7 +45,12 @@ fun mapToGUIInntekt(storedInntekt: StoredInntekt): GUIInntekt {
 
     return GUIInntekt(
         storedInntekt.inntektId,
-        GUIInntektsKomponentResponse(mappedInntekt, storedInntekt.inntekt.ident),
+        GUIInntektsKomponentResponse(
+            fraDato = opptjeningsPeriode.sisteAvsluttendeKalenderMåned,
+            tilDato = opptjeningsPeriode.førsteMåned,
+            arbeidsInntektMaaned = mappedInntekt,
+            ident = storedInntekt.inntekt.ident
+        ),
         storedInntekt.manueltRedigert
     )
 }

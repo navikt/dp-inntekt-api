@@ -65,9 +65,10 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
                 throw IllegalArgumentException("Failed to parse parameters", e)
             }
 
+            val opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
             val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
                 ?: throw InntektNotFoundException("Inntekt with for $request not found.")
-            val mappedInntekt = mapToGUIInntekt(storedInntekt)
+            val mappedInntekt = mapToGUIInntekt(storedInntekt, opptjeningsperiode)
             call.respond(HttpStatusCode.OK, mappedInntekt)
         }
     }
@@ -88,7 +89,7 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
             val uncachedInntekt =
                 inntektskomponentClient.getInntekt(toInntektskomponentRequest(request, opptjeningsperiode))
             val storedInntekt = inntektStore.insertInntekt(request, uncachedInntekt)
-            val mappedInntekt = mapToGUIInntekt(storedInntekt)
+            val mappedInntekt = mapToGUIInntekt(storedInntekt, opptjeningsperiode)
             call.respond(HttpStatusCode.OK, mappedInntekt)
         }
     }
@@ -98,7 +99,9 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
             val request = call.receive<GUIInntekt>()
             val mappedInntekt = mapFromGUIInntekt(request)
             val storedInntekt = inntektStore.redigerInntekt(mappedInntekt)
-            call.respond(HttpStatusCode.OK, mapToGUIInntekt(storedInntekt))
+            val key = inntektStore.getInntektCompoundKey(storedInntekt.inntektId)
+            val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(key.beregningsDato)
+            call.respond(HttpStatusCode.OK, mapToGUIInntekt(storedInntekt, opptjeningsperiode))
         }
     }
 

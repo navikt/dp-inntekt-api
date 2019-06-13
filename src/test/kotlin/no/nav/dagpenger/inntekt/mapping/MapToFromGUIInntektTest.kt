@@ -16,8 +16,10 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforho
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
 import no.nav.dagpenger.inntekt.moshiInstance
+import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.Customization
 import org.skyscreamer.jsonassert.JSONAssert
@@ -27,6 +29,7 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator
 import org.skyscreamer.jsonassert.comparator.JSONCompareUtil.getKeys
 import org.skyscreamer.jsonassert.comparator.JSONCompareUtil.qualify
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.YearMonth
 
 val rawInntekt = InntektkomponentResponse(
@@ -110,7 +113,7 @@ internal class KategoriseringTest {
             InntektId(ULID().nextULID()),
             rawInntekt, false
         )
-        val guiInntekt = mapToGUIInntekt(storedInntekt)
+        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))
         assertEquals(
             "Aksjer/grunnfondsbevis til underkurs",
             guiInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode
@@ -136,12 +139,24 @@ internal class KategoriseringTest {
     }
 
     @Test
+    fun `Skal legger fra og til dato`() {
+        val storedInntekt = StoredInntekt(
+            InntektId(ULID().nextULID()),
+            rawInntekt, false
+        )
+        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))
+
+        assertNotNull(guiInntekt.inntekt.fraDato)
+        assertNotNull(guiInntekt.inntekt.tilDato)
+    }
+
+    @Test
     fun `mapToGUIInntekt does not modify other fields than kategori`() {
         val storedInntekt = StoredInntekt(
             InntektId(ULID().nextULID()),
             rawInntekt, false
         )
-        val guiInntekt = mapToGUIInntekt(storedInntekt)
+        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))
 
         val beforeJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(rawInntekt)
         val mappedJson = moshiInstance.adapter(GUIInntektsKomponentResponse::class.java).toJson(guiInntekt.inntekt)
@@ -150,14 +165,18 @@ internal class KategoriseringTest {
             mappedJson, beforeJson,
             AttributeIgnoringComparator(
                 JSONCompareMode.STRICT,
-                setOf("verdikode"), Customization("") { _, _ -> true }
+                setOf("verdikode", "fraDato", "tilDato"),
+                Customization("") { _, _ -> true }
             )
         )
     }
 
     @Test
     fun `mapFromGUIInntekt removes verdikode and updates to beskrivelse, type and tilleggsinformasjon correctly`() {
-        val guiInntekt = GUIInntekt(InntektId(ULID().nextULID()), GUIInntektsKomponentResponse(listOf(
+        val guiInntekt = GUIInntekt(InntektId(ULID().nextULID()), GUIInntektsKomponentResponse(
+            YearMonth.now(),
+            YearMonth.now(),
+            listOf(
                 GUIArbeidsInntektMaaned(
                         YearMonth.of(2019, 6),
                         listOf(Avvik(Aktoer(AktoerType.AKTOER_ID, "1111111"), Aktoer(AktoerType.AKTOER_ID, "2222222222"), null, YearMonth.of(2019, 6), "tekst")),
@@ -178,7 +197,10 @@ internal class KategoriseringTest {
 
     @Test
     fun `mapFromGUIInntekt does not modify other fields than beskrivelse, type and tilleggsinformasjon`() {
-        val guiInntekt = GUIInntekt(InntektId(ULID().nextULID()), GUIInntektsKomponentResponse(listOf(
+        val guiInntekt = GUIInntekt(InntektId(ULID().nextULID()), GUIInntektsKomponentResponse(
+            YearMonth.now(),
+            YearMonth.now(),
+            listOf(
                 GUIArbeidsInntektMaaned(
                         YearMonth.of(2019, 6),
                         listOf(Avvik(Aktoer(AktoerType.AKTOER_ID, "1111111"), Aktoer(AktoerType.AKTOER_ID, "2222222222"), null, YearMonth.of(2019, 6), "tekst")),
@@ -197,7 +219,7 @@ internal class KategoriseringTest {
                 beforeJson, mappedJson,
                 AttributeIgnoringComparator(
                         JSONCompareMode.LENIENT,
-                        setOf("verdikode"),
+                        setOf("verdikode", "fraDato", "tilDato"),
                         Customization("**.beskrivelse") { _, _ -> true },
                         Customization("**.inntektType") { _, _ -> true }
                 )
@@ -211,7 +233,7 @@ internal class KategoriseringTest {
             rawInntekt, false
         )
 
-        assertEquals(storedInntekt, mapFromGUIInntekt(mapToGUIInntekt(storedInntekt)))
+        assertEquals(storedInntekt, mapFromGUIInntekt(mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))))
     }
 }
 
