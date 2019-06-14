@@ -10,10 +10,9 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
-import no.nav.dagpenger.inntekt.inntektApi
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
+import no.nav.dagpenger.inntekt.ident.AktørregisterHttpClient
 import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
 
@@ -31,46 +30,66 @@ class AktørApiTest {
         }
         """.trimIndent()
 
-    private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val enhetsregisteretHttpClientMock: EnhetsregisteretHttpClient = mockk()
     private val personNameHttpClientMock: PersonNameHttpClient = mockk()
+    private val aktørregisterHttpClient: AktørregisterHttpClient = mockk()
 
     init {
         every {
             enhetsregisteretHttpClientMock.getOrgName(any())
         } returns "123456789"
+
+        every {
+            aktørregisterHttpClient.gjeldendeNorskIdent(any())
+        } returns "12345678912"
     }
 
     @Test
-    fun `post request with good json`() = testApp {
+    fun `name post request with good json`() = testApp {
         handleRequest(HttpMethod.Post, "/v1/aktoer/name") {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(validJson)
         }.apply {
             assertTrue(requestHandled)
-            Assertions.assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(HttpStatusCode.OK, response.status())
         }
     }
 
     @Test
-    fun `post request with bad json`() = testApp {
+    fun `name post request with bad json`() = testApp {
         handleRequest(HttpMethod.Post, "/v1/aktoer/name") {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(jsonMissingFields)
         }.apply {
             assertTrue(requestHandled)
-            Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
+            assertEquals(HttpStatusCode.BadRequest, response.status())
+        }
+    }
+
+    @Test
+    fun `naturlig-ident post request with correct parameters`() = testApp {
+        handleRequest(HttpMethod.Get, "/v1/aktoer/naturlig-ident") {
+            addHeader("ident", "6843546846411")
+        }.apply {
+            assertTrue(requestHandled)
+            assertEquals(HttpStatusCode.OK, response.status())
+        }
+    }
+
+    @Test
+    fun `naturlig-ident get request with missing parameter`() = testApp {
+        handleRequest(HttpMethod.Get, "/v1/aktoer/naturlig-ident").apply {
+            assertTrue(requestHandled)
+            assertEquals(HttpStatusCode.BadRequest, response.status())
         }
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
-            (inntektApi(
-                inntektskomponentClientMock,
-                mockk(relaxed = true),
-                enhetsregisteretHttpClientMock,
-                personNameHttpClientMock,
-                mockk(relaxed = true)))
+            (mockedInntektApi(
+                enhetsregisteretHttpClient = enhetsregisteretHttpClientMock,
+                personNameHttpClient = personNameHttpClientMock,
+                aktørregisterHttpClient = aktørregisterHttpClient))
         }) { callback() }
     }
 }

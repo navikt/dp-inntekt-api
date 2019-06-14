@@ -7,14 +7,17 @@ import io.ktor.request.receive
 import io.ktor.response.cacheControl
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
+import no.nav.dagpenger.inntekt.ident.AktørregisterHttpClient
 import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
 
 fun Route.aktørApi(
     enhetsregisteretHttpClient: EnhetsregisteretHttpClient,
-    personNameHttpClient: PersonNameHttpClient
+    personNameHttpClient: PersonNameHttpClient,
+    aktørregisterHttpClient: AktørregisterHttpClient
 ) {
 
     route("aktoer/name") {
@@ -34,16 +37,28 @@ fun Route.aktørApi(
             call.respond(HttpStatusCode.OK, response)
         }
     }
+
+    route("aktoer/naturlig-ident") {
+        get {
+            val ident = call.request.headers["ident"] ?: throw IllegalArgumentException("Failed to parse header")
+
+            val naturligIdent = aktørregisterHttpClient.gjeldendeNorskIdent(ident)
+
+            call.respond(HttpStatusCode.OK, NaturligIdentResponse(naturligIdent))
+        }
+    }
 }
 
-data class AktørInfoRequest(
+private data class NaturligIdentResponse(val naturligIdent: String)
+
+private data class AktørInfoRequest(
     val aktørType: AktørType,
     val id: String
 )
 
-data class AktørInfoResponse(val name: String, val aktørType: AktørType, val id: String)
+private data class AktørInfoResponse(val name: String, val aktørType: AktørType, val id: String)
 
-enum class AktørType {
+private enum class AktørType {
     AKTOER_ID,
     NATURLIG_IDENT,
     ORGANISASJON

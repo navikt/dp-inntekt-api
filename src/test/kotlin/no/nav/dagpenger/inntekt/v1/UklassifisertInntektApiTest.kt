@@ -15,7 +15,6 @@ import no.nav.dagpenger.inntekt.db.InntektCompoundKey
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.StoredInntekt
-import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
@@ -168,7 +167,9 @@ class UklassifisertInntektApiTest {
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
-            (inntektApi(inntektskomponentClientMock, inntektStorMock, mockk(), mockk(), mockk(relaxed = true)))
+            (mockedInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStorMock))
         }) { callback() }
     }
 }

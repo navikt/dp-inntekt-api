@@ -1,6 +1,5 @@
 package no.nav.dagpenger.inntekt.v1
 
-import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -11,21 +10,16 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
-
 import no.nav.dagpenger.inntekt.Problem
-import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
 import no.nav.dagpenger.inntekt.db.InntektStore
-import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
-
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.moshiInstance
-import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.jupiter.api.Test
 import java.time.YearMonth
@@ -51,8 +45,6 @@ class InntektApiTest {
     private val authApiKeyVerifier = AuthApiKeyVerifier(apiKeyVerifier, listOf("test-client"))
     private val apiKey = apiKeyVerifier.generate("test-client")
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
-    private val enhetsregisteretHttpClientMock: EnhetsregisteretHttpClient = mockk()
-    private val personNameHttpClientMock: PersonNameHttpClient = mockk()
     private val inntektStoreMock: InntektStore = mockk(relaxed = true)
     private val inntektPath = "/v1/inntekt"
 
@@ -225,13 +217,10 @@ class InntektApiTest {
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
-            (inntektApi(
-                inntektskomponentClientMock,
-                inntektStoreMock,
-                enhetsregisteretHttpClientMock,
-                personNameHttpClientMock,
-                authApiKeyVerifier
-            ))
+            (mockedInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                apiAuthApiKeyVerifier = authApiKeyVerifier))
         }) { callback() }
     }
 }

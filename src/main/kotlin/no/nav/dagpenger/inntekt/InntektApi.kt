@@ -27,6 +27,7 @@ import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
 import no.nav.dagpenger.inntekt.db.dataSourceFrom
 import no.nav.dagpenger.inntekt.db.migrate
+import no.nav.dagpenger.inntekt.ident.AktørregisterHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
@@ -55,18 +56,27 @@ fun main() {
 
     val postgresInntektStore = PostgresInntektStore(dataSourceFrom(config))
 
+    val stsOidcClient = StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
+
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
         config.application.hentinntektListeUrl,
-        StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
+        stsOidcClient
     )
 
     val enhetsregisteretHttpClient = EnhetsregisteretHttpClient(config.application.enhetsregisteretUrl)
-
     val personNameHttpClient = PersonNameHttpClient(config.application.oppslagUrl)
+    val aktørregisterHttpClient = AktørregisterHttpClient("", stsOidcClient)
 
     DefaultExports.initialize()
     val application = embeddedServer(Netty, port = config.application.httpPort) {
-        inntektApi(inntektskomponentHttpClient, postgresInntektStore, enhetsregisteretHttpClient, personNameHttpClient, AuthApiKeyVerifier(apiKeyVerifier, allowedApiKeys))
+        inntektApi(
+            inntektskomponentHttpClient,
+            postgresInntektStore,
+            enhetsregisteretHttpClient,
+            personNameHttpClient,
+            aktørregisterHttpClient,
+            AuthApiKeyVerifier(apiKeyVerifier, allowedApiKeys)
+        )
     }
     application.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -79,6 +89,7 @@ fun Application.inntektApi(
     inntektStore: InntektStore,
     enhetsregisteretHttpClient: EnhetsregisteretHttpClient,
     personNameHttpClient: PersonNameHttpClient,
+    aktørregisterHttpClient: AktørregisterHttpClient,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier
 ) {
 
@@ -173,7 +184,7 @@ fun Application.inntektApi(
         route("/v1") {
             inntekt(inntektskomponentHttpClient, inntektStore)
             opptjeningsperiodeApi(inntektStore)
-            aktørApi(enhetsregisteretHttpClient, personNameHttpClient)
+            aktørApi(enhetsregisteretHttpClient, personNameHttpClient, aktørregisterHttpClient)
         }
         naischecks()
     }
