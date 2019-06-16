@@ -17,6 +17,8 @@ data class GUIInntekt(
 )
 
 data class GUIInntektsKomponentResponse(
+    val fraDato: YearMonth?,
+    val tilDato: YearMonth?,
     val arbeidsInntektMaaned: List<GUIArbeidsInntektMaaned>?,
     val ident: Aktoer
 )
