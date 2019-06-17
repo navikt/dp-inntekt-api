@@ -22,6 +22,8 @@ private val localProperties = ConfigurationMap(
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
         "oppslag.url" to "https://localhost:8090",
         "oidc.sts.issuerurl" to "http://localhost/",
+        "jwks.url" to "https://localhost",
+        "jwks.issuer" to "https://localhost",
         "srvdp.inntekt.api.username" to "postgres",
         "srvdp.inntekt.api.password" to "postgres",
         "flyway.locations" to "db/migration,db/testdata",
@@ -39,6 +41,8 @@ private val devProperties = ConfigurationMap(
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
         "oppslag.url" to "https://dagpenger-oppslag.nais.preprod.local",
         "oidc.sts.issuerurl" to "https://security-token-service-t4.nais.preprod.local/",
+        "jwks.url" to "https://isso-q.adeo.no:443/isso/oauth2/connect/jwk_uri",
+        "jwks.issuer" to "https://isso-q.adeo.no:443/isso/oauth2",
         "application.profile" to "DEV",
         "application.httpPort" to "8099"
     )
@@ -53,6 +57,8 @@ private val prodProperties = ConfigurationMap(
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
         "oppslag.url" to "http://dagpenger-oppslag.default",
         "oidc.sts.issuerurl" to "https://security-token-service.nais.adeo.no/",
+        "jwks.url" to "https://isso.adeo.no:443/isso/oauth2/connect/jwk_uri",
+        "jwks.issuer" to "https://isso.adeo.no:443/isso/oauth2",
         "application.profile" to "PROD",
         "application.httpPort" to "8099"
     )
@@ -88,6 +94,8 @@ data class Configuration(
         val enhetsregisteretUrl: String = config()[Key("enhetsregisteret.url", stringType)],
         val oppslagUrl: String = config()[Key("oppslag.url", stringType)],
         val oicdStsUrl: String = config()[Key("oidc.sts.issuerurl", stringType)],
+        val jwksUrl: String = config()[Key("jwks.url", stringType)],
+        val jwksIssuer: String = config()[Key("jwks.issuer", stringType)],
         val name: String = "dp-inntekt-api",
         val apiSecret: String = config()[Key("api.secret", stringType)],
         val allowedApiKeys: List<String> = config()[Key("api.keys", stringType)].split(",").toList()
@@ -98,7 +106,7 @@ enum class Profile {
     LOCAL, DEV, PROD
 }
 
-private fun config() = when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
+fun config() = when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
     "dev-fss" -> ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding devProperties
     "prod-fss" -> ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding prodProperties
     else -> {

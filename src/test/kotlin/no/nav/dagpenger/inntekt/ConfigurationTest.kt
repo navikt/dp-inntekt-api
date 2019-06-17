@@ -4,31 +4,8 @@ import org.junit.jupiter.api.Test
 
 class ConfigurationTest {
 
-    private val dummyConfigs = listOf(
-        "srvdp.inntekt.api.username",
-        "unleash.url",
-        "srvdp.inntekt.api.password",
-        "hentinntektliste.url",
-        "enhetsregisteret.url",
-        "oppslag.url",
-        "oidc.sts.issuerurl",
-        "api.secret",
-        "api.keys"
-    )
-
-    private fun withProps(props: Map<String, String>, test: () -> Unit) {
-        for ((k, v) in props) {
-            System.getProperties()[k] = v
-        }
-        test()
-        for ((k, _) in props) {
-            System.getProperties().remove(k)
-        }
-    }
-
     @Test
     fun `Configuration is loaded based on application profile`() {
-        val dummyConfigs = dummyConfigs.associate { it to "test" }
 
         withProps(dummyConfigs + mapOf("NAIS_CLUSTER_NAME" to "dev-fss")) {
             with(Configuration()) {

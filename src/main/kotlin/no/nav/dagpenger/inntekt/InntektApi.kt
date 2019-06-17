@@ -1,5 +1,7 @@
 package no.nav.dagpenger.inntekt
 
+import com.auth0.jwk.JwkProvider
+import com.auth0.jwk.JwkProviderBuilder
 import com.ryanharter.ktor.moshi.moshi
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonEncodingException
@@ -7,11 +9,14 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
+import io.ktor.auth.jwt.JWTPrincipal
+import io.ktor.auth.jwt.jwt
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.http.isSuccess
 import io.ktor.request.path
 import io.ktor.response.respond
@@ -32,7 +37,8 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClie
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
 import no.nav.dagpenger.inntekt.v1.aktørApi
-import no.nav.dagpenger.inntekt.v1.inntekt
+import no.nav.dagpenger.inntekt.v1.klassifisertInntekt
+import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
 import no.nav.dagpenger.ktor.auth.ApiKeyCredential
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
@@ -44,11 +50,15 @@ import java.net.URI
 import java.util.concurrent.TimeUnit
 
 private val LOGGER = KotlinLogging.logger {}
+val config = Configuration()
 
 fun main() {
-    val config = Configuration()
 
     migrate(config)
+    val jwkProvider = JwkProviderBuilder(config.application.jwksUrl)
+        .cached(10, 24, TimeUnit.HOURS)
+        .rateLimited(10, 1, TimeUnit.MINUTES)
+        .build()
 
     val apiKeyVerifier = ApiKeyVerifier(config.application.apiSecret)
     val allowedApiKeys = config.application.allowedApiKeys
@@ -66,7 +76,14 @@ fun main() {
 
     DefaultExports.initialize()
     val application = embeddedServer(Netty, port = config.application.httpPort) {
-        inntektApi(inntektskomponentHttpClient, postgresInntektStore, enhetsregisteretHttpClient, personNameHttpClient, AuthApiKeyVerifier(apiKeyVerifier, allowedApiKeys))
+        inntektApi(
+            inntektskomponentHttpClient,
+            postgresInntektStore,
+            enhetsregisteretHttpClient,
+            personNameHttpClient,
+            AuthApiKeyVerifier(apiKeyVerifier, allowedApiKeys),
+            jwkProvider
+        )
     }
     application.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -79,11 +96,11 @@ fun Application.inntektApi(
     inntektStore: InntektStore,
     enhetsregisteretHttpClient: EnhetsregisteretHttpClient,
     personNameHttpClient: PersonNameHttpClient,
-    apiAuthApiKeyVerifier: AuthApiKeyVerifier
+    apiAuthApiKeyVerifier: AuthApiKeyVerifier,
+    jwkProvider: JwkProvider
 ) {
 
     install(DefaultHeaders)
-
     install(Authentication) {
         apiKeyAuth {
             apiKeyName = "X-API-KEY"
@@ -92,6 +109,22 @@ fun Application.inntektApi(
                     apiAuthApiKeyVerifier.verify(apikeyCredential.value) -> ApiPrincipal(apikeyCredential)
                     else -> null
                 }
+            }
+        }
+
+        jwt(name = "jwt") {
+            realm = "dp-inntekt-api"
+            verifier(jwkProvider, config.application.jwksIssuer) {
+                acceptNotBefore(10)
+                acceptIssuedAt(10)
+            }
+            authHeader { call ->
+                val cookie = call.request.cookies["ID_token"]
+                    ?: throw CookieNotSetException("Cookie with name ID_Token not found")
+                HttpAuthHeader.Single("Bearer", cookie)
+            }
+            validate { credentials ->
+                return@validate JWTPrincipal(credentials.payload)
             }
         }
     }
@@ -155,6 +188,17 @@ fun Application.inntektApi(
             )
             call.respond(HttpStatusCode.BadRequest, error)
         }
+        exception<CookieNotSetException> { cause ->
+            LOGGER.warn("Unauthorized call", cause)
+            val statusCode = HttpStatusCode.Unauthorized
+            val error = Problem(
+                type = URI("urn:dp:error:inntekt:auth"),
+                title = "Ikke innlogget",
+                detail = "${cause.message}",
+                status = statusCode.value
+            )
+            call.respond(statusCode, error)
+        }
     }
     install(CallLogging) {
         level = Level.INFO
@@ -171,7 +215,11 @@ fun Application.inntektApi(
 
     routing {
         route("/v1") {
-            inntekt(inntektskomponentHttpClient, inntektStore)
+            route("/inntekt") {
+                klassifisertInntekt(inntektskomponentHttpClient, inntektStore)
+                uklassifisertInntekt(inntektskomponentHttpClient, inntektStore)
+            }
+
             opptjeningsperiodeApi(inntektStore)
             aktørApi(enhetsregisteretHttpClient, personNameHttpClient)
         }
