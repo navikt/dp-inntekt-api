@@ -31,6 +31,7 @@ import org.skyscreamer.jsonassert.comparator.JSONCompareUtil.qualify
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.YearMonth
+import kotlin.test.assertTrue
 
 val rawInntekt = InntektkomponentResponse(
     listOf(
@@ -148,6 +149,7 @@ internal class KategoriseringTest {
 
         assertNotNull(guiInntekt.inntekt.fraDato)
         assertNotNull(guiInntekt.inntekt.tilDato)
+        assertTrue { guiInntekt.inntekt.fraDato!!.isBefore(guiInntekt.inntekt.tilDato!!) }
     }
 
     @Test
