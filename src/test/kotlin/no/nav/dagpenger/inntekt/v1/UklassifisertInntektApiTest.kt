@@ -25,13 +25,14 @@ import no.nav.dagpenger.inntekt.moshiInstance
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.YearMonth
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class UklassifisertInntektApiTest {
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
-    private val inntektStorMock: InntektStore = mockk()
+    private val inntektStoreMock: InntektStore = mockk()
     private val inntektId = InntektId(ULID().nextULID())
 
     private val reqAdapter = moshiInstance.adapter<InntektRequest>(InntektRequest::class.java)
@@ -61,31 +62,33 @@ class UklassifisertInntektApiTest {
 
     init {
         every {
-            inntektStorMock.getInntektId(notFoundRequest)
+            inntektStoreMock.getInntektId(notFoundRequest)
         } returns null
 
         every {
-            inntektStorMock.getInntektId(foundRequest)
+            inntektStoreMock.getInntektId(foundRequest)
         } returns inntektId
 
         every {
-            inntektStorMock.getInntektCompoundKey(inntektId)
+            inntektStoreMock.getInntektCompoundKey(inntektId)
         } returns InntektCompoundKey(foundRequest.aktørId, foundRequest.vedtakId, foundRequest.beregningsDato)
 
         every {
-            inntektStorMock.insertInntekt(foundRequest, storedInntekt.inntekt)
+            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt)
         } returns storedInntekt
 
         every {
-            inntektStorMock.redigerInntekt(storedInntekt)
+            inntektStoreMock.redigerInntekt(storedInntekt)
         } returns storedInntekt
 
         every {
-            inntektStorMock.getInntekt(inntektId)
+            inntektStoreMock.getInntekt(inntektId)
         } returns StoredInntekt(
             inntektId,
             InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234")),
-            false
+            false,
+            LocalDateTime.now()
+
         )
 
         every {
@@ -168,7 +171,7 @@ class UklassifisertInntektApiTest {
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
-            (inntektApi(inntektskomponentClientMock, inntektStorMock, mockk(), mockk(), mockk(relaxed = true)))
+            (inntektApi(inntektskomponentClientMock, inntektStoreMock, mockk(), mockk(), mockk(relaxed = true)))
         }) { callback() }
     }
 }

@@ -31,7 +31,7 @@ import org.skyscreamer.jsonassert.comparator.JSONCompareUtil.qualify
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.YearMonth
-import kotlin.test.assertTrue
+import java.time.LocalDateTime
 
 val rawInntekt = InntektkomponentResponse(
     listOf(
@@ -112,7 +112,9 @@ internal class KategoriseringTest {
     fun `mapToGUIInntekt adds correct verdikode`() {
         val storedInntekt = StoredInntekt(
             InntektId(ULID().nextULID()),
-            rawInntekt, false
+            rawInntekt,
+            false,
+            LocalDateTime.now()
         )
         val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))
         assertEquals(
@@ -143,20 +145,23 @@ internal class KategoriseringTest {
     fun `Skal legger fra og til dato`() {
         val storedInntekt = StoredInntekt(
             InntektId(ULID().nextULID()),
-            rawInntekt, false
+            rawInntekt,
+            false,
+            LocalDateTime.now()
         )
         val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))
 
         assertNotNull(guiInntekt.inntekt.fraDato)
         assertNotNull(guiInntekt.inntekt.tilDato)
-        assertTrue { guiInntekt.inntekt.fraDato!!.isBefore(guiInntekt.inntekt.tilDato!!) }
     }
 
     @Test
     fun `mapToGUIInntekt does not modify other fields than kategori`() {
         val storedInntekt = StoredInntekt(
             InntektId(ULID().nextULID()),
-            rawInntekt, false
+            rawInntekt,
+            false,
+            LocalDateTime.now()
         )
         val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))
 
@@ -175,7 +180,7 @@ internal class KategoriseringTest {
 
     @Test
     fun `mapFromGUIInntekt removes verdikode and updates to beskrivelse, type and tilleggsinformasjon correctly`() {
-        val guiInntekt = GUIInntekt(InntektId(ULID().nextULID()), GUIInntektsKomponentResponse(
+        val guiInntekt = GUIInntekt(InntektId(ULID().nextULID()), LocalDateTime.now(), GUIInntektsKomponentResponse(
             YearMonth.now(),
             YearMonth.now(),
             listOf(
@@ -199,7 +204,7 @@ internal class KategoriseringTest {
 
     @Test
     fun `mapFromGUIInntekt does not modify other fields than beskrivelse, type and tilleggsinformasjon`() {
-        val guiInntekt = GUIInntekt(InntektId(ULID().nextULID()), GUIInntektsKomponentResponse(
+        val guiInntekt = GUIInntekt(InntektId(ULID().nextULID()), LocalDateTime.now(), GUIInntektsKomponentResponse(
             YearMonth.now(),
             YearMonth.now(),
             listOf(
@@ -232,10 +237,15 @@ internal class KategoriseringTest {
     fun `map to and from GUIInntekt results in original inntekt`() {
         val storedInntekt = StoredInntekt(
             InntektId(ULID().nextULID()),
-            rawInntekt, false
+            rawInntekt,
+            false,
+            LocalDateTime.now()
         )
 
-        assertEquals(storedInntekt, mapFromGUIInntekt(mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))))
+        val mapFromGUIInntekt = mapFromGUIInntekt(mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now())))
+        assertEquals(storedInntekt.manueltRedigert, mapFromGUIInntekt.manueltRedigert)
+        assertEquals(storedInntekt.inntekt, mapFromGUIInntekt.inntekt)
+        assertEquals(storedInntekt.inntektId, mapFromGUIInntekt.inntektId)
     }
 }
 

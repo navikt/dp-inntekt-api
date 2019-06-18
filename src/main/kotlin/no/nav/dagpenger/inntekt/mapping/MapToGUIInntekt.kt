@@ -45,6 +45,7 @@ fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjening
 
     return GUIInntekt(
         storedInntekt.inntektId,
+        storedInntekt.timestamp,
         GUIInntektsKomponentResponse(
             tilDato = opptjeningsPeriode.sisteAvsluttendeKalenderMåned,
             fraDato = opptjeningsPeriode.førsteMåned,
