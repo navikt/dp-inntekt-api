@@ -14,7 +14,6 @@ class PredicatesNæringsinntektTest {
         val predicates = predicatesInntektklasseNæringsinntekt()
 
         val næringsinntektPredicates = listOf(
-            ::isNæringAnnet,
             ::isLønnAnnetHyre,
             ::isLønnBonusHyre,
             ::isLønnFastTilleggHyre,
@@ -33,14 +32,6 @@ class PredicatesNæringsinntektTest {
 
         assert(predicates.containsAll(næringsinntektPredicates))
         assertEquals(predicates.size, næringsinntektPredicates.size)
-    }
-
-    @Test
-    fun `isNæringAnnet predicates correctly`() {
-        assert(isNæringAnnet(DatagrunnlagKlassifisering(InntektType.NAERINGSINNTEKT, InntektBeskrivelse.ANNET)))
-
-        assertFalse(isNæringAnnet(DatagrunnlagKlassifisering(InntektType.NAERINGSINNTEKT, InntektBeskrivelse.ARBEIDSOPPHOLD_KOST)))
-        assertFalse(isNæringAnnet(DatagrunnlagKlassifisering(InntektType.YTELSE_FRA_OFFENTLIGE, InntektBeskrivelse.ANNET)))
     }
 
     @Test
