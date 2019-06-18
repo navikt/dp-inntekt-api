@@ -225,6 +225,10 @@ enum class InntektBeskrivelse {
     LOTT_KUN_TRYGDEAVGIFT,
     @Json(name = "vederlag")
     VEDERLAG,
+    @Json(name = "sykepengerTilDagmamma")
+    SYKEPENGER_TIL_DAGMAMMA,
+    @Json(name = "sykepengerTilJordOgSkogbrukere")
+    SYKEPENGER_TIL_JORD_OG_SKOGBRUKERE,
     @Json(name = "sykepenger")
     SYKEPENGER
 }
