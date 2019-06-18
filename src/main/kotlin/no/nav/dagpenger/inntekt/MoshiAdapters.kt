@@ -11,12 +11,14 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforho
 import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 val moshiInstance: Moshi = Moshi.Builder()
     .add(YearMonthJsonAdapter())
     .add(LocalDateJsonAdapter())
+    .add(LocalDateTimeJsonAdapter())
     .add(KotlinJsonAdapterFactory())
     .add(BigDecimalJsonAdapter())
     .add(URIJsonAdapter())
@@ -51,6 +53,18 @@ class LocalDateJsonAdapter {
     @FromJson
     fun fromJson(json: String): LocalDate {
         return LocalDate.parse(json)
+    }
+}
+
+class LocalDateTimeJsonAdapter {
+    @ToJson
+    fun toJson(localDateTime: LocalDateTime): String {
+        return localDateTime.format(DateTimeFormatter.ISO_DATE_TIME)
+    }
+
+    @FromJson
+    fun fromJson(json: String): LocalDateTime {
+        return LocalDateTime.parse(json)
     }
 }
 

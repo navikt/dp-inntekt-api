@@ -4,6 +4,7 @@ import de.huxhorn.sulky.ulid.ULID
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.v1.InntektRequest
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 interface InntektStore {
     fun getInntekt(inntektId: InntektId): StoredInntekt
@@ -14,7 +15,7 @@ interface InntektStore {
     fun getInntektCompoundKey(inntektId: InntektId): InntektCompoundKey
 }
 
-data class StoredInntekt(val inntektId: InntektId, val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean)
+data class StoredInntekt(val inntektId: InntektId, val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean, val timestamp: LocalDateTime? = null)
 
 data class InntektId(val id: String) {
     init {

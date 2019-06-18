@@ -83,13 +83,14 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    """ SELECT id, inntekt, manuelt_redigert from inntekt_V1 where id = ?""",
+                    """ SELECT id, inntekt, manuelt_redigert, timestamp from inntekt_V1 where id = ?""",
                     inntektId.id
                 ).map { row ->
                     StoredInntekt(
                         InntektId(row.string("id")),
                         adapter.fromJson(row.string("inntekt"))!!,
-                        row.boolean("manuelt_redigert")
+                        row.boolean("manuelt_redigert"),
+                        row.zonedDateTime("timestamp").toLocalDateTime()
                     )
                 }
                     .asSingle)
