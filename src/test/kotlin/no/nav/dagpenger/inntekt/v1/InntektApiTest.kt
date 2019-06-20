@@ -1,6 +1,5 @@
 package no.nav.dagpenger.inntekt.v1
 
-import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -11,7 +10,6 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
-
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -20,7 +18,6 @@ import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
-
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
@@ -129,7 +126,7 @@ class InntektApiTest {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.BadRequest, response.status())
             val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
-            assertEquals("Feilet mot inntektskomponenten!", problem?.title)
+            assertEquals("Innhenting av inntekt mot a-inntekt feilet. Prøv igjen senere", problem?.title)
             assertEquals("urn:dp:error:inntektskomponenten", problem?.type.toString())
             assertEquals(400, problem?.status)
         }
@@ -154,7 +151,7 @@ class InntektApiTest {
                 assertTrue(requestHandled)
                 assertEquals(HttpStatusCode.BadRequest, response.status())
                 val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
-                assertEquals("Feilet mot inntektskomponenten!", problem?.title)
+                assertEquals("Innhenting av inntekt mot a-inntekt feilet. Prøv igjen senere", problem?.title)
                 assertEquals("urn:dp:error:inntektskomponenten", problem?.type.toString())
                 assertEquals(400, problem?.status)
             }
