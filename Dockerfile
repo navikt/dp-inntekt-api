@@ -1,6 +1,3 @@
-FROM navikt/java:11-appdynamics
-
-ENV APPD_ENABLED=true \
-    APPD_NAME=dp-inntekt-api
+FROM navikt/java:11
 
 COPY build/libs/*.jar app.jar
