@@ -70,6 +70,7 @@ class AktørApiTest {
                 mockk(relaxed = true),
                 enhetsregisteretHttpClientMock,
                 personNameHttpClientMock,
+                mockk(relaxed = true),
                 mockk(relaxed = true)))
         }) { callback() }
     }

@@ -10,12 +10,14 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.dagpenger.inntekt.JwtStub
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.db.InntektCompoundKey
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektApi
+import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
@@ -35,7 +37,8 @@ class UklassifisertInntektApiTest {
     private val inntektStoreMock: InntektStore = mockk()
     private val inntektId = InntektId(ULID().nextULID())
 
-    private val reqAdapter = moshiInstance.adapter<InntektRequest>(InntektRequest::class.java)
+    private val jwtStub = JwtStub("https://localhost")
+    private val token = jwtStub.createTokenFor("user")
     private val storedInntektAdapter = moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java)
 
     private val notFoundRequest =
@@ -102,6 +105,7 @@ class UklassifisertInntektApiTest {
             HttpMethod.Get,
             "$uklassifisertInntekt/${notFoundRequest.aktørId}/${notFoundRequest.vedtakId}/${notFoundRequest.beregningsDato}"
         ) {
+            addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
             assertTrue(requestHandled)
             Assertions.assertEquals(HttpStatusCode.NotFound, response.status())
@@ -117,8 +121,44 @@ class UklassifisertInntektApiTest {
     }
 
     @Test
+    fun `GET uklassifisert without auth cookie should return 401 `() = testApp {
+        handleRequest(
+            HttpMethod.Get,
+            "$uklassifisertInntekt/${notFoundRequest.aktørId}/${notFoundRequest.vedtakId}/${notFoundRequest.beregningsDato}"
+        ) {
+        }.apply {
+            assertTrue(requestHandled)
+            Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
+            val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
+            assertEquals("Ikke innlogget", problem?.title)
+            assertEquals("urn:dp:error:inntekt:auth", problem?.type.toString())
+            assertEquals(401, problem?.status)
+            assertEquals(
+                "Cookie with name ID_Token not found",
+                problem?.detail
+            )
+        }
+    }
+
+    @Test
+    fun `GET uklassifisert without inncorrect auth cookie should return  `() = testApp {
+
+        val anotherIssuer = JwtStub("https://anotherissuer")
+        handleRequest(
+            HttpMethod.Get,
+            "$uklassifisertInntekt/${notFoundRequest.aktørId}/${notFoundRequest.vedtakId}/${notFoundRequest.beregningsDato}"
+        ) {
+            addHeader(HttpHeaders.Cookie, "ID_token=${anotherIssuer.createTokenFor("user")}")
+        }.apply {
+            assertTrue(requestHandled)
+            Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
+        }
+    }
+
+    @Test
     fun `GET uklassifisert inntekt with malformed parameters should return bad request`() = testApp {
         handleRequest(HttpMethod.Get, "$uklassifisertInntekt/${foundRequest.aktørId}/${foundRequest.vedtakId}/blabla") {
+            addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.BadRequest, response.status())
@@ -131,6 +171,7 @@ class UklassifisertInntektApiTest {
             HttpMethod.Get,
             "$uklassifisertInntekt/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
         ) {
+            addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
@@ -146,6 +187,7 @@ class UklassifisertInntektApiTest {
             HttpMethod.Get,
             "$uklassifisertInntekt/uncached/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
         ) {
+            addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
@@ -159,6 +201,7 @@ class UklassifisertInntektApiTest {
     fun `Post uklassifisert inntekt should return 200 ok`() = testApp {
         handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/update") {
             addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader(HttpHeaders.Cookie, "ID_token=$token")
             setBody(storedInntektAdapter.toJson(storedInntekt))
         }.apply {
             assertTrue(requestHandled)
@@ -169,9 +212,21 @@ class UklassifisertInntektApiTest {
         }
     }
 
+    @Test
+    fun `Should get verdikode mapping`() = testApp {
+        handleRequest(HttpMethod.Get, "v1/inntekt/verdikoder") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+        }.apply {
+            assertTrue(requestHandled)
+            assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertTrue(runCatching { inntektKlassifiseringsKoderJsonAdapter.fromJson(response.content!!) }.isSuccess)
+        }
+    }
+
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
-            (inntektApi(inntektskomponentClientMock, inntektStoreMock, mockk(), mockk(), mockk(relaxed = true)))
+            (inntektApi(inntektskomponentClientMock, inntektStorMock, mockk(), mockk(), mockk(relaxed = true), jwkProvider = jwtStub.stubbedJwkProvider()))
         }) { callback() }
     }
 }

@@ -2,10 +2,12 @@ package no.nav.dagpenger.inntekt.db
 
 import com.zaxxer.hikari.HikariDataSource
 import no.nav.dagpenger.inntekt.Configuration
+import no.nav.dagpenger.inntekt.dummyConfigs
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.v1.InntektRequest
+import no.nav.dagpenger.inntekt.withProps
 import org.junit.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDate
@@ -45,14 +47,11 @@ internal class PostgresTest {
 
     @Test
     fun `JDBC url is set correctly from  config values `() {
-        System.setProperty("oidc.sts.issuerurl", "test")
-        System.setProperty("enhetsregisteret.url", "test")
-        System.setProperty("oppslag.url", "test")
-        System.setProperty("api.secret", "test")
-        with(hikariConfigFrom(Configuration())) {
-            assertEquals("jdbc:postgresql://localhost:5432/dp-inntekt-db", jdbcUrl)
+        withProps(dummyConfigs) {
+            with(hikariConfigFrom(Configuration())) {
+                assertEquals("jdbc:postgresql://localhost:5432/dp-inntekt-db", jdbcUrl)
+            }
         }
-        System.clearProperty("oidc.sts.issuerurl")
     }
 }
 
@@ -63,8 +62,8 @@ internal class PostgresInntektStoreTest {
             with(PostgresInntektStore(DataSource.instance)) {
                 val request = InntektRequest("1234", 1234, LocalDate.now())
                 val hentInntektListeResponse = InntektkomponentResponse(
-                        emptyList(),
-                        Aktoer(AktoerType.AKTOER_ID, "1234")
+                    emptyList(),
+                    Aktoer(AktoerType.AKTOER_ID, "1234")
                 )
                 val storedInntekt = insertInntekt(request, hentInntektListeResponse)
                 assertNotNull(storedInntekt.inntektId)
@@ -82,8 +81,8 @@ internal class PostgresInntektStoreTest {
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
                 val hentInntektListeResponse = InntektkomponentResponse(
-                        emptyList(),
-                        Aktoer(AktoerType.AKTOER_ID, "1234")
+                    emptyList(),
+                    Aktoer(AktoerType.AKTOER_ID, "1234")
                 )
                 insertInntekt(InntektRequest("1234", 12345, LocalDate.now()), hentInntektListeResponse)
 
@@ -161,7 +160,8 @@ internal class PostgresInntektStoreTest {
                 )
                 val inntekt = insertInntekt(
                     InntektRequest("1234", 12345, LocalDate.of(2019, 4, 14)),
-                    hentInntektListeResponse)
+                    hentInntektListeResponse
+                )
 
                 val beregningsdato = getBeregningsdato(inntekt.inntektId)
 
@@ -196,7 +196,8 @@ internal class PostgresInntektStoreTest {
                 )
                 val inntekt = insertInntekt(
                     InntektRequest("1234", 12345, LocalDate.of(2019, 4, 14)),
-                    hentInntektListeResponse)
+                    hentInntektListeResponse
+                )
 
                 val compoundKey = getInntektCompoundKey(inntekt.inntektId)
 
@@ -225,7 +226,8 @@ internal class PostgresInntektStoreTest {
 
 private fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }
 
-private fun withMigratedDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.also { migrate(it) }.run { test() }
+private fun withMigratedDb(test: () -> Unit) =
+    DataSource.instance.also { clean(it) }.also { migrate(it) }.run { test() }
 
 private object PostgresContainer {
     val instance by lazy {

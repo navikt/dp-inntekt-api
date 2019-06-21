@@ -16,7 +16,6 @@ import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektApi
-import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
@@ -32,7 +31,7 @@ import java.time.YearMonth
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class InntektApiTest {
+class KlassifisertInntektApiTest {
     val validJson = """
         {
         	"aktørId": "1234",
@@ -211,18 +210,6 @@ class InntektApiTest {
         }
     }
 
-    @Test
-    fun `Should get verdikode mapping`() = testApp {
-        handleRequest(HttpMethod.Get, "$inntektPath/verdikoder") {
-            addHeader(HttpHeaders.ContentType, "application/json")
-        }.apply {
-            assertTrue(requestHandled)
-            assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
-            assertEquals(HttpStatusCode.OK, response.status())
-            assertTrue(runCatching { inntektKlassifiseringsKoderJsonAdapter.fromJson(response.content!!) }.isSuccess)
-        }
-    }
-
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
             (inntektApi(
@@ -230,7 +217,8 @@ class InntektApiTest {
                 inntektStoreMock,
                 enhetsregisteretHttpClientMock,
                 personNameHttpClientMock,
-                authApiKeyVerifier
+                authApiKeyVerifier,
+                mockk(relaxed = true)
             ))
         }) { callback() }
     }
