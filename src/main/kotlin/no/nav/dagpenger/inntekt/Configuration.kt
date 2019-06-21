@@ -41,8 +41,8 @@ private val devProperties = ConfigurationMap(
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
         "oppslag.url" to "https://dagpenger-oppslag.nais.preprod.local",
         "oidc.sts.issuerurl" to "https://security-token-service-t4.nais.preprod.local/",
-        "jwks.url" to "https://isso-q.adeo.no/isso/oauth2/connect/jwk_uri",
-        "jwks.issuer" to "https://isso-q.adeo.no/isso/oauth2",
+        "jwks.url" to "https://isso-q.adeo.no:443/isso/oauth2/connect/jwk_uri",
+        "jwks.issuer" to "https://isso-q.adeo.no:443/isso/oauth2",
         "application.profile" to "DEV",
         "application.httpPort" to "8099"
     )
@@ -57,8 +57,8 @@ private val prodProperties = ConfigurationMap(
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
         "oppslag.url" to "http://dagpenger-oppslag.default",
         "oidc.sts.issuerurl" to "https://security-token-service.nais.adeo.no/",
-        "jwks.url" to "https://isso.adeo.no/isso/oauth2/connect/jwk_uri",
-        "jwks.issuer" to "https://isso.adeo.no/isso/oauth2",
+        "jwks.url" to "https://isso.adeo.no:443/isso/oauth2/connect/jwk_uri",
+        "jwks.issuer" to "https://isso.adeo.no:443/isso/oauth2",
         "application.profile" to "PROD",
         "application.httpPort" to "8099"
     )
