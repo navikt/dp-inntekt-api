@@ -47,6 +47,7 @@ import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import no.nav.dagpenger.oidc.StsOidcClient
 import org.slf4j.event.Level
 import java.net.URI
+import java.net.URL
 import java.util.concurrent.TimeUnit
 
 private val LOGGER = KotlinLogging.logger {}
@@ -55,7 +56,7 @@ val config = Configuration()
 fun main() {
 
     migrate(config)
-    val jwkProvider = JwkProviderBuilder(config.application.jwksUrl)
+    val jwkProvider = JwkProviderBuilder(URL(config.application.jwksUrl))
         .cached(10, 24, TimeUnit.HOURS)
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
