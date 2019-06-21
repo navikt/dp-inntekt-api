@@ -226,7 +226,7 @@ class UklassifisertInntektApiTest {
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
-            (inntektApi(inntektskomponentClientMock, inntektStorMock, mockk(), mockk(), mockk(relaxed = true), jwkProvider = jwtStub.stubbedJwkProvider()))
+            (inntektApi(inntektskomponentClientMock, inntektStoreMock, mockk(), mockk(), mockk(relaxed = true), jwkProvider = jwtStub.stubbedJwkProvider()))
         }) { callback() }
     }
 }
