@@ -16,7 +16,6 @@ import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.klassifisering.Inntekt
 import no.nav.dagpenger.inntekt.klassifisering.klassifiserInntekter
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
@@ -33,12 +32,6 @@ fun Route.inntekt(inntektskomponentClient: InntektskomponentClient, inntektStore
                 val request = call.receive<InntektRequest>()
 
                 val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
-
-                val failingAktørId = setOf("1000062356983", "1000004940731", "1000100347769", "1000009087291")
-
-                if (failingAktørId.contains(request.aktørId)) {
-                    throw InntektskomponentenHttpClientException(500, "TEST: Feilende scenario")
-                }
 
                 val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
                     ?: inntektStore.insertInntekt(
