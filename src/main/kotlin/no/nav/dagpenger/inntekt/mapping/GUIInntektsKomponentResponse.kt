@@ -8,10 +8,12 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Periode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.time.YearMonth
 
 data class GUIInntekt(
     val inntektId: InntektId,
+    val timestamp: LocalDateTime?,
     val inntekt: GUIInntektsKomponentResponse,
     val manueltRedigert: Boolean
 )

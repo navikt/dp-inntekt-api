@@ -51,7 +51,7 @@ val vaultJavaDriverVersion = "3.1.0"
 val konfigVersion = "1.6.10.0"
 val testcontainers_version = "1.10.6"
 val jsonassertVersion = "1.5.0"
-val dpBibliotekerVersion = "2019.05.21-15.46.697023d907a7"
+val dpBibliotekerVersion = "2019.06.19-09.38.5466af242e44"
 
 dependencies {
     implementation(kotlin("stdlib"))
