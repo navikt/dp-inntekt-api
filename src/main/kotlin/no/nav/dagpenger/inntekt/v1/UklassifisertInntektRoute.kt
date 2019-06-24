@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.v1
 
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.auth.authenticate
 import io.ktor.http.ContentType
@@ -11,6 +12,7 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
+import io.ktor.util.pipeline.PipelineContext
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
@@ -27,21 +29,16 @@ fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient,
     authenticate("jwt") {
         route("/uklassifisert/{aktørId}/{vedtakId}/{beregningsDato}") {
             get {
-                val request = try {
-                    InntektRequest(
-                        aktørId = call.parameters["aktørId"]!!,
-                        vedtakId = call.parameters["vedtakId"]!!.toLong(),
-                        beregningsDato = LocalDate.parse(call.parameters["beregningsDato"]!!)
-                    )
-                } catch (e: Exception) {
-                    throw IllegalArgumentException("Failed to parse parameters", e)
+                parseRequest().run {
+                    inntektStore.getInntektId(this)
+                        ?.let {
+                            inntektStore.getInntekt(it)
+                        }?.let {
+                            mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato))
+                        }?.let {
+                            call.respond(HttpStatusCode.OK, it)
+                        } ?: throw InntektNotFoundException("Inntekt with for $this not found.")
                 }
-
-                val opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
-                val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
-                    ?: throw InntektNotFoundException("Inntekt with for $request not found.")
-                val mappedInntekt = mapToGUIInntekt(storedInntekt, opptjeningsperiode)
-                call.respond(HttpStatusCode.OK, mappedInntekt)
             }
         }
 
@@ -87,6 +84,14 @@ fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient,
         }
     }
 }
+
+private fun PipelineContext<Unit, ApplicationCall>.parseRequest(): InntektRequest = runCatching {
+    InntektRequest(
+        aktørId = call.parameters["aktørId"]!!,
+        vedtakId = call.parameters["vedtakId"]!!.toLong(),
+        beregningsDato = LocalDate.parse(call.parameters["beregningsDato"]!!)
+    )
+}.getOrElse { t -> throw IllegalArgumentException("Failed to parse parameters", t) }
 
 data class InntektRequest(
     val aktørId: String,
