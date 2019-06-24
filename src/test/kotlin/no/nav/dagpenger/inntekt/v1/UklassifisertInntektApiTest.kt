@@ -12,6 +12,7 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.dagpenger.inntekt.JwtStub
 import no.nav.dagpenger.inntekt.Problem
+import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.InntektCompoundKey
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -77,7 +78,7 @@ class UklassifisertInntektApiTest {
         } returns InntektCompoundKey(foundRequest.aktørId, foundRequest.vedtakId, foundRequest.beregningsDato)
 
         every {
-            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt)
+            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt, false)
         } returns storedInntekt
 
         every {
@@ -192,14 +193,29 @@ class UklassifisertInntektApiTest {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
             val uncachedInntekt =
-                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+                moshiInstance.adapter<DetachedInntekt>(DetachedInntekt::class.java).fromJson(response.content!!)!!
             assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
         }
     }
 
     @Test
     fun `Post uklassifisert inntekt should return 200 ok`() = testApp {
-        handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/update") {
+        handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            setBody(storedInntektAdapter.toJson(storedInntekt))
+        }.apply {
+            assertTrue(requestHandled)
+            assertEquals(HttpStatusCode.OK, response.status())
+            val storedInntekt =
+                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+            assertEquals(storedInntekt.inntektId, inntektId)
+        }
+    }
+
+    @Test
+    fun `Post uklassifisert uncached inntekt should return 200 ok`() = testApp {
+        handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/uncached/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}") {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
             setBody(storedInntektAdapter.toJson(storedInntekt))

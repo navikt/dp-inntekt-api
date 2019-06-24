@@ -18,9 +18,9 @@ import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
-import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.dataGrunnlagKlassifiseringToVerdikode
 import no.nav.dagpenger.inntekt.mapping.mapFromGUIInntekt
+import no.nav.dagpenger.inntekt.mapping.mapTo
 import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
@@ -40,37 +40,46 @@ fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient,
                         } ?: throw InntektNotFoundException("Inntekt with for $this not found.")
                 }
             }
+            post {
+                parseRequest().run {
+                    mapFromGUIInntekt(call.receive())
+                        .let {
+                            inntektStore.insertInntekt(this, it.inntekt, it.manueltRedigert)
+                        }
+                        .let {
+                            call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato)))
+                        }
+                }
+            }
         }
 
         route("/uklassifisert/uncached/{aktørId}/{vedtakId}/{beregningsDato}") {
             get {
-                val request = try {
-                    InntektRequest(
-                        aktørId = call.parameters["aktørId"]!!,
-                        vedtakId = call.parameters["vedtakId"]!!.toLong(),
-                        beregningsDato = LocalDate.parse(call.parameters["beregningsDato"]!!)
-                    )
-                } catch (e: Exception) {
-                    throw IllegalArgumentException("Failed to parse parameters", e)
+                parseRequest().run {
+                    val opptjeningsperiode = Opptjeningsperiode(this.beregningsDato)
+                    toInntektskomponentRequest(this, opptjeningsperiode)
+                        .let {
+                            inntektskomponentClient.getInntekt(it)
+                        }
+                        .let {
+                            mapToGUIInntekt(it, opptjeningsperiode)
+                        }
+                        .let {
+                            call.respond(HttpStatusCode.OK, it)
+                        }
                 }
-
-                val opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
-                val uncachedInntekt =
-                    inntektskomponentClient.getInntekt(toInntektskomponentRequest(request, opptjeningsperiode))
-                val storedInntekt = inntektStore.insertInntekt(request, uncachedInntekt)
-                val mappedInntekt = mapToGUIInntekt(storedInntekt, opptjeningsperiode)
-                call.respond(HttpStatusCode.OK, mappedInntekt)
             }
-        }
 
-        route("/uklassifisert/update") {
             post {
-                val request = call.receive<GUIInntekt>()
-                val mappedInntekt = mapFromGUIInntekt(request)
-                val storedInntekt = inntektStore.redigerInntekt(mappedInntekt)
-                val key = inntektStore.getInntektCompoundKey(storedInntekt.inntektId)
-                val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(key.beregningsDato)
-                call.respond(HttpStatusCode.OK, mapToGUIInntekt(storedInntekt, opptjeningsperiode))
+                parseRequest().run {
+                    mapTo(call.receive())
+                        .let {
+                            inntektStore.insertInntekt(this, it.inntekt, it.manueltRedigert)
+                        }
+                        .let {
+                            call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato)))
+                        }
+                }
             }
         }
     }

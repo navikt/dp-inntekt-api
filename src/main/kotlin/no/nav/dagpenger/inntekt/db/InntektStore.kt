@@ -9,13 +9,17 @@ import java.time.LocalDateTime
 interface InntektStore {
     fun getInntekt(inntektId: InntektId): StoredInntekt
     fun getInntektId(request: InntektRequest): InntektId?
-    fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt
     fun redigerInntekt(redigertInntekt: StoredInntekt): StoredInntekt
     fun getBeregningsdato(inntektId: InntektId): LocalDate
     fun getInntektCompoundKey(inntektId: InntektId): InntektCompoundKey
+    fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse, manueltRedigert: Boolean): StoredInntekt
+    fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt
 }
 
-data class StoredInntekt(val inntektId: InntektId, val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean, val timestamp: LocalDateTime? = null)
+interface Inntekt
+
+data class StoredInntekt(val inntektId: InntektId, val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean, val timestamp: LocalDateTime? = null) : Inntekt
+data class DetachedInntekt(val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean) : Inntekt
 
 data class InntektId(val id: String) {
     init {

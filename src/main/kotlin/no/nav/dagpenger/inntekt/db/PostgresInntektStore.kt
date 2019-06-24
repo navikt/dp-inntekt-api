@@ -22,14 +22,14 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
         try {
             return using(sessionOf(dataSource)) { session ->
                 session.run(
-                        queryOf(
-                                """SELECT inntektId
+                    queryOf(
+                        """SELECT inntektId
                                     FROM inntekt_V1_arena_mapping
                                     WHERE aktørId = ? AND vedtakid = ? AND beregningsdato = ?
                                     ORDER BY timestamp DESC LIMIT 1
                             """.trimMargin(), request.aktørId, request.vedtakId, request.beregningsDato).map { row ->
-                            InntektId(row.string("inntektId"))
-                        }.asSingle)
+                        InntektId(row.string("inntektId"))
+                    }.asSingle)
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
@@ -69,10 +69,6 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
         }
     }
 
-    override fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt {
-        return insertInntekt(request, inntekt, false)
-    }
-
     override fun redigerInntekt(redigertInntekt: StoredInntekt): StoredInntekt {
         val compoundKey = getInntektCompoundKey(redigertInntekt.inntektId)
         val request = InntektRequest(compoundKey.aktørId, compoundKey.vedtakId, compoundKey.beregningsDato)
@@ -94,11 +90,14 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                     )
                 }
                     .asSingle)
-                    ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
+                ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
         }
     }
 
-    private fun insertInntekt(
+    override fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt =
+        insertInntekt(request, inntekt, false)
+
+    override fun insertInntekt(
         request: InntektRequest,
         inntekt: InntektkomponentResponse,
         manueltRedigert: Boolean

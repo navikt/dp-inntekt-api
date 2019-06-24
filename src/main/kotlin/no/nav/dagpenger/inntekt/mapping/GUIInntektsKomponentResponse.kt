@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 import java.time.YearMonth
 
 data class GUIInntekt(
-    val inntektId: InntektId,
+    val inntektId: InntektId?,
     val timestamp: LocalDateTime?,
     val inntekt: GUIInntektsKomponentResponse,
     val manueltRedigert: Boolean
