@@ -14,10 +14,9 @@ interface InntektStore {
     fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt
 }
 
-interface Inntekt
 
-data class StoredInntekt(val inntektId: InntektId, val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean, val timestamp: LocalDateTime? = null) : Inntekt
-data class DetachedInntekt(val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean) : Inntekt
+data class StoredInntekt(val inntektId: InntektId, val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean, val timestamp: LocalDateTime? = null)
+data class DetachedInntekt(val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean)
 
 data class InntektId(val id: String) {
     init {
