@@ -73,7 +73,7 @@ class UklassifisertInntektApiTest {
         } returns inntektId
 
         every {
-            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt, false)
+            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt, true)
         } returns storedInntekt
 
         every {

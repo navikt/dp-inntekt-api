@@ -29,7 +29,6 @@ data class InntektId(val id: String) {
     }
 }
 
-
 class InntektNotFoundException(override val message: String) : RuntimeException(message)
 
 class StoreException(override val message: String) : RuntimeException(message)

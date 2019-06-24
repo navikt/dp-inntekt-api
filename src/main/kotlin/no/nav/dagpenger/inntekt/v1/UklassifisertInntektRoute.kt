@@ -44,7 +44,7 @@ fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient,
                 parseRequest().run {
                     mapToStoredInntekt(call.receive())
                         .let {
-                            inntektStore.insertInntekt(this, it.inntekt, it.manueltRedigert)
+                            inntektStore.insertInntekt(this, it.inntekt, true) // todo Use property from call
                         }
                         .let {
                             call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato)))
@@ -74,7 +74,7 @@ fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient,
                 parseRequest().run {
                     mapToDetachedInntekt(call.receive())
                         .let {
-                            inntektStore.insertInntekt(this, it.inntekt, it.manueltRedigert)
+                            inntektStore.insertInntekt(this, it.inntekt, true) // todo use flag from GUI
                         }
                         .let {
                             call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato)))
