@@ -14,7 +14,6 @@ interface InntektStore {
     fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt
 }
 
-
 data class StoredInntekt(val inntektId: InntektId, val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean, val timestamp: LocalDateTime? = null)
 data class DetachedInntekt(val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean)
 
