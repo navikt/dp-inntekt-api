@@ -9,9 +9,7 @@ import java.time.LocalDateTime
 interface InntektStore {
     fun getInntekt(inntektId: InntektId): StoredInntekt
     fun getInntektId(request: InntektRequest): InntektId?
-    fun redigerInntekt(redigertInntekt: StoredInntekt): StoredInntekt
     fun getBeregningsdato(inntektId: InntektId): LocalDate
-    fun getInntektCompoundKey(inntektId: InntektId): InntektCompoundKey
     fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse, manueltRedigert: Boolean): StoredInntekt
     fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt
 }

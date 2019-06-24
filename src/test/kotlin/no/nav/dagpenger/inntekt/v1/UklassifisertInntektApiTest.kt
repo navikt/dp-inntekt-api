@@ -13,7 +13,6 @@ import io.mockk.mockk
 import no.nav.dagpenger.inntekt.JwtStub
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
-import no.nav.dagpenger.inntekt.db.InntektCompoundKey
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.StoredInntekt
@@ -74,15 +73,7 @@ class UklassifisertInntektApiTest {
         } returns inntektId
 
         every {
-            inntektStoreMock.getInntektCompoundKey(inntektId)
-        } returns InntektCompoundKey(foundRequest.aktørId, foundRequest.vedtakId, foundRequest.beregningsDato)
-
-        every {
             inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt, false)
-        } returns storedInntekt
-
-        every {
-            inntektStoreMock.redigerInntekt(storedInntekt)
         } returns storedInntekt
 
         every {

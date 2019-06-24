@@ -36,24 +36,6 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
         }
     }
 
-    override fun getInntektCompoundKey(inntektId: InntektId): InntektCompoundKey {
-        return using(sessionOf(dataSource)) { session ->
-            session.run(
-                queryOf(
-                    """SELECT DISTINCT aktørId, vedtakId, beregningsdato
-                                FROM inntekt_V1_arena_mapping
-                                WHERE inntektId = ?
-                        """.trimMargin(), inntektId.id
-                ).map { row ->
-                    InntektCompoundKey(
-                        row.string("aktørId"),
-                        row.long("vedtakId"),
-                        row.localDate("beregningsdato"))
-                }.asSingle
-            ) ?: throw InntektNotFoundException("Inntekt compound key with id $inntektId not found.")
-        }
-    }
-
     override fun getBeregningsdato(inntektId: InntektId): LocalDate {
         return using(sessionOf(dataSource)) { session ->
             session.run(
@@ -67,12 +49,6 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                 }.asSingle
             ) ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
         }
-    }
-
-    override fun redigerInntekt(redigertInntekt: StoredInntekt): StoredInntekt {
-        val compoundKey = getInntektCompoundKey(redigertInntekt.inntektId)
-        val request = InntektRequest(compoundKey.aktørId, compoundKey.vedtakId, compoundKey.beregningsDato)
-        return insertInntekt(request, redigertInntekt.inntekt, true)
     }
 
     override fun getInntekt(inntektId: InntektId): StoredInntekt {
