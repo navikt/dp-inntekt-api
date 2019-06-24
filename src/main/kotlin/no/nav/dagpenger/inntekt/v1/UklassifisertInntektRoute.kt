@@ -19,8 +19,8 @@ import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.mapping.dataGrunnlagKlassifiseringToVerdikode
-import no.nav.dagpenger.inntekt.mapping.mapFromGUIInntekt
-import no.nav.dagpenger.inntekt.mapping.mapTo
+import no.nav.dagpenger.inntekt.mapping.mapToStoredInntekt
+import no.nav.dagpenger.inntekt.mapping.mapToDetachedInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
@@ -42,7 +42,7 @@ fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient,
             }
             post {
                 parseRequest().run {
-                    mapFromGUIInntekt(call.receive())
+                    mapToStoredInntekt(call.receive())
                         .let {
                             inntektStore.insertInntekt(this, it.inntekt, it.manueltRedigert)
                         }
@@ -72,7 +72,7 @@ fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient,
 
             post {
                 parseRequest().run {
-                    mapTo(call.receive())
+                    mapToDetachedInntekt(call.receive())
                         .let {
                             inntektStore.insertInntekt(this, it.inntekt, it.manueltRedigert)
                         }

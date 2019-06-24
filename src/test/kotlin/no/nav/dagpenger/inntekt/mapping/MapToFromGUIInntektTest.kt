@@ -193,7 +193,7 @@ internal class KategoriseringTest {
                 Aktoer(AktoerType.AKTOER_ID, "3333333333")
         ), false)
 
-        val mappedInntekt = mapFromGUIInntekt(guiInntekt)
+        val mappedInntekt = mapToStoredInntekt(guiInntekt)
 
         assertEquals(InntektBeskrivelse.ANNET, mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.beskrivelse)
         assertEquals(InntektType.LOENNSINNTEKT, mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.inntektType)
@@ -217,7 +217,7 @@ internal class KategoriseringTest {
                 Aktoer(AktoerType.AKTOER_ID, "3333333333")
         ), false)
 
-        val mappedInntekt = mapFromGUIInntekt(guiInntekt)
+        val mappedInntekt = mapToStoredInntekt(guiInntekt)
 
         val beforeJson = moshiInstance.adapter(GUIInntektsKomponentResponse::class.java).toJson(guiInntekt.inntekt)
         val mappedJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(mappedInntekt.inntekt)
@@ -242,7 +242,7 @@ internal class KategoriseringTest {
             LocalDateTime.now()
         )
 
-        val mapFromGUIInntekt = mapFromGUIInntekt(mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now())))
+        val mapFromGUIInntekt = mapToStoredInntekt(mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now())))
         assertEquals(storedInntekt.manueltRedigert, mapFromGUIInntekt.manueltRedigert)
         assertEquals(storedInntekt.inntekt, mapFromGUIInntekt.inntekt)
         assertEquals(storedInntekt.inntektId, mapFromGUIInntekt.inntektId)

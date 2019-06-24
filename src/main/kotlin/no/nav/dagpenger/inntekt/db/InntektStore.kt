@@ -29,11 +29,6 @@ data class InntektId(val id: String) {
     }
 }
 
-data class InntektCompoundKey(
-    val aktørId: String,
-    val vedtakId: Long,
-    val beregningsDato: LocalDate
-)
 
 class InntektNotFoundException(override val message: String) : RuntimeException(message)
 

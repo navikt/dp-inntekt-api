@@ -11,20 +11,17 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetalj
 import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
 import java.lang.IllegalArgumentException
 
-fun mapFromGUIInntekt(guiInntekt: GUIInntekt): StoredInntekt {
-    val unMappedInntekt = hubba(guiInntekt) ?: emptyList()
-    return guiInntekt.inntektId?.let {
-        StoredInntekt(guiInntekt.inntektId, InntektkomponentResponse(unMappedInntekt, guiInntekt.inntekt.ident), guiInntekt.manueltRedigert)
-    } ?: throw IllegalArgumentException("missing innktektId")
-}
+fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt = guiInntekt.inntektId?.let {
+    StoredInntekt(guiInntekt.inntektId, InntektkomponentResponse(mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)
+        ?: emptyList(), guiInntekt.inntekt.ident), guiInntekt.manueltRedigert)
+} ?: throw IllegalArgumentException("missing innktektId")
 
-fun mapTo(guiInntekt: GUIInntekt): DetachedInntekt {
-    val unMappedInntekt = hubba(guiInntekt) ?: emptyList()
-    return DetachedInntekt(InntektkomponentResponse(unMappedInntekt, guiInntekt.inntekt.ident), guiInntekt.manueltRedigert)
-}
+fun mapToDetachedInntekt(guiInntekt: GUIInntekt): DetachedInntekt =
+    DetachedInntekt(InntektkomponentResponse(mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)
+        ?: emptyList(), guiInntekt.inntekt.ident), guiInntekt.manueltRedigert)
 
-private fun hubba(guiInntekt: GUIInntekt): List<ArbeidsInntektMaaned>? {
-    return guiInntekt.inntekt.arbeidsInntektMaaned?.map { GUIarbeidsInntektMaaned ->
+private fun mapToArbeidsInntektMaaneder(arbeidsMaaneder: List<GUIArbeidsInntektMaaned>?): List<ArbeidsInntektMaaned>? {
+    return arbeidsMaaneder?.map { GUIarbeidsInntektMaaned ->
         ArbeidsInntektMaaned(
             GUIarbeidsInntektMaaned.aarMaaned,
             GUIarbeidsInntektMaaned.avvikListe,
