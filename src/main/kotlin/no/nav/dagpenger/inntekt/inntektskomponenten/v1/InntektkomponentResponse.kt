@@ -226,9 +226,5 @@ enum class InntektBeskrivelse {
     @Json(name = "vederlag")
     VEDERLAG,
     @Json(name = "sykepenger")
-    SYKEPENGER,
-    @Json(name = "sykepengerTilDagmamma")
-    SYKEPENGER_TIL_DAGMAMMA,
-    @Json(name = "sykepengerTilJordOgSkogbrukere")
-    SYKEPENGER_TIL_JORD_OG_SKOGBRUKERE,
+    SYKEPENGER
 }

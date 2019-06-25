@@ -617,15 +617,6 @@ internal class VerdikodeTest {
     }
 
     @Test
-    fun `test verdikode-mapping for Annen næringsinntekt`() {
-        val verdiKode = "Annen næringsinntekt"
-        val datagrunnlag = DatagrunnlagKlassifisering(InntektType.NAERINGSINNTEKT, InntektBeskrivelse.ANNET, null)
-
-        assertEquals(verdiKode, verdiKode(datagrunnlag))
-        assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
-    }
-
-    @Test
     fun `test verdikode-mapping for Hyre - Annet`() {
         val verdiKode = "Hyre - Annet"
         val datagrunnlag = DatagrunnlagKlassifisering(
@@ -805,38 +796,6 @@ internal class VerdikodeTest {
         val verdiKode = "Sykepenger fra folketrygden"
         val datagrunnlag =
             DatagrunnlagKlassifisering(InntektType.YTELSE_FRA_OFFENTLIGE, InntektBeskrivelse.SYKEPENGER, null)
-
-        assertEquals(verdiKode, verdiKode(datagrunnlag))
-        assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
-    }
-
-    @Test
-    fun `test verdikode-mapping for Sykepenger fra næring`() {
-        val verdiKode = "Sykepenger fra næring"
-        val datagrunnlag = DatagrunnlagKlassifisering(InntektType.NAERINGSINNTEKT, InntektBeskrivelse.SYKEPENGER, null)
-
-        assertEquals(verdiKode, verdiKode(datagrunnlag))
-        assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
-    }
-
-    @Test
-    fun `test verdikode-mapping for Sykepenger til dagmamma`() {
-        val verdiKode = "Sykepenger til dagmamma"
-        val datagrunnlag =
-            DatagrunnlagKlassifisering(InntektType.NAERINGSINNTEKT, InntektBeskrivelse.SYKEPENGER_TIL_DAGMAMMA, null)
-
-        assertEquals(verdiKode, verdiKode(datagrunnlag))
-        assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
-    }
-
-    @Test
-    fun `test verdikode-mapping for Sykepenger til jord- og skogbrukere`() {
-        val verdiKode = "Sykepenger til jord- og skogbrukere"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.NAERINGSINNTEKT,
-            InntektBeskrivelse.SYKEPENGER_TIL_JORD_OG_SKOGBRUKERE,
-            null
-        )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
