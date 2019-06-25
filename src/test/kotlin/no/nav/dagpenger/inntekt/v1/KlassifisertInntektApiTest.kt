@@ -1,6 +1,5 @@
 package no.nav.dagpenger.inntekt.v1
 
-import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -24,6 +23,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.moshiInstance
+import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.jupiter.api.Test
@@ -52,6 +52,7 @@ class KlassifisertInntektApiTest {
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val enhetsregisteretHttpClientMock: EnhetsregisteretHttpClient = mockk()
     private val personNameHttpClientMock: PersonNameHttpClient = mockk()
+    private val oppslagClientMock: OppslagClient = mockk()
     private val inntektStoreMock: InntektStore = mockk(relaxed = true)
     private val inntektPath = "/v1/inntekt"
 
@@ -81,6 +82,9 @@ class KlassifisertInntektApiTest {
         every {
             inntektStoreMock.getInntektId(any())
         } returns null
+        every {
+            oppslagClientMock.finnNaturligIdent(any())
+        } returns "12345678912"
     }
 
     @Test
@@ -217,6 +221,7 @@ class KlassifisertInntektApiTest {
                 inntektStoreMock,
                 enhetsregisteretHttpClientMock,
                 personNameHttpClientMock,
+                oppslagClientMock,
                 authApiKeyVerifier,
                 mockk(relaxed = true)
             ))

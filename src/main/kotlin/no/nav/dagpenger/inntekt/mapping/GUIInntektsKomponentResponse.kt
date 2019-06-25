@@ -15,7 +15,8 @@ data class GUIInntekt(
     val inntektId: InntektId?,
     val timestamp: LocalDateTime?,
     val inntekt: GUIInntektsKomponentResponse,
-    val manueltRedigert: Boolean
+    val manueltRedigert: Boolean,
+    val naturligIdent: String? = null
 )
 
 data class GUIInntektsKomponentResponse(

@@ -6,7 +6,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 
-fun mapToGUIInntekt(inntekt: InntektkomponentResponse, opptjeningsPeriode: Opptjeningsperiode) = GUIInntekt(
+fun mapToGUIInntekt(inntekt: InntektkomponentResponse, opptjeningsPeriode: Opptjeningsperiode, personnummer: String?) = GUIInntekt(
     null,
     null,
     GUIInntektsKomponentResponse(
@@ -15,10 +15,11 @@ fun mapToGUIInntekt(inntekt: InntektkomponentResponse, opptjeningsPeriode: Opptj
         arbeidsInntektMaaned = mapToArbeidsInntektMaaneder(inntekt.arbeidsInntektMaaned),
         ident = inntekt.ident
     ),
-    false
+    false,
+    personnummer
 )
 
-fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjeningsperiode) = GUIInntekt(
+fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjeningsperiode, personnummer: String?) = GUIInntekt(
     storedInntekt.inntektId,
     storedInntekt.timestamp,
     GUIInntektsKomponentResponse(
@@ -27,7 +28,8 @@ fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjening
         arbeidsInntektMaaned = mapToArbeidsInntektMaaneder(storedInntekt.inntekt.arbeidsInntektMaaned),
         ident = storedInntekt.inntekt.ident
     ),
-    storedInntekt.manueltRedigert
+    storedInntekt.manueltRedigert,
+    personnummer
 )
 
 private fun mapToArbeidsInntektMaaneder(list: List<ArbeidsInntektMaaned>?) =

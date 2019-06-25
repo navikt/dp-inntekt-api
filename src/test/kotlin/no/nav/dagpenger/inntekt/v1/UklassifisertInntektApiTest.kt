@@ -24,6 +24,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.moshiInstance
+import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -52,7 +53,7 @@ class UklassifisertInntektApiTest {
         YearMonth.of(2015, 12),
         YearMonth.of(2018, 12)
     )
-
+    private val oppslagClientMock: OppslagClient = mockk()
     private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234"))
 
     private val storedInntekt = StoredInntekt(
@@ -89,6 +90,10 @@ class UklassifisertInntektApiTest {
         every {
             inntektskomponentClientMock.getInntekt(inntektkomponentenFoundRequest)
         } returns emptyInntekt
+
+        every {
+            oppslagClientMock.finnNaturligIdent(any())
+        } returns "12345678912"
     }
 
     @Test
@@ -233,7 +238,7 @@ class UklassifisertInntektApiTest {
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
-            (inntektApi(inntektskomponentClientMock, inntektStoreMock, mockk(), mockk(), mockk(relaxed = true), jwkProvider = jwtStub.stubbedJwkProvider()))
+            (inntektApi(inntektskomponentClientMock, inntektStoreMock, mockk(), mockk(), oppslagClientMock, mockk(relaxed = true), jwkProvider = jwtStub.stubbedJwkProvider()))
         }) { callback() }
     }
 }

@@ -93,17 +93,19 @@ val rawInntekt = InntektkomponentResponse(
     Aktoer(AktoerType.AKTOER_ID, "aktorId")
 )
 
+val testPnr = "12345678912"
+
 val inntektMedVerdikode = GUIArbeidsInntektInformasjon(
-        listOf(InntektMedVerdikode(
-                BigDecimal.ONE,
-                "fordel",
-                InntektBeskrivelse.FASTLOENN,
-                "kilde",
-                "status",
-                "periodetype",
-                inntektType = InntektType.NAERINGSINNTEKT,
-                utbetaltIMaaned = YearMonth.of(2019, 6),
-                verdikode = "Hyre - Annet"))
+    listOf(InntektMedVerdikode(
+        BigDecimal.ONE,
+        "fordel",
+        InntektBeskrivelse.FASTLOENN,
+        "kilde",
+        "status",
+        "periodetype",
+        inntektType = InntektType.NAERINGSINNTEKT,
+        utbetaltIMaaned = YearMonth.of(2019, 6),
+        verdikode = "Hyre - Annet"))
 )
 
 internal class KategoriseringTest {
@@ -116,19 +118,19 @@ internal class KategoriseringTest {
             false,
             LocalDateTime.now()
         )
-        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))
+        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), testPnr)
         assertEquals(
             "Aksjer/grunnfondsbevis til underkurs",
             guiInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode
         )
         assertEquals(
             "Fastlønn",
-            guiInntekt.inntekt.arbeidsInntektMaaned?.filter {
+            guiInntekt.inntekt.arbeidsInntektMaaned?.first {
                 it.aarMaaned == YearMonth.of(
                     2019,
                     6
                 )
-            }?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode
+            }?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode
         )
         assertEquals(
             "Hyre - Annet",
@@ -149,7 +151,7 @@ internal class KategoriseringTest {
             false,
             LocalDateTime.now()
         )
-        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))
+        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), testPnr)
 
         assertNotNull(guiInntekt.inntekt.fraDato)
         assertNotNull(guiInntekt.inntekt.tilDato)
@@ -163,7 +165,7 @@ internal class KategoriseringTest {
             false,
             LocalDateTime.now()
         )
-        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))
+        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), testPnr)
 
         val beforeJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(rawInntekt)
         val mappedJson = moshiInstance.adapter(GUIInntektsKomponentResponse::class.java).toJson(guiInntekt.inntekt)
@@ -185,12 +187,12 @@ internal class KategoriseringTest {
             YearMonth.now(),
             listOf(
                 GUIArbeidsInntektMaaned(
-                        YearMonth.of(2019, 6),
-                        listOf(Avvik(Aktoer(AktoerType.AKTOER_ID, "1111111"), Aktoer(AktoerType.AKTOER_ID, "2222222222"), null, YearMonth.of(2019, 6), "tekst")),
-                        inntektMedVerdikode
+                    YearMonth.of(2019, 6),
+                    listOf(Avvik(Aktoer(AktoerType.AKTOER_ID, "1111111"), Aktoer(AktoerType.AKTOER_ID, "2222222222"), null, YearMonth.of(2019, 6), "tekst")),
+                    inntektMedVerdikode
                 )
-        ),
-                Aktoer(AktoerType.AKTOER_ID, "3333333333")
+            ),
+            Aktoer(AktoerType.AKTOER_ID, "3333333333")
         ), false)
 
         val mappedInntekt = mapToStoredInntekt(guiInntekt)
@@ -198,8 +200,8 @@ internal class KategoriseringTest {
         assertEquals(InntektBeskrivelse.ANNET, mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.beskrivelse)
         assertEquals(InntektType.LOENNSINNTEKT, mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.inntektType)
         assertEquals(
-                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
-                mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold)
+            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold)
     }
 
     @Test
@@ -209,12 +211,12 @@ internal class KategoriseringTest {
             YearMonth.now(),
             listOf(
                 GUIArbeidsInntektMaaned(
-                        YearMonth.of(2019, 6),
-                        listOf(Avvik(Aktoer(AktoerType.AKTOER_ID, "1111111"), Aktoer(AktoerType.AKTOER_ID, "2222222222"), null, YearMonth.of(2019, 6), "tekst")),
-                        inntektMedVerdikode
+                    YearMonth.of(2019, 6),
+                    listOf(Avvik(Aktoer(AktoerType.AKTOER_ID, "1111111"), Aktoer(AktoerType.AKTOER_ID, "2222222222"), null, YearMonth.of(2019, 6), "tekst")),
+                    inntektMedVerdikode
                 )
-        ),
-                Aktoer(AktoerType.AKTOER_ID, "3333333333")
+            ),
+            Aktoer(AktoerType.AKTOER_ID, "3333333333")
         ), false)
 
         val mappedInntekt = mapToStoredInntekt(guiInntekt)
@@ -223,13 +225,13 @@ internal class KategoriseringTest {
         val mappedJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(mappedInntekt.inntekt)
 
         JSONAssert.assertEquals(
-                beforeJson, mappedJson,
-                AttributeIgnoringComparator(
-                        JSONCompareMode.LENIENT,
-                        setOf("verdikode", "fraDato", "tilDato"),
-                        Customization("**.beskrivelse") { _, _ -> true },
-                        Customization("**.inntektType") { _, _ -> true }
-                )
+            beforeJson, mappedJson,
+            AttributeIgnoringComparator(
+                JSONCompareMode.LENIENT,
+                setOf("verdikode", "fraDato", "tilDato"),
+                Customization("**.beskrivelse") { _, _ -> true },
+                Customization("**.inntektType") { _, _ -> true }
+            )
         )
     }
 
@@ -242,7 +244,7 @@ internal class KategoriseringTest {
             LocalDateTime.now()
         )
 
-        val mapFromGUIInntekt = mapToStoredInntekt(mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now())))
+        val mapFromGUIInntekt = mapToStoredInntekt(mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), null))
         assertEquals(storedInntekt.manueltRedigert, mapFromGUIInntekt.manueltRedigert)
         assertEquals(storedInntekt.inntekt, mapFromGUIInntekt.inntekt)
         assertEquals(storedInntekt.inntektId, mapFromGUIInntekt.inntektId)

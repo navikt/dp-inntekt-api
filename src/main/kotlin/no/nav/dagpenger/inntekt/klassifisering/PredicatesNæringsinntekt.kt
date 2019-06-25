@@ -6,7 +6,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforho
 
 fun predicatesInntektklasseNæringsinntekt(): List<(DatagrunnlagKlassifisering) -> Boolean> {
     return listOf(
-        ::isNæringAnnet,
         ::isLønnAnnetHyre,
         ::isLønnBonusHyre,
         ::isLønnFastTilleggHyre,
@@ -23,9 +22,6 @@ fun predicatesInntektklasseNæringsinntekt(): List<(DatagrunnlagKlassifisering) 
         ::isNæringVederlag
     )
 }
-
-fun isNæringAnnet(datagrunnlag: DatagrunnlagKlassifisering): Boolean =
-    datagrunnlag.type == InntektType.NAERINGSINNTEKT && datagrunnlag.beskrivelse == InntektBeskrivelse.ANNET
 
 fun isLønnAnnetHyre(datagrunnlag: DatagrunnlagKlassifisering): Boolean =
     datagrunnlag.type == InntektType.LOENNSINNTEKT &&

@@ -18,36 +18,44 @@ import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
+import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.dataGrunnlagKlassifiseringToVerdikode
 import no.nav.dagpenger.inntekt.mapping.mapToStoredInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToDetachedInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
+import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
 
-fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient, inntektStore: InntektStore) {
+fun Route.uklassifisertInntekt(
+    inntektskomponentClient: InntektskomponentClient,
+    inntektStore: InntektStore,
+    oppslagClient: OppslagClient
+) {
     authenticate("jwt") {
         route("/uklassifisert/{aktørId}/{vedtakId}/{beregningsDato}") {
             get {
-                parseRequest().run {
+                parseUrlPathParameters().run {
                     inntektStore.getInntektId(this)
                         ?.let {
                             inntektStore.getInntekt(it)
                         }?.let {
-                            mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato))
+                            val personNummer = oppslagClient.finnNaturligIdent(this.aktørId)
+                            mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), personNummer)
                         }?.let {
                             call.respond(HttpStatusCode.OK, it)
                         } ?: throw InntektNotFoundException("Inntekt with for $this not found.")
                 }
             }
             post {
-                parseRequest().run {
-                    mapToStoredInntekt(call.receive())
+                parseUrlPathParameters().run {
+                    val guiInntekt = call.receive<GUIInntekt>()
+                    mapToStoredInntekt(guiInntekt)
                         .let {
                             inntektStore.insertInntekt(this, it.inntekt, true) // todo Use property from call
                         }
                         .let {
-                            call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato)))
+                            call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), guiInntekt.naturligIdent))
                         }
                 }
             }
@@ -55,14 +63,15 @@ fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient,
 
         route("/uklassifisert/uncached/{aktørId}/{vedtakId}/{beregningsDato}") {
             get {
-                parseRequest().run {
+                parseUrlPathParameters().run {
                     val opptjeningsperiode = Opptjeningsperiode(this.beregningsDato)
                     toInntektskomponentRequest(this, opptjeningsperiode)
                         .let {
                             inntektskomponentClient.getInntekt(it)
                         }
                         .let {
-                            mapToGUIInntekt(it, opptjeningsperiode)
+                            val personNummer = oppslagClient.finnNaturligIdent(this.aktørId)
+                            mapToGUIInntekt(it, opptjeningsperiode, personNummer)
                         }
                         .let {
                             call.respond(HttpStatusCode.OK, it)
@@ -71,13 +80,14 @@ fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient,
             }
 
             post {
-                parseRequest().run {
-                    mapToDetachedInntekt(call.receive())
+                parseUrlPathParameters().run {
+                    val guiInntekt = call.receive<GUIInntekt>()
+                    mapToDetachedInntekt(guiInntekt)
                         .let {
                             inntektStore.insertInntekt(this, it.inntekt, true) // todo use flag from GUI
                         }
                         .let {
-                            call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato)))
+                            call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), guiInntekt.naturligIdent))
                         }
                 }
             }
@@ -94,7 +104,7 @@ fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient,
     }
 }
 
-private fun PipelineContext<Unit, ApplicationCall>.parseRequest(): InntektRequest = runCatching {
+private fun PipelineContext<Unit, ApplicationCall>.parseUrlPathParameters(): InntektRequest = runCatching {
     InntektRequest(
         aktørId = call.parameters["aktørId"]!!,
         vedtakId = call.parameters["vedtakId"]!!.toLong(),
