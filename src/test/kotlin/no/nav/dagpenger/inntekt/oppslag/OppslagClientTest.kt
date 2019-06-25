@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import no.nav.dagpenger.oidc.OidcClient
 import no.nav.dagpenger.oidc.OidcToken
+import no.nav.dagpenger.oidc.StsOidcClientException
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -25,6 +26,13 @@ class OppslagClientTest {
             return OidcToken(UUID.randomUUID().toString(), "openid", 3000)
         }
     }
+
+    val failingOidcClient = object : OidcClient {
+        override fun oidcToken(): OidcToken {
+            throw StsOidcClientException("Failed!", RuntimeException("arrgg!"))
+        }
+    }
+
     companion object {
         val server = WireMockServer(WireMockConfiguration.options().dynamicPort())
 
@@ -66,6 +74,18 @@ class OppslagClientTest {
             WireMock.get(WireMock.urlEqualTo("//naturlig-ident"))
                 .withHeader("ident", AnythingPattern())
                 .willReturn(WireMock.serverError())
+        )
+        val pnr = oppslagClient.finnNaturligIdent("1234")
+        assertNull(pnr)
+    }
+
+    @Test
+    fun `returns empty string if something goes wrong with fetching OIDC token`() {
+        val oppslagClient = OppslagClient(server.url(""), failingOidcClient)
+        WireMock.stubFor(
+            WireMock.get(WireMock.urlEqualTo("//naturlig-ident"))
+                .withHeader("ident", AnythingPattern())
+                .willReturn(WireMock.aResponse().withBody(validResponse))
         )
         val pnr = oppslagClient.finnNaturligIdent("1234")
         assertNull(pnr)
