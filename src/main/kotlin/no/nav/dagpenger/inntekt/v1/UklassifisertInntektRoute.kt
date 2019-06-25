@@ -20,10 +20,15 @@ import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.dataGrunnlagKlassifiseringToVerdikode
 import no.nav.dagpenger.inntekt.mapping.mapFromGUIInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
+import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
 
-fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient, inntektStore: InntektStore) {
+fun Route.uklassifisertInntekt(
+    inntektskomponentClient: InntektskomponentClient,
+    inntektStore: InntektStore,
+    oppslagClient: OppslagClient
+) {
     authenticate("jwt") {
         route("/uklassifisert/{aktørId}/{vedtakId}/{beregningsDato}") {
             get {
@@ -36,11 +41,11 @@ fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient,
                 } catch (e: Exception) {
                     throw IllegalArgumentException("Failed to parse parameters", e)
                 }
-
+                val personNummer = oppslagClient.finnNaturligIdent(request.aktørId)
                 val opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
                 val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
                     ?: throw InntektNotFoundException("Inntekt with for $request not found.")
-                val mappedInntekt = mapToGUIInntekt(storedInntekt, opptjeningsperiode)
+                val mappedInntekt = mapToGUIInntekt(storedInntekt, opptjeningsperiode, personNummer)
                 call.respond(HttpStatusCode.OK, mappedInntekt)
             }
         }
@@ -58,10 +63,12 @@ fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient,
                 }
 
                 val opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
+                val personNummer = oppslagClient.finnNaturligIdent(request.aktørId)
+
                 val uncachedInntekt =
                     inntektskomponentClient.getInntekt(toInntektskomponentRequest(request, opptjeningsperiode))
                 val storedInntekt = inntektStore.insertInntekt(request, uncachedInntekt)
-                val mappedInntekt = mapToGUIInntekt(storedInntekt, opptjeningsperiode)
+                val mappedInntekt = mapToGUIInntekt(storedInntekt, opptjeningsperiode, personNummer)
                 call.respond(HttpStatusCode.OK, mappedInntekt)
             }
         }
@@ -73,7 +80,7 @@ fun Route.uklassifisertInntekt(inntektskomponentClient: InntektskomponentClient,
                 val storedInntekt = inntektStore.redigerInntekt(mappedInntekt)
                 val key = inntektStore.getInntektCompoundKey(storedInntekt.inntektId)
                 val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(key.beregningsDato)
-                call.respond(HttpStatusCode.OK, mapToGUIInntekt(storedInntekt, opptjeningsperiode))
+                call.respond(HttpStatusCode.OK, mapToGUIInntekt(storedInntekt, opptjeningsperiode, request.naturligIdent))
             }
         }
     }

@@ -31,6 +31,7 @@ class OpptjeningsperiodeApiSpec {
                 inntektStore,
                 mockk(),
                 mockk(),
+                mockk(),
                 mockk(relaxed = true),
                 mockk(relaxed = true)
             )
