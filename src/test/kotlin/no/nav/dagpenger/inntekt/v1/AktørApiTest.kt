@@ -12,6 +12,7 @@ import io.mockk.mockk
 import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
+import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -34,11 +35,15 @@ class AktørApiTest {
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val enhetsregisteretHttpClientMock: EnhetsregisteretHttpClient = mockk()
     private val personNameHttpClientMock: PersonNameHttpClient = mockk()
+    private val oppslagClientMock: OppslagClient = mockk()
 
     init {
         every {
             enhetsregisteretHttpClientMock.getOrgName(any())
         } returns "123456789"
+        every {
+            oppslagClientMock.finnNaturligIdent(any())
+        } returns "12345678912"
     }
 
     @Test
@@ -70,6 +75,7 @@ class AktørApiTest {
                 mockk(relaxed = true),
                 enhetsregisteretHttpClientMock,
                 personNameHttpClientMock,
+                oppslagClientMock,
                 mockk(relaxed = true),
                 mockk(relaxed = true)))
         }) { callback() }

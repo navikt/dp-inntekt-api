@@ -40,6 +40,7 @@ import no.nav.dagpenger.inntekt.db.migrate
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
+import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
 import no.nav.dagpenger.inntekt.v1.aktørApi
 import no.nav.dagpenger.inntekt.v1.klassifisertInntekt
@@ -70,11 +71,13 @@ fun main() {
     val allowedApiKeys = config.application.allowedApiKeys
 
     val postgresInntektStore = PostgresInntektStore(dataSourceFrom(config))
+    val stsOidcClient = StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
 
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
         config.application.hentinntektListeUrl,
-        StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
+        stsOidcClient
     )
+    val oppslagClient = OppslagClient(config.application.oppslagUrl, stsOidcClient)
 
     val enhetsregisteretHttpClient = EnhetsregisteretHttpClient(config.application.enhetsregisteretUrl)
 
@@ -87,6 +90,7 @@ fun main() {
             postgresInntektStore,
             enhetsregisteretHttpClient,
             personNameHttpClient,
+            oppslagClient,
             AuthApiKeyVerifier(apiKeyVerifier, allowedApiKeys),
             jwkProvider
         )
@@ -102,6 +106,7 @@ fun Application.inntektApi(
     inntektStore: InntektStore,
     enhetsregisteretHttpClient: EnhetsregisteretHttpClient,
     personNameHttpClient: PersonNameHttpClient,
+    oppslagClient: OppslagClient,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     jwkProvider: JwkProvider
 ) {
@@ -231,7 +236,7 @@ fun Application.inntektApi(
         route("/v1") {
             route("/inntekt") {
                 klassifisertInntekt(inntektskomponentHttpClient, inntektStore)
-                uklassifisertInntekt(inntektskomponentHttpClient, inntektStore)
+                uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, oppslagClient)
             }
 
             opptjeningsperiodeApi(inntektStore)
