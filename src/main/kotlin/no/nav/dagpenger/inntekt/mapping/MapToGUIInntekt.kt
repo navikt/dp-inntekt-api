@@ -5,10 +5,11 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
+import java.time.LocalDateTime
 
 fun mapToGUIInntekt(inntekt: InntektkomponentResponse, opptjeningsPeriode: Opptjeningsperiode, personnummer: String?) = GUIInntekt(
     null,
-    null,
+    LocalDateTime.now(),
     GUIInntektsKomponentResponse(
         tilDato = opptjeningsPeriode.sisteAvsluttendeKalenderMåned,
         fraDato = opptjeningsPeriode.førsteMåned,
