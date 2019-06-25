@@ -17,6 +17,7 @@ fun mapToGUIInntekt(inntekt: InntektkomponentResponse, opptjeningsPeriode: Opptj
         ident = inntekt.ident
     ),
     false,
+    false,
     personnummer
 )
 
@@ -29,6 +30,7 @@ fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjening
         arbeidsInntektMaaned = mapToArbeidsInntektMaaneder(storedInntekt.inntekt.arbeidsInntektMaaned),
         ident = storedInntekt.inntekt.ident
     ),
+    storedInntekt.manueltRedigert,
     storedInntekt.manueltRedigert,
     personnummer
 )

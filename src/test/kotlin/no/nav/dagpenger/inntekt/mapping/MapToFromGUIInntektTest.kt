@@ -193,7 +193,7 @@ internal class KategoriseringTest {
                 )
             ),
             Aktoer(AktoerType.AKTOER_ID, "3333333333")
-        ), false)
+        ), false, false)
 
         val mappedInntekt = mapToStoredInntekt(guiInntekt)
 
@@ -217,7 +217,7 @@ internal class KategoriseringTest {
                 )
             ),
             Aktoer(AktoerType.AKTOER_ID, "3333333333")
-        ), false)
+        ), false, false)
 
         val mappedInntekt = mapToStoredInntekt(guiInntekt)
 

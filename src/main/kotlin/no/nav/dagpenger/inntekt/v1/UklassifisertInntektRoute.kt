@@ -52,7 +52,7 @@ fun Route.uklassifisertInntekt(
                     val guiInntekt = call.receive<GUIInntekt>()
                     mapToStoredInntekt(guiInntekt)
                         .let {
-                            inntektStore.insertInntekt(this, it.inntekt, true) // todo Use property from call
+                            inntektStore.insertInntekt(this, it.inntekt, guiInntekt.redigertAvSaksbehandler)
                         }
                         .let {
                             call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), guiInntekt.naturligIdent))
@@ -84,7 +84,7 @@ fun Route.uklassifisertInntekt(
                     val guiInntekt = call.receive<GUIInntekt>()
                     mapToDetachedInntekt(guiInntekt)
                         .let {
-                            inntektStore.insertInntekt(this, it.inntekt, true) // todo use flag from GUI
+                            inntektStore.insertInntekt(this, it.inntekt, guiInntekt.redigertAvSaksbehandler)
                         }
                         .let {
                             call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), guiInntekt.naturligIdent))

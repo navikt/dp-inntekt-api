@@ -23,6 +23,8 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
+import no.nav.dagpenger.inntekt.mapping.GUIInntekt
+import no.nav.dagpenger.inntekt.mapping.GUIInntektsKomponentResponse
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import org.junit.jupiter.api.Assertions
@@ -74,7 +76,7 @@ class UklassifisertInntektApiTest {
         } returns inntektId
 
         every {
-            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt, true)
+            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt, false)
         } returns storedInntekt
 
         every {
@@ -196,10 +198,19 @@ class UklassifisertInntektApiTest {
 
     @Test
     fun `Post uklassifisert inntekt should return 200 ok`() = testApp {
+        val guiInntekt = GUIInntekt(
+            inntektId = inntektId,
+            timestamp = null,
+            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+            manueltRedigert = false,
+            redigertAvSaksbehandler = false,
+            naturligIdent = null
+        )
+
         handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}") {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
-            setBody(storedInntektAdapter.toJson(storedInntekt))
+            setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
         }.apply {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
@@ -211,10 +222,20 @@ class UklassifisertInntektApiTest {
 
     @Test
     fun `Post uklassifisert uncached inntekt should return 200 ok`() = testApp {
+
+        val guiInntekt = GUIInntekt(
+            inntektId = null,
+            timestamp = null,
+            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+            manueltRedigert = false,
+            redigertAvSaksbehandler = false,
+            naturligIdent = null
+        )
+
         handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/uncached/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}") {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
-            setBody(storedInntektAdapter.toJson(storedInntekt))
+            setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
         }.apply {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
