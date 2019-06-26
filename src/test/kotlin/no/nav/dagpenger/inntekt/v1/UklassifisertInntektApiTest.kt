@@ -12,7 +12,7 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.dagpenger.inntekt.JwtStub
 import no.nav.dagpenger.inntekt.Problem
-import no.nav.dagpenger.inntekt.db.InntektCompoundKey
+import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.StoredInntekt
@@ -23,6 +23,8 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
+import no.nav.dagpenger.inntekt.mapping.GUIInntekt
+import no.nav.dagpenger.inntekt.mapping.GUIInntektsKomponentResponse
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import org.junit.jupiter.api.Assertions
@@ -74,15 +76,7 @@ class UklassifisertInntektApiTest {
         } returns inntektId
 
         every {
-            inntektStoreMock.getInntektCompoundKey(inntektId)
-        } returns InntektCompoundKey(foundRequest.aktørId, foundRequest.vedtakId, foundRequest.beregningsDato)
-
-        every {
-            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt)
-        } returns storedInntekt
-
-        every {
-            inntektStoreMock.redigerInntekt(storedInntekt)
+            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt, false)
         } returns storedInntekt
 
         every {
@@ -197,17 +191,51 @@ class UklassifisertInntektApiTest {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
             val uncachedInntekt =
-                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+                moshiInstance.adapter<DetachedInntekt>(DetachedInntekt::class.java).fromJson(response.content!!)!!
             assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
         }
     }
 
     @Test
     fun `Post uklassifisert inntekt should return 200 ok`() = testApp {
-        handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/update") {
+        val guiInntekt = GUIInntekt(
+            inntektId = inntektId,
+            timestamp = null,
+            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+            manueltRedigert = false,
+            redigertAvSaksbehandler = false,
+            naturligIdent = null
+        )
+
+        handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}") {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
-            setBody(storedInntektAdapter.toJson(storedInntekt))
+            setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
+        }.apply {
+            assertTrue(requestHandled)
+            assertEquals(HttpStatusCode.OK, response.status())
+            val storedInntekt =
+                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+            assertEquals(storedInntekt.inntektId, inntektId)
+        }
+    }
+
+    @Test
+    fun `Post uklassifisert uncached inntekt should return 200 ok`() = testApp {
+
+        val guiInntekt = GUIInntekt(
+            inntektId = null,
+            timestamp = null,
+            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+            manueltRedigert = false,
+            redigertAvSaksbehandler = false,
+            naturligIdent = null
+        )
+
+        handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/uncached/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
         }.apply {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())

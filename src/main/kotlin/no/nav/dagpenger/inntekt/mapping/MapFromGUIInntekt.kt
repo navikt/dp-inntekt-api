@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.mapping
 
+import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
@@ -8,9 +9,19 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
 import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
+import java.lang.IllegalArgumentException
 
-fun mapFromGUIInntekt(guiInntekt: GUIInntekt): StoredInntekt {
-    val unMappedInntekt = guiInntekt.inntekt.arbeidsInntektMaaned?.map { GUIarbeidsInntektMaaned ->
+fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt = guiInntekt.inntektId?.let {
+    StoredInntekt(guiInntekt.inntektId, InntektkomponentResponse(mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)
+        ?: emptyList(), guiInntekt.inntekt.ident), guiInntekt.manueltRedigert)
+} ?: throw IllegalArgumentException("missing innktektId")
+
+fun mapToDetachedInntekt(guiInntekt: GUIInntekt): DetachedInntekt =
+    DetachedInntekt(InntektkomponentResponse(mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)
+        ?: emptyList(), guiInntekt.inntekt.ident), guiInntekt.manueltRedigert)
+
+private fun mapToArbeidsInntektMaaneder(arbeidsMaaneder: List<GUIArbeidsInntektMaaned>?): List<ArbeidsInntektMaaned>? {
+    return arbeidsMaaneder?.map { GUIarbeidsInntektMaaned ->
         ArbeidsInntektMaaned(
             GUIarbeidsInntektMaaned.aarMaaned,
             GUIarbeidsInntektMaaned.avvikListe,
@@ -40,6 +51,5 @@ fun mapFromGUIInntekt(guiInntekt: GUIInntekt): StoredInntekt {
                         datagrunnlagForVerdikode.forhold?.let { TilleggInformasjon(inntekt.tilleggsinformasjon?.kategori, TilleggInformasjonsDetaljer(inntekt.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.detaljerType, it)) }
                     )
                 } ?: emptyList()))
-    } ?: emptyList()
-    return StoredInntekt(guiInntekt.inntektId, InntektkomponentResponse(unMappedInntekt, guiInntekt.inntekt.ident), guiInntekt.manueltRedigert)
+    }
 }

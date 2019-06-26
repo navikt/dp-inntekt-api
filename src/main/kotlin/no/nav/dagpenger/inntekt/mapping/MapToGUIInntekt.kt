@@ -1,11 +1,42 @@
 package no.nav.dagpenger.inntekt.mapping
 
 import no.nav.dagpenger.inntekt.db.StoredInntekt
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
+import java.time.LocalDateTime
 
-fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjeningsperiode, personnummer: String? = null): GUIInntekt {
-    val mappedInntekt = storedInntekt.inntekt.arbeidsInntektMaaned?.map { arbeidsInntektMaaned ->
+fun mapToGUIInntekt(inntekt: InntektkomponentResponse, opptjeningsPeriode: Opptjeningsperiode, personnummer: String?) = GUIInntekt(
+    null,
+    LocalDateTime.now(),
+    GUIInntektsKomponentResponse(
+        tilDato = opptjeningsPeriode.sisteAvsluttendeKalenderMåned,
+        fraDato = opptjeningsPeriode.førsteMåned,
+        arbeidsInntektMaaned = mapToArbeidsInntektMaaneder(inntekt.arbeidsInntektMaaned),
+        ident = inntekt.ident
+    ),
+    false,
+    false,
+    personnummer
+)
+
+fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjeningsperiode, personnummer: String?) = GUIInntekt(
+    storedInntekt.inntektId,
+    storedInntekt.timestamp,
+    GUIInntektsKomponentResponse(
+        tilDato = opptjeningsPeriode.sisteAvsluttendeKalenderMåned,
+        fraDato = opptjeningsPeriode.førsteMåned,
+        arbeidsInntektMaaned = mapToArbeidsInntektMaaneder(storedInntekt.inntekt.arbeidsInntektMaaned),
+        ident = storedInntekt.inntekt.ident
+    ),
+    storedInntekt.manueltRedigert,
+    storedInntekt.manueltRedigert,
+    personnummer
+)
+
+private fun mapToArbeidsInntektMaaneder(list: List<ArbeidsInntektMaaned>?) =
+    list?.map { arbeidsInntektMaaned ->
         GUIArbeidsInntektMaaned(
             arbeidsInntektMaaned.aarMaaned,
             arbeidsInntektMaaned.avvikListe,
@@ -41,18 +72,4 @@ fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjening
                         )
                     )
                 } ?: emptyList()))
-    } ?: emptyList()
-
-    return GUIInntekt(
-        storedInntekt.inntektId,
-        storedInntekt.timestamp,
-        GUIInntektsKomponentResponse(
-            tilDato = opptjeningsPeriode.sisteAvsluttendeKalenderMåned,
-            fraDato = opptjeningsPeriode.førsteMåned,
-            arbeidsInntektMaaned = mappedInntekt,
-            ident = storedInntekt.inntekt.ident
-        ),
-        storedInntekt.manueltRedigert,
-        personnummer
-    )
-}
+    }
