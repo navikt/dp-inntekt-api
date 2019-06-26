@@ -3,6 +3,8 @@ package no.nav.dagpenger.inntekt.v1
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.auth.authenticate
+import io.ktor.auth.authentication
+import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
@@ -13,6 +15,7 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.util.pipeline.PipelineContext
+import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
@@ -26,6 +29,8 @@ import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
+
+private val LOGGER = KotlinLogging.logger {}
 
 fun Route.uklassifisertInntekt(
     inntektskomponentClient: InntektskomponentClient,
@@ -57,7 +62,7 @@ fun Route.uklassifisertInntekt(
                         .let {
                             call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), guiInntekt.naturligIdent))
                         }
-                }
+                }.run { logSubject() }
             }
         }
 
@@ -89,7 +94,7 @@ fun Route.uklassifisertInntekt(
                         .let {
                             call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), guiInntekt.naturligIdent))
                         }
-                }
+                }.run { logSubject() }
             }
         }
     }
@@ -100,6 +105,15 @@ fun Route.uklassifisertInntekt(
                 ContentType.Application.Json,
                 HttpStatusCode.OK
             )
+        }
+    }
+}
+
+private fun PipelineContext<Unit, ApplicationCall>.logSubject() {
+    runCatching {
+        call.authentication.principal?.let {
+            val jwtPrincipal = it as JWTPrincipal
+            LOGGER.info { jwtPrincipal.payload.subject }
         }
     }
 }
