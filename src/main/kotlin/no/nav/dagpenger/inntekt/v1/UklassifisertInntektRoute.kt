@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.v1
 
+import com.auth0.jwt.exceptions.JWTDecodeException
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.auth.authenticate
@@ -18,6 +19,7 @@ import io.ktor.util.pipeline.PipelineContext
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
@@ -57,12 +59,12 @@ fun Route.uklassifisertInntekt(
                     val guiInntekt = call.receive<GUIInntekt>()
                     mapToStoredInntekt(guiInntekt)
                         .let {
-                            inntektStore.insertInntekt(this, it.inntekt, guiInntekt.redigertAvSaksbehandler)
+                            inntektStore.insertInntekt(this, it.inntekt, ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject()))
                         }
                         .let {
                             call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), guiInntekt.naturligIdent))
                         }
-                }.run { logSubject() }
+                }
             }
         }
 
@@ -89,12 +91,12 @@ fun Route.uklassifisertInntekt(
                     val guiInntekt = call.receive<GUIInntekt>()
                     mapToDetachedInntekt(guiInntekt)
                         .let {
-                            inntektStore.insertInntekt(this, it.inntekt, guiInntekt.redigertAvSaksbehandler)
+                            inntektStore.insertInntekt(this, it.inntekt, ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject()))
                         }
                         .let {
                             call.respond(HttpStatusCode.OK, mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), guiInntekt.naturligIdent))
                         }
-                }.run { logSubject() }
+                }
             }
         }
     }
@@ -109,12 +111,14 @@ fun Route.uklassifisertInntekt(
     }
 }
 
-private fun PipelineContext<Unit, ApplicationCall>.logSubject() {
-    runCatching {
+private fun PipelineContext<Unit, ApplicationCall>.getSubject(): String {
+    return runCatching {
         call.authentication.principal?.let {
-            val jwtPrincipal = it as JWTPrincipal
-            LOGGER.info { jwtPrincipal.payload.subject }
-        }
+            (it as JWTPrincipal).payload.subject
+        } ?: throw JWTDecodeException("Unable to get subject from JWT")
+    }.getOrElse {
+        LOGGER.error(it) { "Unable to get subject" }
+        return@getOrElse "UNKNOWN"
     }
 }
 
