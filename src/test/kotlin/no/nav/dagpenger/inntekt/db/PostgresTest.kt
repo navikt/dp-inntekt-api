@@ -23,7 +23,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(4, migrations, "Wrong number of migrations")
+            assertEquals(5, migrations, "Wrong number of migrations")
         }
     }
 
@@ -41,7 +41,7 @@ internal class PostgresTest {
     fun `Migration of testdata `() {
         withCleanDb {
             val migrations = migrate(DataSource.instance, locations = listOf("db/migration", "db/testdata"))
-            assertEquals(8, migrations, "Wrong number of migrations")
+            assertEquals(9, migrations, "Wrong number of migrations")
         }
     }
 
@@ -71,6 +71,32 @@ internal class PostgresInntektStoreTest {
 
                 val storedInntektByRequest = getInntekt(storedInntekt.inntektId)
                 assertTrue("Inntekstliste should be in the same state") { storedInntekt == storedInntektByRequest }
+
+                assertNull(getManueltRedigert(storedInntektByRequest.inntektId))
+            }
+        }
+    }
+
+    @Test
+    fun `Successful insert of inntekter which is manuelt redigert`() {
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+                val request = InntektRequest("1234", 1234, LocalDate.now())
+                val hentInntektListeResponse = InntektkomponentResponse(
+                    emptyList(),
+                    Aktoer(AktoerType.AKTOER_ID, "1234")
+                )
+                val manueltRedigert = ManueltRedigert("user")
+
+                val storedInntekt = insertInntekt(request, hentInntektListeResponse, manueltRedigert)
+                assertTrue(storedInntekt.manueltRedigert)
+
+                val storedInntektByRequest = getInntekt(storedInntekt.inntektId)
+                assertTrue(storedInntektByRequest.manueltRedigert)
+
+                val storedManueltRedigert = getManueltRedigert(storedInntekt.inntektId)
+                assertNotNull(storedManueltRedigert)
+                assertEquals(manueltRedigert, storedManueltRedigert)
             }
         }
     }

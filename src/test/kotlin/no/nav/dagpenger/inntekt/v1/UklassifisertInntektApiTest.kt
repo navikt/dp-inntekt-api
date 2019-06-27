@@ -1,6 +1,7 @@
 package no.nav.dagpenger.inntekt.v1
 
 import de.huxhorn.sulky.ulid.ULID
+import io.ktor.application.Application
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -15,6 +16,7 @@ import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
@@ -76,7 +78,11 @@ class UklassifisertInntektApiTest {
         } returns inntektId
 
         every {
-            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt, false)
+            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt, null)
+        } returns storedInntekt
+
+        every {
+            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt, ManueltRedigert.from(true, "user"))
         } returns storedInntekt
 
         every {
@@ -221,7 +227,56 @@ class UklassifisertInntektApiTest {
     }
 
     @Test
+    fun `Post uklassifisert inntekt redigert should return 200 ok`() = testApp {
+        val guiInntekt = GUIInntekt(
+            inntektId = inntektId,
+            timestamp = null,
+            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+            manueltRedigert = false,
+            redigertAvSaksbehandler = true,
+            naturligIdent = null
+        )
+
+        handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
+        }.apply {
+            assertTrue(requestHandled)
+            assertEquals(HttpStatusCode.OK, response.status())
+            val storedInntekt =
+                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+            assertEquals(storedInntekt.inntektId, inntektId)
+        }
+    }
+
+    @Test
     fun `Post uklassifisert uncached inntekt should return 200 ok`() = testApp {
+
+        val guiInntekt = GUIInntekt(
+            inntektId = null,
+            timestamp = null,
+            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+            manueltRedigert = false,
+            redigertAvSaksbehandler = true,
+            naturligIdent = null
+        )
+
+        handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/uncached/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
+        }.apply {
+            assertTrue(requestHandled)
+            assertEquals(HttpStatusCode.OK, response.status())
+            val storedInntekt =
+                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+            assertEquals(storedInntekt.inntektId, inntektId)
+        }
+    }
+
+    @Test
+    fun `Post uklassifisert uncached inntekt redigert should return 200 ok`() = testApp {
 
         val guiInntekt = GUIInntekt(
             inntektId = null,
@@ -257,9 +312,19 @@ class UklassifisertInntektApiTest {
         }
     }
 
-    private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        withTestApplication({
-            (inntektApi(inntektskomponentClientMock, inntektStoreMock, mockk(), mockk(), oppslagClientMock, mockk(relaxed = true), jwkProvider = jwtStub.stubbedJwkProvider()))
-        }) { callback() }
+    private fun testApp(
+        moduleFunction: Application.() -> Unit = {
+            inntektApi(
+                inntektskomponentClientMock,
+                inntektStoreMock,
+                mockk(),
+                mockk(),
+                oppslagClientMock,
+                mockk(relaxed = true),
+                jwkProvider = jwtStub.stubbedJwkProvider())
+        },
+        callback: TestApplicationEngine.() -> Unit
+    ) {
+        withTestApplication(moduleFunction) { callback() }
     }
 }

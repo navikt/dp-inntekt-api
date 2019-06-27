@@ -14,6 +14,23 @@ import java.time.LocalDate
 import javax.sql.DataSource
 
 internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore {
+    override fun getManueltRedigert(inntektId: InntektId): ManueltRedigert? {
+        try {
+            return using(sessionOf(dataSource)) { session ->
+                session.run(
+                    queryOf(
+                        """SELECT redigert_av
+                                    FROM inntekt_V1_manuelt_redigert
+                                    WHERE inntekt_id = ?
+                            """.trimMargin(), inntektId.id
+                    ).map { row ->
+                        ManueltRedigert(row.string(1))
+                    }.asSingle)
+            }
+        } catch (p: PSQLException) {
+            throw StoreException(p.message!!)
+        }
+    }
 
     private val adapter: JsonAdapter<InntektkomponentResponse> = moshiInstance.adapter(InntektkomponentResponse::class.java)
     private val ulidGenerator = ULID()
@@ -71,12 +88,12 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
     }
 
     override fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt =
-        insertInntekt(request, inntekt, false)
+        insertInntekt(request, inntekt, null)
 
     override fun insertInntekt(
         request: InntektRequest,
         inntekt: InntektkomponentResponse,
-        manueltRedigert: Boolean
+        manueltRedigert: ManueltRedigert?
     ): StoredInntekt {
         try {
             val inntektId = InntektId(ulidGenerator.nextULID())
@@ -87,7 +104,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                             "INSERT INTO inntekt_V1 (id, inntekt, manuelt_redigert) VALUES (?, (to_json(?::json)), ?)",
                             inntektId.id,
                             adapter.toJson(inntekt),
-                            manueltRedigert
+                            manueltRedigert?.let { true } ?: false
                         ).asUpdate
                     )
                     tx.run(
@@ -99,6 +116,16 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                             request.beregningsDato
                         ).asUpdate
                     )
+
+                    manueltRedigert?.let {
+                        tx.run(
+                            queryOf(
+                                "INSERT INTO inntekt_V1_manuelt_redigert VALUES(?,?)",
+                                inntektId.id,
+                                it.redigertAv
+                            ).asUpdate
+                        )
+                    }
                 }
             }
             return getInntekt(inntektId)
