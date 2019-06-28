@@ -11,6 +11,9 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import com.github.tomakehurst.wiremock.matching.RegexPattern
+import io.kotlintest.matchers.doubles.shouldBeGreaterThan
+import io.kotlintest.shouldNotBe
+import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.oidc.OidcClient
 import no.nav.dagpenger.oidc.OidcToken
 import org.junit.jupiter.api.AfterAll
@@ -50,7 +53,7 @@ internal class InntektskomponentHttpClientTest {
     }
 
     @Test
-    fun `fetch uklassifisert inntekt on 200 ok`() {
+    fun `fetch uklassifisert inntekt on 200 ok and measure latency metrics`() {
         val body = InntektskomponentHttpClientTest::class.java
             .getResource("/test-data/example-inntekt-payload.json").readText()
 
@@ -81,6 +84,13 @@ internal class InntektskomponentHttpClientTest {
             )
 
         assertEquals("99999999999", hentInntektListeResponse.ident.identifikator)
+
+        val registry = CollectorRegistry.defaultRegistry
+
+        registry.metricFamilySamples().asSequence().find { it.name == INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME }?.let { metric ->
+            metric.samples[0].value shouldNotBe null
+            metric.samples[0].value shouldBeGreaterThan 0.0
+        }
     }
 
     @Test
@@ -89,7 +99,7 @@ internal class InntektskomponentHttpClientTest {
             .getResource("/test-data/example-inntekt-spesielleinntjeningsforhold.json").readText()
 
         stubFor(
-            WireMock.post(WireMock.urlEqualTo("/v1/hentinntektliste"))
+            WireMock.post(urlEqualTo("/v1/hentinntektliste"))
                 .withHeader("Authorization", RegexPattern("Bearer\\s[\\d|a-f]{8}-([\\d|a-f]{4}-){3}[\\d|a-f]{12}"))
                 .withHeader("Nav-Consumer-Id", EqualToPattern("dp-inntekt-api"))
                 .withHeader("Nav-Call-Id", AnythingPattern())
