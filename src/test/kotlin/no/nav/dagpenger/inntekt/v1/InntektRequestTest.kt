@@ -18,7 +18,7 @@ internal class InntektRequestTest {
         val inntektskomponentRequest = toInntektskomponentRequest(request, opptjeningsperiode)
 
         assertEquals("1234", inntektskomponentRequest.aktørId)
-        assertEquals("2016-02", inntektskomponentRequest.månedFom.toString())
+        assertEquals("2016-03", inntektskomponentRequest.månedFom.toString())
         assertEquals("2019-02", inntektskomponentRequest.månedTom.toString())
     }
 }

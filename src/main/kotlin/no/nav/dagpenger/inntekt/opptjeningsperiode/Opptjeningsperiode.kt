@@ -16,7 +16,7 @@ data class Opptjeningsperiode(val beregningsdato: LocalDate) {
     }
 
     val sisteAvsluttendeKalenderMåned: YearMonth = beregningsdato.minusMonths(månedSubtraksjon).toYearMonth()
-    val førsteMåned: YearMonth = sisteAvsluttendeKalenderMåned.minusMonths(36)
+    val førsteMåned: YearMonth = sisteAvsluttendeKalenderMåned.minusMonths(35)
 
     fun sammeOpptjeningsPeriode(other: Opptjeningsperiode): Boolean =
         this.sisteAvsluttendeKalenderMåned == other.sisteAvsluttendeKalenderMåned

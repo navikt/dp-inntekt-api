@@ -18,14 +18,14 @@ class OpptjeningsperiodeTest {
     ) {
         val inntjeningsperiode = Opptjeningsperiode(LocalDate.of(2019, 7, dag))
         assertEquals(YearMonth.of(2019, 5), inntjeningsperiode.sisteAvsluttendeKalenderMåned)
-        assertEquals(YearMonth.of(2016, 5), inntjeningsperiode.førsteMåned)
+        assertEquals(YearMonth.of(2016, 6), inntjeningsperiode.førsteMåned)
     }
 
     @Test
     fun `Hvis 5 juli er en fredag Så er arbeidsgivers rapporteringsfrist fredag 5 juli - Dersom beregningsdato er fra og med 6 juli (selv om det er helg) - Så er juni siste avsluttede kalendermåned fordi 5 juli er passert `() {
         val inntjeningsperiode = Opptjeningsperiode(LocalDate.of(2019, 7, 6))
         assertEquals(YearMonth.of(2019, 6), inntjeningsperiode.sisteAvsluttendeKalenderMåned)
-        assertEquals(YearMonth.of(2016, 6), inntjeningsperiode.førsteMåned)
+        assertEquals(YearMonth.of(2016, 7), inntjeningsperiode.førsteMåned)
     }
 
     @ParameterizedTest

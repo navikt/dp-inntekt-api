@@ -61,7 +61,7 @@ class KlassifisertInntektApiTest {
             inntektskomponentClientMock.getInntekt(
                 InntektkomponentRequest(
                     "1234",
-                    YearMonth.of(2015, 12),
+                    YearMonth.of(2016, 1),
                     YearMonth.of(2018, 12)
                 )
             )
@@ -73,7 +73,7 @@ class KlassifisertInntektApiTest {
             inntektskomponentClientMock.getInntekt(
                 InntektkomponentRequest(
                     "5678",
-                    YearMonth.of(2015, 12),
+                    YearMonth.of(2016, 1),
                     YearMonth.of(2018, 12)
                 )
             )
