@@ -55,7 +55,7 @@ private val prodProperties = ConfigurationMap(
         "vault.mountpath" to "postgresql/prod-fss/",
         "hentinntektliste.url" to "https://app.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
-        "oppslag.url" to "http://dagpenger-oppslag.default/api",
+        "oppslag.url" to "http://dagpenger-oppslag.nais.adeo.no/api",
         "oidc.sts.issuerurl" to "https://security-token-service.nais.adeo.no/",
         "jwks.url" to "https://isso.adeo.no:443/isso/oauth2/connect/jwk_uri",
         "jwks.issuer" to "https://isso.adeo.no:443/isso/oauth2",
