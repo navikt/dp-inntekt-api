@@ -15,6 +15,7 @@ private val LOGGER = KotlinLogging.logger {}
 private val jsonResponseAdapter = moshiInstance.adapter(InntektkomponentResponse::class.java)
 private val jsonRequestRequestAdapter = moshiInstance.adapter(HentInntektListeRequest::class.java)
 private val jsonMapAdapter = moshiInstance.adapter(Map::class.java)
+private val jsonMapAdapterLenient = moshiInstance.adapter(Map::class.java)
 private val ulid = ULID()
 
 const val INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME = "inntektskomponent_client_seconds"
@@ -59,6 +60,9 @@ class InntektskomponentHttpClient(
                     val resp = result.error.response.body().asString("application/json")
                     val message = runCatching {
                         jsonMapAdapter.fromJson(resp)
+                    }.recoverCatching {
+                        LOGGER.warn { "Invalid JSON response from Inntektskomponenten. Falling back to lenient JSON parser." }
+                        jsonMapAdapterLenient.fromJson(resp)
                     }.let {
                         val s = it.getOrNull()?.get("message")?.toString() ?: result.error.message
                         s
