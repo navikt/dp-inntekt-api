@@ -133,11 +133,6 @@ fun Application.inntektApi(
                 acceptIssuedAt(10)
             }
             authHeader { call ->
-
-                call.request.headers.forEach { s, list ->
-                    LOGGER.info { " HEADER -> $s -- ${list.joinToString { it }}" }
-                }
-
                 val cookie = call.request.cookies["ID_token"]
                     ?: throw CookieNotSetException("Cookie with name ID_Token not found")
                 HttpAuthHeader.Single("Bearer", cookie)
