@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.inntektskomponenten.v1
 
+import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
@@ -55,29 +56,32 @@ class InntektskomponentHttpClient(
             }
 
             return when (result) {
-
                 is Result.Failure -> {
-                    val resp = result.error.response.body().asString("application/json")
-                    val message = runCatching {
-                        jsonMapAdapter.fromJson(resp)
-                    }.recoverCatching {
-                        LOGGER.warn { "Invalid JSON response from Inntektskomponenten. Falling back to lenient JSON parser." }
-                        jsonMapAdapterLenient.fromJson(resp)
-                    }.let {
-                        val s = it.getOrNull()?.get("message")?.toString() ?: result.error.message
-                        s
-                    }
-                    throw InntektskomponentenHttpClientException(
-                        response.statusCode,
-                        "Failed to fetch inntekt. Response message: ${response.responseMessage}. Problem message: $message"
-                    )
-                }
+                    val message = getErrorMessageFromResponse(result)
 
+                    when (errorIsCauseByDuplicateValues(result)) {
+                        true -> throw InntektskomponentenHttpClientDuplicateValuesException("Duplicate values for 'detaljerType' in response from Inntektskomponenten. Message: $message")
+                        else ->
+                            throw InntektskomponentenHttpClientException(
+                                response.statusCode,
+                                "Failed to fetch inntekt. Response message: ${response.responseMessage}. Problem message: $message"
+                            )
+                    }
+                }
                 is Result.Success -> result.get()
             }
         } finally {
             timer.observeDuration()
         }
+    }
+
+    private fun errorIsCauseByDuplicateValues(result: Result.Failure<FuelError>) =
+        result.getException().exception.message?.contains("Multiple values")
+
+    private fun getErrorMessageFromResponse(result: Result.Failure<FuelError>): String? = runCatching {
+        jsonMapAdapter.fromJson(result.error.response.body().asString("application/json"))
+    }.let {
+        it.getOrNull()?.get("message")?.toString() ?: result.error.message
     }
 }
 
@@ -88,6 +92,10 @@ data class HentInntektListeRequest(
     val maanedFom: YearMonth,
     val maanedTom: YearMonth
 )
+
+class InntektskomponentenHttpClientDuplicateValuesException(
+    override val message: String
+) : RuntimeException(message)
 
 class InntektskomponentenHttpClientException(
     val status: Int,

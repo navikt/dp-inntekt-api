@@ -87,10 +87,11 @@ internal class InntektskomponentHttpClientTest {
 
         val registry = CollectorRegistry.defaultRegistry
 
-        registry.metricFamilySamples().asSequence().find { it.name == INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME }?.let { metric ->
-            metric.samples[0].value shouldNotBe null
-            metric.samples[0].value shouldBeGreaterThan 0.0
-        }
+        registry.metricFamilySamples().asSequence().find { it.name == INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME }
+            ?.let { metric ->
+                metric.samples[0].value shouldNotBe null
+                metric.samples[0].value shouldBeGreaterThan 0.0
+            }
     }
 
     @Test
@@ -131,7 +132,6 @@ internal class InntektskomponentHttpClientTest {
         )
     }
 
-
     @Test
     fun `fetch uklassifisert inntekt with duplikate fields`() {
         val body = InntektskomponentHttpClientTest::class.java
@@ -154,16 +154,18 @@ internal class InntektskomponentHttpClientTest {
             DummyOidcClient()
         )
 
-        val hentInntektListeResponse = runCatching {
+        val result = runCatching {
             inntektskomponentClient.getInntekt(
                 InntektkomponentRequest(
                     "",
                     YearMonth.of(2017, 3),
                     YearMonth.of(2019, 1)
                 )
-            ) }
+            )
+        }
 
-        assertTrue ("Feilet - svaret er '${hentInntektListeResponse.exceptionOrNull()?.message}'"){ hentInntektListeResponse.isSuccess }
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull() is InntektskomponentenHttpClientDuplicateValuesException)
     }
 
     @Test
