@@ -175,7 +175,7 @@ fun Application.inntektApi(
             LOGGER.error("Request failed against inntektskomponenten", cause)
             val error = Problem(
                 type = URI("urn:dp:error:inntektskomponenten"),
-                title = "Feilet mot inntektskomponenten!",
+                title = "Innhenting av inntekt mot a-inntekt feilet. Prøv igjen senere",
                 status = statusCode.value
             )
             call.respond(statusCode, error)

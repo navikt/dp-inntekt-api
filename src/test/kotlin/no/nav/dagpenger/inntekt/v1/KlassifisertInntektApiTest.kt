@@ -132,7 +132,7 @@ class KlassifisertInntektApiTest {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.BadRequest, response.status())
             val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
-            assertEquals("Feilet mot inntektskomponenten!", problem?.title)
+            assertEquals("Innhenting av inntekt mot a-inntekt feilet. Prøv igjen senere", problem?.title)
             assertEquals("urn:dp:error:inntektskomponenten", problem?.type.toString())
             assertEquals(400, problem?.status)
         }
@@ -157,7 +157,7 @@ class KlassifisertInntektApiTest {
                 assertTrue(requestHandled)
                 assertEquals(HttpStatusCode.BadRequest, response.status())
                 val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
-                assertEquals("Feilet mot inntektskomponenten!", problem?.title)
+                assertEquals("Innhenting av inntekt mot a-inntekt feilet. Prøv igjen senere", problem?.title)
                 assertEquals("urn:dp:error:inntektskomponenten", problem?.type.toString())
                 assertEquals(400, problem?.status)
             }
