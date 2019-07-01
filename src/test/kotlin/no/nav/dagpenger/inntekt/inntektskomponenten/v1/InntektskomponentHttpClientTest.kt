@@ -131,6 +131,41 @@ internal class InntektskomponentHttpClientTest {
         )
     }
 
+
+    @Test
+    fun `fetch uklassifisert inntekt with duplikate fields`() {
+        val body = InntektskomponentHttpClientTest::class.java
+            .getResource("/test-data/example-duplicate.json").readText()
+
+        stubFor(
+            WireMock.post(urlEqualTo("/v1/hentinntektliste"))
+                .withHeader("Authorization", RegexPattern("Bearer\\s[\\d|a-f]{8}-([\\d|a-f]{4}-){3}[\\d|a-f]{12}"))
+                .withHeader("Nav-Consumer-Id", EqualToPattern("dp-inntekt-api"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
+                .willReturn(
+                    WireMock.aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(body)
+                )
+        )
+
+        val inntektskomponentClient = InntektskomponentHttpClient(
+            server.url("/v1/hentinntektliste"),
+            DummyOidcClient()
+        )
+
+        val hentInntektListeResponse = runCatching {
+            inntektskomponentClient.getInntekt(
+                InntektkomponentRequest(
+                    "",
+                    YearMonth.of(2017, 3),
+                    YearMonth.of(2019, 1)
+                )
+            ) }
+
+        assertTrue ("Feilet - svaret er '${hentInntektListeResponse.exceptionOrNull()?.message}'"){ hentInntektListeResponse.isSuccess }
+    }
+
     @Test
     fun `fetch uklassifisert inntekt on 500 server error`() {
 
