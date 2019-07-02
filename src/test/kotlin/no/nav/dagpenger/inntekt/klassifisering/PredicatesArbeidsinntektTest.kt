@@ -611,4 +611,11 @@ internal class PredicatesArbeidsinntektTest {
         assertFalse(isLønnYrkebilTjenestligbehovListepris(DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.YRKEBIL_TJENESTLIGBEHOV_KILOMETER)))
         assertFalse(isLønnYrkebilTjenestligbehovListepris(DatagrunnlagKlassifisering(InntektType.NAERINGSINNTEKT, InntektBeskrivelse.YRKEBIL_TJENESTLIGBEHOV_LISTEPRIS)))
     }
+
+    @Test
+    fun ` Tips skal klassifiseres som arbeidsinntekt `(){
+        assert(isTips(DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TIPS)))
+    }
+
+
 }

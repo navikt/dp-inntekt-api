@@ -226,5 +226,7 @@ enum class InntektBeskrivelse {
     @Json(name = "vederlag")
     VEDERLAG,
     @Json(name = "sykepenger")
-    SYKEPENGER
+    SYKEPENGER,
+    @Json(name = "tips")
+    TIPS
 }
