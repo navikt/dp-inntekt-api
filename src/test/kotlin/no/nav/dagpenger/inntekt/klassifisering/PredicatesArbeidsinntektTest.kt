@@ -14,6 +14,7 @@ internal class PredicatesArbeidsinntektTest {
         val predicates = predicatesInntektklasseArbeid()
 
         val arbeidPredicates = listOf(
+            ::isTips,
             ::isLønnAksjerGrunnfondsbevisTilUnderkurs,
             ::isLønnAnnet,
             ::isLønnArbeidsoppholdKost,
