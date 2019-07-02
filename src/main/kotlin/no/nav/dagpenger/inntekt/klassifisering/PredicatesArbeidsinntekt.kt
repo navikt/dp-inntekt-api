@@ -6,6 +6,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforho
 
 fun predicatesInntektklasseArbeid(): List<(DatagrunnlagKlassifisering) -> Boolean> {
     return listOf(
+        ::isTips,
         ::isLønnAksjerGrunnfondsbevisTilUnderkurs,
         ::isLønnAnnet,
         ::isLønnArbeidsoppholdKost,
@@ -240,3 +241,6 @@ fun isLønnYrkebilTjenestligbehovKilometer(datagrunnlag: DatagrunnlagKlassifiser
 
 fun isLønnYrkebilTjenestligbehovListepris(datagrunnlag: DatagrunnlagKlassifisering): Boolean =
     datagrunnlag.type == InntektType.LOENNSINNTEKT && datagrunnlag.beskrivelse == InntektBeskrivelse.YRKEBIL_TJENESTLIGBEHOV_LISTEPRIS
+
+fun isTips(datagrunnlag: DatagrunnlagKlassifisering): Boolean =
+    datagrunnlag.type == InntektType.LOENNSINNTEKT && datagrunnlag.beskrivelse == InntektBeskrivelse.TIPS
