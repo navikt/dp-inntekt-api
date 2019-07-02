@@ -613,9 +613,7 @@ internal class PredicatesArbeidsinntektTest {
     }
 
     @Test
-    fun ` Tips skal klassifiseres som arbeidsinntekt `(){
+    fun ` Tips skal klassifiseres som arbeidsinntekt `() {
         assert(isTips(DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TIPS)))
     }
-
-
 }
