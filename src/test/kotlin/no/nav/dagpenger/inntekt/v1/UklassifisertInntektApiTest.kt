@@ -11,6 +11,7 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.JwtStub
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
@@ -96,7 +97,7 @@ class UklassifisertInntektApiTest {
         )
 
         every {
-            inntektskomponentClientMock.getInntekt(inntektkomponentenFoundRequest)
+            runBlocking { inntektskomponentClientMock.getInntekt(inntektkomponentenFoundRequest) }
         } returns emptyInntekt
 
         every {
@@ -213,7 +214,10 @@ class UklassifisertInntektApiTest {
             naturligIdent = null
         )
 
-        handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}") {
+        handleRequest(
+            HttpMethod.Post,
+            "v1/inntekt/uklassifisert/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
+        ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
             setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
@@ -237,7 +241,10 @@ class UklassifisertInntektApiTest {
             naturligIdent = null
         )
 
-        handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}") {
+        handleRequest(
+            HttpMethod.Post,
+            "v1/inntekt/uklassifisert/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
+        ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
             setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
@@ -262,7 +269,10 @@ class UklassifisertInntektApiTest {
             naturligIdent = null
         )
 
-        handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/uncached/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}") {
+        handleRequest(
+            HttpMethod.Post,
+            "v1/inntekt/uklassifisert/uncached/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
+        ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
             setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
@@ -287,7 +297,10 @@ class UklassifisertInntektApiTest {
             naturligIdent = null
         )
 
-        handleRequest(HttpMethod.Post, "v1/inntekt/uklassifisert/uncached/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}") {
+        handleRequest(
+            HttpMethod.Post,
+            "v1/inntekt/uklassifisert/uncached/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
+        ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
             setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
@@ -321,7 +334,8 @@ class UklassifisertInntektApiTest {
                 mockk(),
                 oppslagClientMock,
                 mockk(relaxed = true),
-                jwkProvider = jwtStub.stubbedJwkProvider())
+                jwkProvider = jwtStub.stubbedJwkProvider()
+            )
         },
         callback: TestApplicationEngine.() -> Unit
     ) {

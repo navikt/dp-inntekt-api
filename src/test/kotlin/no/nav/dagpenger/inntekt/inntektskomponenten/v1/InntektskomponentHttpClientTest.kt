@@ -14,6 +14,7 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern
 import io.kotlintest.matchers.doubles.shouldBeGreaterThan
 import io.kotlintest.shouldNotBe
 import io.prometheus.client.CollectorRegistry
+import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.oidc.OidcClient
 import no.nav.dagpenger.oidc.OidcToken
 import org.junit.jupiter.api.AfterAll
@@ -75,22 +76,25 @@ internal class InntektskomponentHttpClientTest {
         )
 
         val hentInntektListeResponse =
-            inntektskomponentClient.getInntekt(
-                InntektkomponentRequest(
-                    "",
-                    YearMonth.of(2017, 3),
-                    YearMonth.of(2019, 1)
+            runBlocking {
+                inntektskomponentClient.getInntekt(
+                    InntektkomponentRequest(
+                        "",
+                        YearMonth.of(2017, 3),
+                        YearMonth.of(2019, 1)
+                    )
                 )
-            )
+            }
 
         assertEquals("99999999999", hentInntektListeResponse.ident.identifikator)
 
         val registry = CollectorRegistry.defaultRegistry
 
-        registry.metricFamilySamples().asSequence().find { it.name == INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME }?.let { metric ->
-            metric.samples[0].value shouldNotBe null
-            metric.samples[0].value shouldBeGreaterThan 0.0
-        }
+        registry.metricFamilySamples().asSequence().find { it.name == INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME }
+            ?.let { metric ->
+                metric.samples[0].value shouldNotBe null
+                metric.samples[0].value shouldBeGreaterThan 0.0
+            }
     }
 
     @Test
@@ -116,13 +120,13 @@ internal class InntektskomponentHttpClientTest {
         )
 
         val hentInntektListeResponse =
-            inntektskomponentClient.getInntekt(
+            runBlocking { inntektskomponentClient.getInntekt(
                 InntektkomponentRequest(
                     "",
                     YearMonth.of(2017, 3),
                     YearMonth.of(2019, 1)
                 )
-            )
+            ) }
 
         assertEquals("8888888888", hentInntektListeResponse.ident.identifikator)
         assertEquals(
@@ -150,13 +154,13 @@ internal class InntektskomponentHttpClientTest {
         )
 
         val result = runCatching {
-            inntektskomponentClient.getInntekt(
+            runBlocking { inntektskomponentClient.getInntekt(
                 InntektkomponentRequest(
                     "",
                     YearMonth.of(2017, 3),
                     YearMonth.of(2019, 1)
                 )
-            )
+            ) }
         }
 
         assertTrue(result.isFailure)
@@ -184,14 +188,14 @@ internal class InntektskomponentHttpClientTest {
         )
 
         val result = runCatching {
-            inntektskomponentClient.getInntekt(
+            runBlocking { inntektskomponentClient.getInntekt(
                 InntektkomponentRequest(
                     "",
                     YearMonth.of(2017, 3),
                     YearMonth.of(2019, 1)
                 )
             )
-        }
+        } }
 
         assertTrue(result.isFailure)
         assertTrue(result.exceptionOrNull() is InntektskomponentenHttpClientException)
