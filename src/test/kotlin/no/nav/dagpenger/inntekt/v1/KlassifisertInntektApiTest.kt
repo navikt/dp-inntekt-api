@@ -9,6 +9,7 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 
 import no.nav.dagpenger.inntekt.Problem
@@ -58,25 +59,29 @@ class KlassifisertInntektApiTest {
 
     init {
         every {
-            inntektskomponentClientMock.getInntekt(
-                InntektkomponentRequest(
-                    "1234",
-                    YearMonth.of(2016, 1),
-                    YearMonth.of(2018, 12)
+            runBlocking {
+                inntektskomponentClientMock.getInntekt(
+                    InntektkomponentRequest(
+                        "1234",
+                        YearMonth.of(2016, 1),
+                        YearMonth.of(2018, 12)
+                    )
                 )
-            )
+            }
         } returns InntektkomponentResponse(
             emptyList(),
             Aktoer(AktoerType.AKTOER_ID, "1234")
         )
         every {
-            inntektskomponentClientMock.getInntekt(
-                InntektkomponentRequest(
-                    "5678",
-                    YearMonth.of(2016, 1),
-                    YearMonth.of(2018, 12)
+            runBlocking {
+                inntektskomponentClientMock.getInntekt(
+                    InntektkomponentRequest(
+                        "5678",
+                        YearMonth.of(2016, 1),
+                        YearMonth.of(2018, 12)
+                    )
                 )
-            )
+            }
         } throws InntektskomponentenHttpClientException(400, "Bad request")
 
         every {

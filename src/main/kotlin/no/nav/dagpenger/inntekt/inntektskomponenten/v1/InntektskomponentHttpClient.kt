@@ -31,7 +31,7 @@ class InntektskomponentHttpClient(
     private val oidcClient: OidcClient
 ) : InntektskomponentClient {
 
-    override fun getInntekt(request: InntektkomponentRequest): InntektkomponentResponse {
+    override suspend fun getInntekt(request: InntektkomponentRequest): InntektkomponentResponse {
         LOGGER.info("Fetching new inntekt for $request")
 
         val requestBody = HentInntektListeRequest(
