@@ -31,7 +31,6 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
 import mu.KotlinLogging
-import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
@@ -41,8 +40,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
-import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
-import no.nav.dagpenger.inntekt.v1.aktørApi
 import no.nav.dagpenger.inntekt.v1.klassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
@@ -79,17 +76,11 @@ fun main() {
     )
     val oppslagClient = OppslagClient(config.application.oppslagUrl, stsOidcClient)
 
-    val enhetsregisteretHttpClient = EnhetsregisteretHttpClient(config.application.enhetsregisteretUrl)
-
-    val personNameHttpClient = PersonNameHttpClient(config.application.oppslagUrl)
-
     DefaultExports.initialize()
     val application = embeddedServer(Netty, port = config.application.httpPort) {
         inntektApi(
             inntektskomponentHttpClient,
             postgresInntektStore,
-            enhetsregisteretHttpClient,
-            personNameHttpClient,
             oppslagClient,
             AuthApiKeyVerifier(apiKeyVerifier, allowedApiKeys),
             jwkProvider
@@ -104,8 +95,6 @@ fun main() {
 fun Application.inntektApi(
     inntektskomponentHttpClient: InntektskomponentClient,
     inntektStore: InntektStore,
-    enhetsregisteretHttpClient: EnhetsregisteretHttpClient,
-    personNameHttpClient: PersonNameHttpClient,
     oppslagClient: OppslagClient,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     jwkProvider: JwkProvider
@@ -233,9 +222,7 @@ fun Application.inntektApi(
                 klassifisertInntekt(inntektskomponentHttpClient, inntektStore)
                 uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, oppslagClient)
             }
-
             opptjeningsperiodeApi(inntektStore)
-            aktørApi(enhetsregisteretHttpClient, personNameHttpClient)
         }
         naischecks()
     }

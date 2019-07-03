@@ -317,8 +317,6 @@ class UklassifisertInntektApiTest {
             inntektApi(
                 inntektskomponentClientMock,
                 inntektStoreMock,
-                mockk(),
-                mockk(),
                 oppslagClientMock,
                 mockk(relaxed = true),
                 jwkProvider = jwtStub.stubbedJwkProvider())

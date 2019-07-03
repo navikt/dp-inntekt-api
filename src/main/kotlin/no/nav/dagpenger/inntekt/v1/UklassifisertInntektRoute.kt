@@ -78,7 +78,8 @@ fun Route.uklassifisertInntekt(
                         }
                         .let {
                             val personNummer = oppslagClient.finnNaturligIdent(this.aktørId)
-                            mapToGUIInntekt(it, opptjeningsperiode, personNummer)
+                            val navn = personNummer?.let { pnr -> oppslagClient.personNavn(pnr) }
+                            mapToGUIInntekt(it, opptjeningsperiode, personNummer, navn)
                         }
                         .let {
                             call.respond(HttpStatusCode.OK, it)
