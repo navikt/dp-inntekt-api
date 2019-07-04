@@ -103,5 +103,7 @@ val dataGrunnlagKlassifiseringToVerdikode = biMapOf(
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TIMELOENN, SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK) to "Tiltak - Timelønn",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_ARBEIDET_TID, SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK) to "Tiltak - Uregelmessige tillegg knyttet til arbeidet tid",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_IKKE_ARBEIDET_TID, SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK) to "Tiltak - Uregelmessige tillegg knyttet til ikke-arbeidet tid",
-    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TREKK_I_LOENN_FOR_FERIE, SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK) to "Trekk i lønn for ferie - Tiltak"
+    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TREKK_I_LOENN_FOR_FERIE, SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK) to "Trekk i lønn for ferie - Tiltak",
+    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TIPS, null) to "Tips",
+    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.SKATTEPLIKTIG_PERSONALRABATT, null) to "Skattepliktig personalrabatt"
 )

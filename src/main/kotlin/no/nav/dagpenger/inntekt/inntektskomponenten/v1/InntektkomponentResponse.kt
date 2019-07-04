@@ -228,5 +228,7 @@ enum class InntektBeskrivelse {
     @Json(name = "sykepenger")
     SYKEPENGER,
     @Json(name = "tips")
-    TIPS
+    TIPS,
+    @Json(name = "skattepliktigPersonalrabatt")
+    SKATTEPLIKTIG_PERSONALRABATT
 }
