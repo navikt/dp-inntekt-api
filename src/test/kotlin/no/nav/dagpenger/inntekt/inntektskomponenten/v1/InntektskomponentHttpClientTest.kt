@@ -129,6 +129,15 @@ internal class InntektskomponentHttpClientTest {
             SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
             hentInntektListeResponse.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold
         )
+        assertEquals(
+            null,
+            hentInntektListeResponse.arbeidsInntektMaaned?.elementAt(1)?.arbeidsInntektInformasjon?.inntektListe?.first()?.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold
+        )
+
+        assertEquals(
+            InntektType.LOENNSINNTEKT,
+            hentInntektListeResponse.arbeidsInntektMaaned?.elementAt(1)?.arbeidsInntektInformasjon?.inntektListe?.first()?.inntektType
+        )
     }
 
     @Test

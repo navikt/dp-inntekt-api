@@ -103,7 +103,6 @@ enum class SpesielleInntjeningsforhold {
     HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
     @Json(name = "loennVedArbeidsmarkedstiltak")
     LOENN_VED_ARBEIDSMARKEDSTILTAK,
-    UNKNOWN
 }
 
 enum class InntektBeskrivelse {

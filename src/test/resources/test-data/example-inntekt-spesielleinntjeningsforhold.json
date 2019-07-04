@@ -39,6 +39,46 @@
           }
         ]
       }
+    },
+    {
+      "aarMaaned": "2019-02",
+      "arbeidsInntektInformasjon": {
+        "inntektListe": [
+          {
+            "inntektType": "LOENNSINNTEKT",
+            "beloep": 150000,
+            "fordel": "kontantytelse",
+            "inntektskilde": "A-ordningen",
+            "inntektsperiodetype": "Maaned",
+            "inntektsstatus": "LoependeInnrapportert",
+            "leveringstidspunkt": "2019-05",
+            "utbetaltIMaaned": "2019-01",
+            "opplysningspliktig": {
+              "identifikator": "8888888888",
+              "aktoerType": "ORGANISASJON"
+            },
+            "virksomhet": {
+              "identifikator": "8888888888",
+              "aktoerType": "ORGANISASJON"
+            },
+            "tilleggsinformasjon": {
+              "kategori": "SpesielleInntjeningsforhold",
+              "tilleggsinformasjonDetaljer": {
+                "detaljerType": "INNTJENINGSFORHOLD",
+                "spesielleInntjeningsforhold": "DINNA VEIT ME IKJE KA E"
+              }
+            },
+            "inntektsmottaker": {
+              "identifikator": "8888888888",
+              "aktoerType": "NATURLIG_IDENT"
+            },
+            "inngaarIGrunnlagForTrekk": true,
+            "utloeserArbeidsgiveravgift": true,
+            "informasjonsstatus": "InngaarAlltid",
+            "beskrivelse": "timeloenn"
+          }
+        ]
+      }
     }
   ],
   "ident": {

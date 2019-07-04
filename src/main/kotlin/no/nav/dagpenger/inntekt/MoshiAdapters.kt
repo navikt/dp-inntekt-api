@@ -22,15 +22,18 @@ val moshiInstance: Moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
     .add(BigDecimalJsonAdapter())
     .add(URIJsonAdapter())
-    .add(SpesielleInntjeningsforhold::class.java,
-        EnumJsonAdapter.create(SpesielleInntjeningsforhold::class.java).withUnknownFallback(SpesielleInntjeningsforhold.UNKNOWN).nullSafe())
+    .add(
+        SpesielleInntjeningsforhold::class.java,
+        EnumJsonAdapter.create(SpesielleInntjeningsforhold::class.java).withUnknownFallback(null).nullSafe()
+    )
     .build()!!
 
 val inntektKlassifiseringsKoderJsonAdapter: JsonAdapter<Set<String>> = moshiInstance.adapter<Set<String>>(
     Types.newParameterizedType(
         Set::class.java,
         String::class.java
-    )).nullSafe()
+    )
+).nullSafe()
 
 class YearMonthJsonAdapter {
     @ToJson
