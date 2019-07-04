@@ -14,6 +14,7 @@ internal class PredicatesArbeidsinntektTest {
         val predicates = predicatesInntektklasseArbeid()
 
         val arbeidPredicates = listOf(
+            ::isSkattepliktigPersonalrabatt,
             ::isTips,
             ::isLønnAksjerGrunnfondsbevisTilUnderkurs,
             ::isLønnAnnet,
@@ -616,5 +617,10 @@ internal class PredicatesArbeidsinntektTest {
     @Test
     fun ` Tips skal klassifiseres som arbeidsinntekt `() {
         assert(isTips(DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TIPS)))
+    }
+
+    @Test
+    fun `isSkattepliktigPersonalrabatt skal klassifiseres som arbeidsinntekt `() {
+        assert(isSkattepliktigPersonalrabatt(DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.SKATTEPLIKTIG_PERSONALRABATT)))
     }
 }

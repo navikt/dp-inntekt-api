@@ -6,6 +6,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforho
 
 fun predicatesInntektklasseArbeid(): List<(DatagrunnlagKlassifisering) -> Boolean> {
     return listOf(
+        ::isSkattepliktigPersonalrabatt,
         ::isTips,
         ::isLønnAksjerGrunnfondsbevisTilUnderkurs,
         ::isLønnAnnet,
@@ -244,3 +245,6 @@ fun isLønnYrkebilTjenestligbehovListepris(datagrunnlag: DatagrunnlagKlassifiser
 
 fun isTips(datagrunnlag: DatagrunnlagKlassifisering): Boolean =
     datagrunnlag.type == InntektType.LOENNSINNTEKT && datagrunnlag.beskrivelse == InntektBeskrivelse.TIPS
+
+fun isSkattepliktigPersonalrabatt(datagrunnlag: DatagrunnlagKlassifisering): Boolean =
+    datagrunnlag.type == InntektType.LOENNSINNTEKT && datagrunnlag.beskrivelse == InntektBeskrivelse.SKATTEPLIKTIG_PERSONALRABATT
