@@ -18,9 +18,11 @@ data class GUIInntekt(
     val manueltRedigert: Boolean,
     val redigertAvSaksbehandler: Boolean,
     val naturligIdent: String? = null,
-    val navn: String? = null
+    val inntektsmottaker: Inntektsmottaker? = null
 
 )
+
+data class Inntektsmottaker(val pnr: String?, val navn: String?)
 
 data class GUIInntektsKomponentResponse(
     val fraDato: YearMonth?,
@@ -54,7 +56,6 @@ data class InntektMedVerdikode(
     val opplysningspliktig: Aktoer? = null,
     val inntektsinnsender: Aktoer? = null,
     val virksomhet: Aktoer? = null,
-    val virsomhetsNavn: String? = null,
     val inntektsmottaker: Aktoer? = null,
     val inngaarIGrunnlagForTrekk: Boolean? = null,
     val utloeserArbeidsgiveravgift: Boolean? = null,

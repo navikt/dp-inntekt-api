@@ -44,7 +44,6 @@ class UklassifisertInntektApiTest {
 
     private val jwtStub = JwtStub("https://localhost")
     private val token = jwtStub.createTokenFor("user")
-    private val storedInntektAdapter = moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java)
 
     private val notFoundRequest =
         InntektRequest(aktørId = "1234", vedtakId = 1, beregningsDato = LocalDate.of(2019, 1, 8))
@@ -102,6 +101,10 @@ class UklassifisertInntektApiTest {
         every {
             oppslagClientMock.finnNaturligIdent(any())
         } returns "12345678912"
+
+        every {
+            oppslagClientMock.personNavn(any())
+        } returns "Navn Navnesen"
     }
 
     @Test

@@ -11,7 +11,7 @@ fun mapToGUIInntekt(
     inntekt: InntektkomponentResponse,
     opptjeningsPeriode: Opptjeningsperiode,
     personnummer: String?,
-    navn: String?
+    inntektsmottaker: Inntektsmottaker?
 ) = GUIInntekt(
     null,
     LocalDateTime.now(),
@@ -24,10 +24,10 @@ fun mapToGUIInntekt(
     false,
     false,
     personnummer,
-    navn
+    inntektsmottaker
 )
 
-fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjeningsperiode, personnummer: String?) =
+fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjeningsperiode, inntektsMottaker: Inntektsmottaker?) =
     GUIInntekt(
         storedInntekt.inntektId,
         storedInntekt.timestamp,
@@ -39,7 +39,8 @@ fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjening
         ),
         storedInntekt.manueltRedigert,
         storedInntekt.manueltRedigert,
-        personnummer
+        naturligIdent = inntektsMottaker?.pnr,
+        inntektsmottaker = inntektsMottaker
     )
 
 private fun mapToArbeidsInntektMaaneder(list: List<ArbeidsInntektMaaned>?) =
