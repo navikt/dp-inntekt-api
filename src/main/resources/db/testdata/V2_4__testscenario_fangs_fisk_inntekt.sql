@@ -30,7 +30,7 @@ values ('01D8G9HAJRSA552SP8135X387J', '
             "inngaarIGrunnlagForTrekk": true,
             "utloeserArbeidsgiveravgift": true,
             "informasjonsstatus": "InngaarAlltid",
-            "beskrivelse": "annet"
+            "beskrivelse": "lottKunTrygdeavgift"
           }
         ]
       }
@@ -63,7 +63,7 @@ values ('01D8G9HAJRSA552SP8135X387J', '
             "inngaarIGrunnlagForTrekk": true,
             "utloeserArbeidsgiveravgift": true,
             "informasjonsstatus": "InngaarAlltid",
-            "beskrivelse": "annet"
+            "beskrivelse": "lottKunTrygdeavgift"
           }
         ]
       }
@@ -96,7 +96,7 @@ values ('01D8G9HAJRSA552SP8135X387J', '
             "inngaarIGrunnlagForTrekk": true,
             "utloeserArbeidsgiveravgift": true,
             "informasjonsstatus": "InngaarAlltid",
-            "beskrivelse": "annet"
+            "beskrivelse": "lottKunTrygdeavgift"
           }
         ]
       }
@@ -129,7 +129,7 @@ values ('01D8G9HAJRSA552SP8135X387J', '
             "inngaarIGrunnlagForTrekk": true,
             "utloeserArbeidsgiveravgift": true,
             "informasjonsstatus": "InngaarAlltid",
-            "beskrivelse": "annet"
+            "beskrivelse": "lottKunTrygdeavgift"
           }
         ]
       }
