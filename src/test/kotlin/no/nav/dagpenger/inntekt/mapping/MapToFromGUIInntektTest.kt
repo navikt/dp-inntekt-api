@@ -93,7 +93,7 @@ val rawInntekt = InntektkomponentResponse(
     Aktoer(AktoerType.AKTOER_ID, "aktorId")
 )
 
-val testPnr = "12345678912"
+val inntektsmottaker = Inntektsmottaker("12345678912", "Navn Navnesen")
 
 val inntektMedVerdikode = GUIArbeidsInntektInformasjon(
     listOf(InntektMedVerdikode(
@@ -118,7 +118,7 @@ internal class KategoriseringTest {
             false,
             LocalDateTime.now()
         )
-        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), testPnr)
+        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), inntektsmottaker)
         assertEquals(
             "Aksjer/grunnfondsbevis til underkurs",
             guiInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode
@@ -151,7 +151,7 @@ internal class KategoriseringTest {
             false,
             LocalDateTime.now()
         )
-        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), testPnr)
+        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), inntektsmottaker)
 
         assertNotNull(guiInntekt.inntekt.fraDato)
         assertNotNull(guiInntekt.inntekt.tilDato)
@@ -165,7 +165,7 @@ internal class KategoriseringTest {
             false,
             LocalDateTime.now()
         )
-        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), testPnr)
+        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), inntektsmottaker)
 
         val beforeJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(rawInntekt)
         val mappedJson = moshiInstance.adapter(GUIInntektsKomponentResponse::class.java).toJson(guiInntekt.inntekt)

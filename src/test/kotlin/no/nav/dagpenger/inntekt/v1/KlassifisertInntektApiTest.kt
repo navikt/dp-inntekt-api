@@ -13,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 
 import no.nav.dagpenger.inntekt.Problem
-import no.nav.dagpenger.inntekt.brreg.enhetsregisteret.EnhetsregisteretHttpClient
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
@@ -25,7 +24,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
-import no.nav.dagpenger.inntekt.oppslag.PersonNameHttpClient
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.jupiter.api.Test
 import java.time.YearMonth
@@ -51,8 +49,6 @@ class KlassifisertInntektApiTest {
     private val authApiKeyVerifier = AuthApiKeyVerifier(apiKeyVerifier, listOf("test-client"))
     private val apiKey = apiKeyVerifier.generate("test-client")
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
-    private val enhetsregisteretHttpClientMock: EnhetsregisteretHttpClient = mockk()
-    private val personNameHttpClientMock: PersonNameHttpClient = mockk()
     private val oppslagClientMock: OppslagClient = mockk()
     private val inntektStoreMock: InntektStore = mockk(relaxed = true)
     private val inntektPath = "/v1/inntekt"
@@ -224,8 +220,6 @@ class KlassifisertInntektApiTest {
             (inntektApi(
                 inntektskomponentClientMock,
                 inntektStoreMock,
-                enhetsregisteretHttpClientMock,
-                personNameHttpClientMock,
                 oppslagClientMock,
                 authApiKeyVerifier,
                 mockk(relaxed = true)

@@ -17,8 +17,12 @@ data class GUIInntekt(
     val inntekt: GUIInntektsKomponentResponse,
     val manueltRedigert: Boolean,
     val redigertAvSaksbehandler: Boolean,
-    val naturligIdent: String? = null
+    val naturligIdent: String? = null,
+    val inntektsmottaker: Inntektsmottaker? = null
+
 )
+
+data class Inntektsmottaker(val pnr: String?, val navn: String?)
 
 data class GUIInntektsKomponentResponse(
     val fraDato: YearMonth?,

@@ -7,7 +7,12 @@ import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDateTime
 
-fun mapToGUIInntekt(inntekt: InntektkomponentResponse, opptjeningsPeriode: Opptjeningsperiode, personnummer: String?) = GUIInntekt(
+fun mapToGUIInntekt(
+    inntekt: InntektkomponentResponse,
+    opptjeningsPeriode: Opptjeningsperiode,
+    personnummer: String?,
+    inntektsmottaker: Inntektsmottaker?
+) = GUIInntekt(
     null,
     LocalDateTime.now(),
     GUIInntektsKomponentResponse(
@@ -18,22 +23,25 @@ fun mapToGUIInntekt(inntekt: InntektkomponentResponse, opptjeningsPeriode: Opptj
     ),
     false,
     false,
-    personnummer
+    personnummer,
+    inntektsmottaker
 )
 
-fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjeningsperiode, personnummer: String?) = GUIInntekt(
-    storedInntekt.inntektId,
-    storedInntekt.timestamp,
-    GUIInntektsKomponentResponse(
-        tilDato = opptjeningsPeriode.sisteAvsluttendeKalenderMåned,
-        fraDato = opptjeningsPeriode.førsteMåned,
-        arbeidsInntektMaaned = mapToArbeidsInntektMaaneder(storedInntekt.inntekt.arbeidsInntektMaaned),
-        ident = storedInntekt.inntekt.ident
-    ),
-    storedInntekt.manueltRedigert,
-    storedInntekt.manueltRedigert,
-    personnummer
-)
+fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjeningsperiode, inntektsMottaker: Inntektsmottaker?) =
+    GUIInntekt(
+        storedInntekt.inntektId,
+        storedInntekt.timestamp,
+        GUIInntektsKomponentResponse(
+            tilDato = opptjeningsPeriode.sisteAvsluttendeKalenderMåned,
+            fraDato = opptjeningsPeriode.førsteMåned,
+            arbeidsInntektMaaned = mapToArbeidsInntektMaaneder(storedInntekt.inntekt.arbeidsInntektMaaned),
+            ident = storedInntekt.inntekt.ident
+        ),
+        storedInntekt.manueltRedigert,
+        storedInntekt.manueltRedigert,
+        naturligIdent = inntektsMottaker?.pnr,
+        inntektsmottaker = inntektsMottaker
+    )
 
 private fun mapToArbeidsInntektMaaneder(list: List<ArbeidsInntektMaaned>?) =
     list?.map { arbeidsInntektMaaned ->
@@ -43,27 +51,27 @@ private fun mapToArbeidsInntektMaaneder(list: List<ArbeidsInntektMaaned>?) =
             GUIArbeidsInntektInformasjon(
                 arbeidsInntektMaaned.arbeidsInntektInformasjon?.inntektListe?.map {
                     InntektMedVerdikode(
-                        it.beloep,
-                        it.fordel,
-                        it.beskrivelse,
-                        it.inntektskilde,
-                        it.inntektsstatus,
-                        it.inntektsperiodetype,
-                        it.leveringstidspunkt,
-                        it.opptjeningsland,
-                        it.opptjeningsperiode,
-                        it.skattemessigBosattLand,
-                        it.utbetaltIMaaned,
-                        it.opplysningspliktig,
-                        it.inntektsinnsender,
-                        it.virksomhet,
-                        it.inntektsmottaker,
-                        it.inngaarIGrunnlagForTrekk,
-                        it.utloeserArbeidsgiveravgift,
-                        it.informasjonsstatus,
-                        it.inntektType,
-                        it.tilleggsinformasjon,
-                        verdiKode(
+                        beloep = it.beloep,
+                        fordel = it.fordel,
+                        beskrivelse = it.beskrivelse,
+                        inntektskilde = it.inntektskilde,
+                        inntektsstatus = it.inntektsstatus,
+                        inntektsperiodetype = it.inntektsperiodetype,
+                        leveringstidspunkt = it.leveringstidspunkt,
+                        opptjeningsland = it.opptjeningsland,
+                        opptjeningsperiode = it.opptjeningsperiode,
+                        skattemessigBosattLand = it.skattemessigBosattLand,
+                        utbetaltIMaaned = it.utbetaltIMaaned,
+                        opplysningspliktig = it.opplysningspliktig,
+                        inntektsinnsender = it.inntektsinnsender,
+                        virksomhet = it.virksomhet,
+                        inntektsmottaker = it.inntektsmottaker,
+                        inngaarIGrunnlagForTrekk = it.inngaarIGrunnlagForTrekk,
+                        utloeserArbeidsgiveravgift = it.utloeserArbeidsgiveravgift,
+                        informasjonsstatus = it.informasjonsstatus,
+                        inntektType = it.inntektType,
+                        tilleggsinformasjon = it.tilleggsinformasjon,
+                        verdikode = verdiKode(
                             DatagrunnlagKlassifisering(
                                 it.inntektType,
                                 it.beskrivelse,
