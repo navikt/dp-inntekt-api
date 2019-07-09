@@ -158,7 +158,7 @@ pipeline {
     }
 
     stage('Deploy') {
-      when { branch 'xxxxx' }
+      when { branch 'master' }
 
       steps {
         sh label: 'Deploy with kubectl', script: """
