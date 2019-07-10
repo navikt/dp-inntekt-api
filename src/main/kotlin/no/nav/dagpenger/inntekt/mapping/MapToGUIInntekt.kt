@@ -10,7 +10,6 @@ import java.time.LocalDateTime
 fun mapToGUIInntekt(
     inntekt: InntektkomponentResponse,
     opptjeningsPeriode: Opptjeningsperiode,
-    personnummer: String?,
     inntektsmottaker: Inntektsmottaker?
 ) = GUIInntekt(
     null,
@@ -23,7 +22,6 @@ fun mapToGUIInntekt(
     ),
     false,
     false,
-    personnummer,
     inntektsmottaker
 )
 
@@ -39,7 +37,6 @@ fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjening
         ),
         storedInntekt.manueltRedigert,
         storedInntekt.manueltRedigert,
-        naturligIdent = inntektsMottaker?.pnr,
         inntektsmottaker = inntektsMottaker
     )
 

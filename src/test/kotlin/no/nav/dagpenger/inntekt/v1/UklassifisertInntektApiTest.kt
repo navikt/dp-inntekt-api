@@ -213,8 +213,7 @@ class UklassifisertInntektApiTest {
             timestamp = null,
             inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
             manueltRedigert = false,
-            redigertAvSaksbehandler = false,
-            naturligIdent = null
+            redigertAvSaksbehandler = false
         )
 
         handleRequest(
@@ -240,8 +239,7 @@ class UklassifisertInntektApiTest {
             timestamp = null,
             inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
             manueltRedigert = false,
-            redigertAvSaksbehandler = true,
-            naturligIdent = null
+            redigertAvSaksbehandler = true
         )
 
         handleRequest(
@@ -268,8 +266,7 @@ class UklassifisertInntektApiTest {
             timestamp = null,
             inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
             manueltRedigert = false,
-            redigertAvSaksbehandler = true,
-            naturligIdent = null
+            redigertAvSaksbehandler = true
         )
 
         handleRequest(
@@ -296,8 +293,7 @@ class UklassifisertInntektApiTest {
             timestamp = null,
             inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
             manueltRedigert = false,
-            redigertAvSaksbehandler = false,
-            naturligIdent = null
+            redigertAvSaksbehandler = false
         )
 
         handleRequest(
