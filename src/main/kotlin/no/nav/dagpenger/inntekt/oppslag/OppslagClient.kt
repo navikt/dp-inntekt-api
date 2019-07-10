@@ -43,10 +43,10 @@ class OppslagClient(val apiUrl: String, val oidcClient: OidcClient) {
         }
     }
 
-    fun personNavn(naturligIdent: String): String? {
+    fun personNavn(fødselsnummer: String): String? {
         val url = "$apiUrl/person/name"
 
-        val json = jsonAdapter.toJson(PersonNameRequest(naturligIdent))
+        val json = jsonAdapter.toJson(PersonNameRequest(fødselsnummer))
 
         return withOidc { token ->
             val (_, response, result) = with(
@@ -126,7 +126,7 @@ data class Organisasjon(val orgNr: Long, val navn: String)
 class OppslagException(val statusCode: Int, override val message: String) :
     RuntimeException(message)
 
-data class PersonNameRequest(val naturligIdent: String)
+data class PersonNameRequest(val fødselsnummer: String)
 data class PersonNameResponse(
     val etternavn: String,
     val fornavn: String,

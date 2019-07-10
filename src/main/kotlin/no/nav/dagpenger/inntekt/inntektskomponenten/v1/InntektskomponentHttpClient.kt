@@ -3,7 +3,6 @@ package no.nav.dagpenger.inntekt.inntektskomponenten.v1
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
-import com.github.kittinunf.result.Result
 import de.huxhorn.sulky.ulid.ULID
 import io.prometheus.client.Summary
 import mu.KotlinLogging
@@ -53,24 +52,21 @@ class InntektskomponentHttpClient(
                 responseObject(moshiDeserializerOf(jsonResponseAdapter))
             }
 
-            return when (result) {
-
-                is Result.Failure -> {
-                    val resp = result.error.response.body().asString("application/json")
-                    val message = runCatching {
-                        jsonMapAdapter.fromJson(resp)
-                    }.let {
-                        val s = it.getOrNull()?.get("message")?.toString() ?: result.error.message
-                        s
-                    }
-                    throw InntektskomponentenHttpClientException(
-                        response.statusCode,
-                        "Failed to fetch inntekt. Response message: ${response.responseMessage}. Problem message: $message"
-                    )
+            return result.fold({
+                it
+            }, { error ->
+                val resp = error.response.body().asString("application/json")
+                val message = runCatching {
+                    jsonMapAdapter.fromJson(resp)
+                }.let {
+                    val s = it.getOrNull()?.get("message")?.toString() ?: error.message
+                    s
                 }
-
-                is Result.Success -> result.get()
-            }
+                throw InntektskomponentenHttpClientException(
+                    response.statusCode,
+                    "Failed to fetch inntekt. Response message: ${response.responseMessage}. Problem message: $message"
+                )
+            })
         } finally {
             timer.observeDuration()
         }
