@@ -108,7 +108,7 @@ class OppslagClientTest {
                 .withRequestBody(
                     EqualToPattern(
                         """
-                            {"naturligIdent":"12345678912"}
+                            {"fødselsnummer":"12345678912"}
                         """.trimIndent()
                     )
                 )
