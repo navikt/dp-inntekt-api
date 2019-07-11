@@ -1,0 +1,14 @@
+{
+  "ref": "master",
+  "auto_merge": false,
+  "description": "",
+  "environment": "CLUSTER",
+  "required_contexts": [],
+  "payload": {
+    "version": [1, 0, 0],
+    "team": "TEAM",
+    "kubernetes": {
+      "resources": "JSON"
+    }
+  }
+}

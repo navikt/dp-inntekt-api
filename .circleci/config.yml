@@ -1,8 +1,211 @@
 version: 2.1
- jobs:
-   build:
+
+orbs:
+  docker: circleci/docker@0.5.1
+
+executors:
+  java:
      docker:
-       - image: circleci/ruby:2.4.1
-     steps:
-       - checkout
-       - run: echo "A first hello"
+       - image: circleci/openjdk:11-jdk
+  deployment:
+    docker:
+      - image: androa/ci-cd-toolbox@sha256:fc3d3f6f836b523f46702f4f8ca19e5d88fa145aa7c16fc69f26d8d0a7f79a28
+
+jobs:
+  build-and-push:
+    executor: java
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - gradle-repo-v1-{{ .Branch }}-{{ checksum "dependencies.lockfile" }}
+            - gradle-repo-v1-{{ .Branch }}-
+            - gradle-repo-v1-
+      - run:
+          name: Lint, test, and build application
+          command: ./gradlew build -x test
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-repo-v1-{{ .Branch }}-{{ checksum "dependencies.lockfile" }}
+      - setup_remote_docker
+      - docker/check
+      - docker/build:
+          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          tag: $CIRCLE_SHA1
+      - docker/push:
+          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          tag: $CIRCLE_SHA1
+
+  prepare-nais:
+    executor: deployment
+    steps:
+      - checkout
+      - run:
+          name: Set up necessary environment variables for deployment
+          command: |
+            echo "TEAM_NAME=$(yq r ./nais/base/kustomization.yaml commonLabels.team)" >> ./nais/deploy.env
+            echo "APP_NAME=$(yq r ./nais/base/kustomization.yaml commonLabels.app)" >> ./nais/deploy.env
+            echo "ZONE=$(yq r ./nais/base/kustomization.yaml commonAnnotations.zone)" >> ./nais/deploy.env
+
+      - run:
+          name: "Set image on base overlay"
+          command: yq w -i nais/base/nais.yaml spec.image docker.io/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_SHA1
+
+      - run:
+          name: "Prepare kustomized service contracts"
+          command: |
+            kustomize build ./nais/dev | tee ./nais/nais-dev-deploy.yaml
+            kustomize build ./nais/prod | tee ./nais/nais-prod-deploy.yaml
+
+      - persist_to_workspace:
+          root: ./nais
+          paths:
+            - ./*deploy.yaml
+            - deploy.env
+            - deployment-request.json
+
+  make-github-token:
+    executor: deployment
+    steps:
+      - run:
+          name: Inject GitHub App token
+          command: curl -v https://github-circle-token-generator.herokuapp.com/token/inject?owner=$CIRCLE_PROJECT_USERNAME\&project=$CIRCLE_PROJECT_REPONAME
+
+  deploy-preprod:
+    executor: deployment
+    steps:
+      - create-github-deployment:
+          environment: dev
+
+  wait-for-deploy:
+    executor: deployment
+    steps:
+      - wait-for-github-deployment
+
+  deploy-prod:
+    executor: deployment
+    steps:
+      - create-github-deployment:
+          environment: prod
+
+commands:
+  create-github-deployment:
+    description: Creates a GitHub Deployment through the GitHub API
+    parameters:
+      environment:
+        default: dev
+        description: Cluster environment to deploy to
+        type: enum
+        enum: [ dev, prod ]
+    steps:
+      - attach_workspace:
+          at: /tmp/nais
+
+      - run:
+          name: Load environment variables for deployment
+          command: cat /tmp/nais/deploy.env >> $BASH_ENV
+
+      - run:
+          name: Prepare new deployment in the GitHub API
+          command: |
+            export RESOURCES=$(yq read -d"*" -j /tmp/nais/nais-<< parameters.environment >>-deploy.yaml)
+            cat /tmp/nais/deployment-request.json | \
+              jq ".ref = \"${CIRCLE_BRANCH}\" | \
+                  .environment = \"<< parameters.environment >>-${ZONE}\" | \
+                  .description = \"Automated deploy to << parameters.environment >>-${ZONE}\" | \
+                  .payload.team = \"${TEAM_NAME}\" | \
+                  .payload.kubernetes.resources = ${RESOURCES}" > /tmp/nais/deployment-request-<< parameters.environment >>.json
+
+      - store_artifacts:
+          path: /tmp/nais/
+          destination: service-contracts
+
+      - run:
+          name: Create new deployment in the GitHub API
+          command: |
+            curl -sS \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "Accept: application/vnd.github.flash-preview+json" \
+              -X POST \
+              -d @/tmp/nais/deployment-request-<< parameters.environment >>.json \
+              https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/deployments | jq -r -e .statuses_url | tee deployment-status-url
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - deployment-status-url
+
+  wait-for-github-deployment:
+    description: Wait for the GitHub deployment is complete
+    steps:
+      - attach_workspace:
+          at: /tmp/deployment
+
+      - run:
+          name: Wait for deployment in the GitHub API to complete
+          command: |
+            DEPLOYMENT_STATUS_URL=$(cat /tmp/deployment/deployment-status-url)
+            MAX_WAIT_TIME_SECONDS=600
+            USED_ATTEMPTS=0
+            USED_TIME=0
+            POLL_SECONDS=3
+
+            until curl -s \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "Accept: application/vnd.github.flash-preview+json" \
+              $DEPLOYMENT_STATUS_URL | jq -e '.[]?|select(.state == "success")' > deployment-success-status.json
+            do
+              if [ $USED_TIME -ge ${MAX_WAIT_TIME_SECONDS} ]
+              then
+                echo "Deployment timed out"
+                exit 1
+              fi
+
+              printf '.'
+
+              sleep $POLL_SECONDS
+              USED_TIME=$(($USED_TIME+$POLL_SECONDS))
+              USED_ATTEMPTS=$(($USED_ATTEMPTS+1))
+              POLL_SECONDS=$(($POLL_SECONDS+2))
+            done
+
+            cat deployment-success-status.json | jq .
+            echo "🚀 Deployment was successful! Good job! ❤️"
+
+      - store_artifacts:
+          path: ./deployment-success-status.json
+          destination: deployment-success-status.json
+
+workflows:
+  version: 2.1
+  build-test-and-deploy:
+    jobs:
+      - build-and-push:
+          context: NAIS deployment
+      - prepare-nais
+      - make-github-token:
+          requires:
+            - build-and-push
+      - deploy-preprod:
+          requires:
+            - build-and-push
+            - prepare-nais
+            - make-github-token
+          filters:
+            branches:
+              only: circleci
+      - wait-for-deploy:
+          requires:
+            - deploy-preprod
+      - deploy-prod:
+          requires:
+            - deploy-prod
+          filters:
+            branches:
+              only: masters
+      - wait-for-deploy:
+          requires:
+            - deploy-prod
