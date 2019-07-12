@@ -129,7 +129,7 @@ object Ktor {
 }
 
 object Log4j2 {
-    private const val version = "2.12.0"
+    const val version = "2.12.0"
     const val api = "org.apache.logging.log4j:log4j-api:$version"
     const val core = "org.apache.logging.log4j:log4j-core:$version"
     const val slf4j = "org.apache.logging.log4j:log4j-slf4j-impl:$version"
@@ -211,6 +211,3 @@ object Wiremock {
     const val version = "2.21.0"
     const val standalone = "com.github.tomakehurst:wiremock-standalone:$version"
 }
-
-
-

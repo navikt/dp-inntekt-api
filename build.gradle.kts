@@ -34,6 +34,16 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+dependencyLocking {
+    lockAllConfigurations()
+}
+
+configurations.all {
+    resolutionStrategy.activateDependencyLocking()
+    resolutionStrategy.preferProjectModules()
+    resolutionStrategy.eachDependency { DependencyResolver.execute(this) }
+}
+
 dependencies {
     implementation(kotlin("stdlib"))
 
