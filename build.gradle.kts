@@ -136,5 +136,5 @@ tasks.named("shadowJar") {
 }
 
 tasks.named("compileKotlin") {
-    dependsOn("spotlessKotlin")
+    dependsOn("spotlessKotlinCheck")
 }
