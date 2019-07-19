@@ -4,10 +4,13 @@ import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import de.huxhorn.sulky.ulid.ULID
+import io.prometheus.client.Counter
 import io.prometheus.client.Summary
+import kotlinx.coroutines.delay
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.oidc.OidcClient
+import java.io.IOException
 import java.time.YearMonth
 
 private val LOGGER = KotlinLogging.logger {}
@@ -25,12 +28,21 @@ private val clientLatencyStats: Summary = Summary.build()
     .help("Latency arena-adapter regel client, in seconds")
     .register()
 
+const val INNTEKTSKOMPONENT_FETCH_ERROR = "inntektskomponent_fetch_error"
+private val clientFetchErrors = Counter.build()
+    .name(INNTEKTSKOMPONENT_FETCH_ERROR)
+    .help("Number of times fetching form inntektskomponenten has failed")
+    .register()
+
 class InntektskomponentHttpClient(
     private val hentInntektlisteUrl: String,
     private val oidcClient: OidcClient
 ) : InntektskomponentClient {
 
-    override suspend fun getInntekt(request: InntektkomponentRequest): InntektkomponentResponse {
+    override suspend fun getInntekt(
+        request: InntektkomponentRequest,
+        timeouts: InntektskomponentClient.ConnectionTimeout
+    ): InntektkomponentResponse {
         LOGGER.info("Fetching new inntekt for $request")
 
         val requestBody = HentInntektListeRequest(
@@ -45,6 +57,9 @@ class InntektskomponentHttpClient(
         val timer = clientLatencyStats.startTimer()
         try {
             val (_, response, result) = with(hentInntektlisteUrl.httpPost()) {
+                timeout(timeouts.connectionTimeout.toMillis().toInt())
+                timeoutRead(timeouts.readTimeout.toMillis().toInt())
+
                 authentication().bearer(oidcClient.oidcToken().access_token)
                 header("Nav-Consumer-Id" to "dp-inntekt-api")
                 header("Nav-Call-Id" to ulid.nextULID())
@@ -59,9 +74,11 @@ class InntektskomponentHttpClient(
                 val message = runCatching {
                     jsonMapAdapter.fromJson(resp)
                 }.let {
-                    val s = it.getOrNull()?.get("message")?.toString() ?: error.message
-                    s
+                    it.getOrNull()?.get("message")?.toString() ?: error.message
                 }
+
+                clientFetchErrors.inc()
+
                 throw InntektskomponentenHttpClientException(
                     response.statusCode,
                     "Failed to fetch inntekt. Response message: ${response.responseMessage}. Problem message: $message"
