@@ -129,4 +129,16 @@ tasks.withType<Test> {
 
 tasks.withType<Wrapper> {
     gradleVersion = "5.5"
+<<<<<<< Updated upstream
 }
+=======
+}
+
+tasks.named("shadowJar") {
+    dependsOn("test")
+}
+
+tasks.named("compileKotlin") {
+    dependsOn("spotlessKotlin")
+}
+>>>>>>> Stashed changes
