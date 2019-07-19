@@ -268,7 +268,7 @@ class UklassifisertInntektApiTest {
     }
 
     @Test
-    fun `Post uklassifisert inntekt med feil redigert should return 200 ok`() = testApp {
+    fun `Post uklassifisert inntekt med feil redigert should return 400 ok`() = testApp {
         val guiInntekt = GUIInntekt(
             inntektId = inntektId,
             timestamp = null,
