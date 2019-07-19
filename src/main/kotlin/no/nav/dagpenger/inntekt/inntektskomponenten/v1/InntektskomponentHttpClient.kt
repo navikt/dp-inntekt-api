@@ -6,11 +6,9 @@ import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import de.huxhorn.sulky.ulid.ULID
 import io.prometheus.client.Counter
 import io.prometheus.client.Summary
-import kotlinx.coroutines.delay
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.oidc.OidcClient
-import java.io.IOException
 import java.time.YearMonth
 
 private val LOGGER = KotlinLogging.logger {}

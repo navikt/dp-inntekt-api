@@ -17,7 +17,6 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.runBlocking
-import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.oidc.OidcClient
 import no.nav.dagpenger.oidc.OidcToken
 import org.junit.jupiter.api.AfterAll
@@ -271,4 +270,3 @@ private fun shouldBeCounted(metricName: String) {
             metric.samples[0].value shouldBeGreaterThan 0.0
         }
 }
-
