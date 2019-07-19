@@ -23,15 +23,24 @@ import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
+import no.nav.dagpenger.inntekt.mapping.GUIArbeidsInntektInformasjon
+import no.nav.dagpenger.inntekt.mapping.GUIArbeidsInntektMaaned
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.GUIInntektsKomponentResponse
+import no.nav.dagpenger.inntekt.mapping.InntektMedVerdikode
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
@@ -61,9 +70,9 @@ class UklassifisertInntektApiTest {
     private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234"))
 
     private val storedInntekt = StoredInntekt(
-        inntektId,
-        emptyInntekt,
-        false
+        inntektId = inntektId,
+        inntekt = emptyInntekt,
+        manueltRedigert = false
     )
 
     private val uklassifisertInntekt = "/v1/inntekt/uklassifisert"
@@ -255,6 +264,55 @@ class UklassifisertInntektApiTest {
             val storedInntekt =
                 moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
             assertEquals(storedInntekt.inntektId, inntektId)
+        }
+    }
+
+    @Test
+    fun `Post uklassifisert inntekt med feil redigert should return 400 ok`() = testApp {
+        val guiInntekt = GUIInntekt(
+            inntektId = inntektId,
+            timestamp = null,
+            inntekt = GUIInntektsKomponentResponse(
+                fraDato = null,
+                tilDato = null,
+                arbeidsInntektMaaned = listOf(
+                    GUIArbeidsInntektMaaned(
+                        aarMaaned = YearMonth.of(2019, 1),
+                        avvikListe = listOf(),
+                        arbeidsInntektInformasjon = GUIArbeidsInntektInformasjon(
+                            inntektListe = listOf(
+                                InntektMedVerdikode(
+                                    beloep = BigDecimal(123),
+                                    inntektskilde = "",
+                                    verdikode = "Bolig",
+                                    utbetaltIMaaned = YearMonth.of(2019, 1),
+                                    beskrivelse = InntektBeskrivelse.BOLIG,
+                                    fordel = null,
+                                    inntektType = InntektType.LOENNSINNTEKT,
+                                    inntektsperiodetype = null,
+                                    inntektsstatus = null
+                                )
+                            )
+                        )
+                    )
+                ),
+                ident = Aktoer(AktoerType.AKTOER_ID, "1234")
+            ),
+            manueltRedigert = false,
+            redigertAvSaksbehandler = true
+        )
+
+        handleRequest(
+            HttpMethod.Post,
+            "v1/inntekt/uklassifisert/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
+        ) {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            val body = moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt)
+            setBody(body.replace(oldValue = "123", newValue = ""))
+        }.apply {
+            assertTrue(requestHandled)
+            assertEquals(HttpStatusCode.BadRequest, response.status())
         }
     }
 
