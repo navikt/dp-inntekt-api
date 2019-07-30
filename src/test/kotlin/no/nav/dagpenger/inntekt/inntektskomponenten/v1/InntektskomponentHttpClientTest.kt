@@ -11,7 +11,9 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import com.github.tomakehurst.wiremock.matching.RegexPattern
+import io.kotlintest.matchers.boolean.shouldBeTrue
 import io.kotlintest.matchers.doubles.shouldBeGreaterThan
+import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.runBlocking
@@ -21,10 +23,10 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.Duration
 import java.time.YearMonth
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 internal class InntektskomponentHttpClientTest {
 
@@ -87,14 +89,7 @@ internal class InntektskomponentHttpClientTest {
             }
 
         assertEquals("99999999999", hentInntektListeResponse.ident.identifikator)
-
-        val registry = CollectorRegistry.defaultRegistry
-
-        registry.metricFamilySamples().asSequence().find { it.name == INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME }
-            ?.let { metric ->
-                metric.samples[0].value shouldNotBe null
-                metric.samples[0].value shouldBeGreaterThan 0.0
-            }
+        shouldBeCounted(metricName = INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME)
     }
 
     @Test
@@ -120,13 +115,15 @@ internal class InntektskomponentHttpClientTest {
         )
 
         val hentInntektListeResponse =
-            runBlocking { inntektskomponentClient.getInntekt(
-                InntektkomponentRequest(
-                    "",
-                    YearMonth.of(2017, 3),
-                    YearMonth.of(2019, 1)
+            runBlocking {
+                inntektskomponentClient.getInntekt(
+                    InntektkomponentRequest(
+                        "",
+                        YearMonth.of(2017, 3),
+                        YearMonth.of(2019, 1)
+                    )
                 )
-            ) }
+            }
 
         assertEquals("8888888888", hentInntektListeResponse.ident.identifikator)
         assertEquals(
@@ -154,19 +151,59 @@ internal class InntektskomponentHttpClientTest {
         )
 
         val result = runCatching {
-            runBlocking { inntektskomponentClient.getInntekt(
-                InntektkomponentRequest(
-                    "",
-                    YearMonth.of(2017, 3),
-                    YearMonth.of(2019, 1)
+            runBlocking {
+                inntektskomponentClient.getInntekt(
+                    InntektkomponentRequest(
+                        "",
+                        YearMonth.of(2017, 3),
+                        YearMonth.of(2019, 1)
+                    )
                 )
-            ) }
+            }
         }
 
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull() is InntektskomponentenHttpClientException)
-        val inntektskomponentenHttpClientException = result.exceptionOrNull() as InntektskomponentenHttpClientException
-        assertEquals(500, inntektskomponentenHttpClientException.status)
+        result.isFailure.shouldBeTrue()
+        result.shouldBeClientException<InntektskomponentenHttpClientException>(
+            status = 500
+        )
+    }
+
+    @Test
+    fun `fetch uklassifisert inntekt with timeout`() {
+        stubFor(
+            post(urlEqualTo("/v1/hentinntektliste"))
+                .withHeader("Authorization", RegexPattern("Bearer\\s[\\d|a-f]{8}-([\\d|a-f]{4}-){3}[\\d|a-f]{12}"))
+                .withHeader("Nav-Consumer-Id", EqualToPattern("dp-inntekt-api"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
+                .willReturn(
+                    WireMock.serviceUnavailable().withFixedDelay(500)
+                )
+        )
+
+        val inntektskomponentClient = InntektskomponentHttpClient(
+            server.url("/v1/hentinntektliste"),
+            DummyOidcClient()
+        )
+
+        val result = runCatching {
+            runBlocking {
+                inntektskomponentClient.getInntekt(
+                    InntektkomponentRequest(
+                        "",
+                        YearMonth.of(2017, 3),
+                        YearMonth.of(2019, 1)
+                    ), InntektskomponentClient.ConnectionTimeout(readTimeout = Duration.ofMillis(5))
+                )
+            }
+        }
+
+        result.isFailure.shouldBeTrue()
+        result.shouldBeClientException<InntektskomponentenHttpClientException>(
+            status = -1,
+            message = "Failed to fetch inntekt. Response message: . Problem message: Read timed out"
+        )
+
+        shouldBeCounted(metricName = INNTEKTSKOMPONENT_FETCH_ERROR)
     }
 
     @Test
@@ -188,22 +225,21 @@ internal class InntektskomponentHttpClientTest {
         )
 
         val result = runCatching {
-            runBlocking { inntektskomponentClient.getInntekt(
-                InntektkomponentRequest(
-                    "",
-                    YearMonth.of(2017, 3),
-                    YearMonth.of(2019, 1)
+            runBlocking {
+                inntektskomponentClient.getInntekt(
+                    InntektkomponentRequest(
+                        "",
+                        YearMonth.of(2017, 3),
+                        YearMonth.of(2019, 1)
+                    )
                 )
-            )
-        } }
+            }
+        }
 
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull() is InntektskomponentenHttpClientException)
-        val inntektskomponentenHttpClientException = result.exceptionOrNull() as InntektskomponentenHttpClientException
-        assertEquals(500, inntektskomponentenHttpClientException.status)
-        assertEquals(
-            "Failed to fetch inntekt. Response message: Server Error. Problem message: Feil i filtrering: En feil oppstod i filteret DagpengerGrunnlagA-Inntekt, Regel no.nav.inntektskomponenten.filter.regler.dagpenger.DagpengerHovedregel støtter ikke inntekter av type no.nav.inntektskomponenten.domain.Loennsinntekt",
-            inntektskomponentenHttpClientException.message
+        result.isFailure.shouldBeTrue()
+        result.shouldBeClientException<InntektskomponentenHttpClientException>(
+            status = 500,
+            message = "Failed to fetch inntekt. Response message: Server Error. Problem message: Feil i filtrering: En feil oppstod i filteret DagpengerGrunnlagA-Inntekt, Regel no.nav.inntektskomponenten.filter.regler.dagpenger.DagpengerHovedregel støtter ikke inntekter av type no.nav.inntektskomponenten.domain.Loennsinntekt"
         )
     }
 
@@ -216,4 +252,21 @@ internal class InntektskomponentHttpClientTest {
               "path": "/hentinntektliste"
             }
         """.trimIndent()
+}
+
+private inline fun <reified T : InntektskomponentenHttpClientException> Result<InntektkomponentResponse>.shouldBeClientException(
+    status: Int? = null,
+    message: String? = null
+) {
+    val exception = exceptionOrNull() as T
+    status?.let { exception.status shouldBe status }
+    message?.let { exception.message shouldBe message }
+}
+
+private fun shouldBeCounted(metricName: String) {
+    CollectorRegistry.defaultRegistry.metricFamilySamples().asSequence().find { it.name == metricName }
+        ?.let { metric ->
+            metric.samples[0].value shouldNotBe null
+            metric.samples[0].value shouldBeGreaterThan 0.0
+        }
 }

@@ -34,6 +34,16 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+dependencyLocking {
+    lockAllConfigurations()
+}
+
+configurations.all {
+    resolutionStrategy.activateDependencyLocking()
+    resolutionStrategy.preferProjectModules()
+    resolutionStrategy.eachDependency { DependencyResolver.execute(this) }
+}
+
 dependencies {
     implementation(kotlin("stdlib"))
 
@@ -120,5 +130,13 @@ tasks.withType<Test> {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "5.0"
+    gradleVersion = "5.5"
+}
+
+tasks.named("shadowJar") {
+    dependsOn("test")
+}
+
+tasks.named("compileKotlin") {
+    dependsOn("spotlessKotlinCheck")
 }
