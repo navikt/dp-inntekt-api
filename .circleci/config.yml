@@ -197,15 +197,15 @@ workflows:
           filters:
             branches:
               only: circleci
-      - wait-for-deploy:
+      - wait-for-deploy-preprod:
           requires:
             - deploy-preprod
       - deploy-prod:
           requires:
-            - deploy-prod
+            - wait-for-deploy-preprod
           filters:
             branches:
               only: masters
-      - wait-for-deploy:
+      - wait-for-deploy-prod:
           requires:
             - deploy-prod
