@@ -301,7 +301,7 @@ class UklassifisertInntektApiTest {
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
+            "v1/inntekt/uklassifisert/${foundBehandlingsKey.aktørId}/${foundBehandlingsKey.vedtakId}/${foundBehandlingsKey.beregningsDato}"
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
