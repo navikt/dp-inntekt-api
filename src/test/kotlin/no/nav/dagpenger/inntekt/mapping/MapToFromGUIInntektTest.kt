@@ -33,7 +33,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.LocalDateTime
 
-val rawInntekt = InntektkomponentResponse(
+private val rawInntekt = InntektkomponentResponse(
     listOf(
         ArbeidsInntektMaaned(
             YearMonth.of(2019, 5),
@@ -93,9 +93,9 @@ val rawInntekt = InntektkomponentResponse(
     Aktoer(AktoerType.AKTOER_ID, "aktorId")
 )
 
-val inntektsmottaker = Inntektsmottaker("12345678912", "Navn Navnesen")
+private val inntektsmottaker = Inntektsmottaker("12345678912", "Navn Navnesen")
 
-val inntektMedVerdikode = GUIArbeidsInntektInformasjon(
+private val inntektMedVerdikode = GUIArbeidsInntektInformasjon(
     listOf(InntektMedVerdikode(
         BigDecimal.ONE,
         "fordel",

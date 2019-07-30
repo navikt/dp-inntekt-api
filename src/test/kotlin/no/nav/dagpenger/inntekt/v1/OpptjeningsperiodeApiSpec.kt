@@ -10,7 +10,6 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.db.InntektStore
-import no.nav.dagpenger.inntekt.inntektApi
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -25,15 +24,7 @@ class OpptjeningsperiodeApiSpec {
             inntektStore.getBeregningsdato(any())
         } } returns LocalDate.of(2019, 2, 27)
 
-        withTestApplication({
-            inntektApi(
-                mockk(),
-                inntektStore,
-                mockk(),
-                mockk(relaxed = true),
-                mockk(relaxed = true)
-            )
-        }) {
+        withTestApplication(mockInntektApi(inntektStore = inntektStore)) {
             handleRequest(HttpMethod.Post, "/v1/is-samme-inntjeningsperiode") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(

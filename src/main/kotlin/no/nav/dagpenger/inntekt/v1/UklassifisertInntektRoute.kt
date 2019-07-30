@@ -17,6 +17,7 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.util.pipeline.PipelineContext
 import mu.KotlinLogging
+import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
@@ -26,9 +27,9 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.Inntektsmottaker
 import no.nav.dagpenger.inntekt.mapping.dataGrunnlagKlassifiseringToVerdikode
-import no.nav.dagpenger.inntekt.mapping.mapToStoredInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToDetachedInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
+import no.nav.dagpenger.inntekt.mapping.mapToStoredInntekt
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
@@ -44,7 +45,7 @@ fun Route.uklassifisertInntekt(
         route("/uklassifisert/{aktørId}/{vedtakId}/{beregningsDato}") {
             get {
                 parseUrlPathParameters().run {
-                    inntektStore.getInntektId(this)
+                    inntektStore.getInntektId(BehandlingsKey(this.aktørId, this.vedtakId, this.beregningsDato))
                         ?.let {
                             inntektStore.getInntekt(it)
                         }?.let {
@@ -62,7 +63,10 @@ fun Route.uklassifisertInntekt(
                     val guiInntekt = call.receive<GUIInntekt>()
                     mapToStoredInntekt(guiInntekt)
                         .let {
-                            inntektStore.insertInntekt(this, it.inntekt, ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject()))
+                            inntektStore.insertInntekt(
+                                BehandlingsKey(this.aktørId, this.vedtakId, this.beregningsDato),
+                                it.inntekt,
+                                ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject()))
                         }
                         .let {
                             call.respond(
@@ -99,7 +103,10 @@ fun Route.uklassifisertInntekt(
                     val guiInntekt = call.receive<GUIInntekt>()
                     mapToDetachedInntekt(guiInntekt)
                         .let {
-                            inntektStore.insertInntekt(this, it.inntekt, ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject()))
+                            inntektStore.insertInntekt(
+                                BehandlingsKey(this.aktørId, this.vedtakId, this.beregningsDato),
+                                it.inntekt,
+                                ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject()))
                         }
                         .let {
                             call.respond(

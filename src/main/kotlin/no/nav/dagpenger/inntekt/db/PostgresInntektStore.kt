@@ -5,10 +5,10 @@ import de.huxhorn.sulky.ulid.ULID
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
+import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 
 import no.nav.dagpenger.inntekt.moshiInstance
-import no.nav.dagpenger.inntekt.v1.InntektRequest
 import org.postgresql.util.PSQLException
 import java.time.LocalDate
 import javax.sql.DataSource
@@ -35,7 +35,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
     private val adapter: JsonAdapter<InntektkomponentResponse> = moshiInstance.adapter(InntektkomponentResponse::class.java)
     private val ulidGenerator = ULID()
 
-    override fun getInntektId(request: InntektRequest): InntektId? {
+    override fun getInntektId(request: BehandlingsKey): InntektId? {
         try {
             return using(sessionOf(dataSource)) { session ->
                 session.run(
@@ -87,11 +87,11 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
         }
     }
 
-    override fun insertInntekt(request: InntektRequest, inntekt: InntektkomponentResponse): StoredInntekt =
+    override fun insertInntekt(request: BehandlingsKey, inntekt: InntektkomponentResponse): StoredInntekt =
         insertInntekt(request, inntekt, null)
 
     override fun insertInntekt(
-        request: InntektRequest,
+        request: BehandlingsKey,
         inntekt: InntektkomponentResponse,
         manueltRedigert: ManueltRedigert?
     ): StoredInntekt {

@@ -14,7 +14,6 @@ import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.db.InntektStore
-import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
@@ -216,14 +215,13 @@ class KlassifisertInntektApiTest {
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        withTestApplication({
-            (inntektApi(
-                inntektskomponentClientMock,
-                inntektStoreMock,
-                oppslagClientMock,
-                authApiKeyVerifier,
-                mockk(relaxed = true)
-            ))
-        }) { callback() }
+        withTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                oppslagClient = oppslagClientMock,
+                apiAuthApiKeyVerifier = authApiKeyVerifier
+            )
+        ) { callback() }
     }
 }

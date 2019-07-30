@@ -12,6 +12,7 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.JwtStub
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
@@ -19,7 +20,6 @@ import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.StoredInntekt
-import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
@@ -46,11 +46,11 @@ class UklassifisertInntektApiTest {
     private val jwtStub = JwtStub("https://localhost")
     private val token = jwtStub.createTokenFor("user")
 
-    private val notFoundRequest =
-        InntektRequest(aktørId = "1234", vedtakId = 1, beregningsDato = LocalDate.of(2019, 1, 8))
+    private val notFoundBehandlingsKey =
+        BehandlingsKey(aktørId = "1234", vedtakId = 1, beregningsDato = LocalDate.of(2019, 1, 8))
 
-    private val foundRequest =
-        InntektRequest(aktørId = "1234", vedtakId = 1234, beregningsDato = LocalDate.of(2019, 1, 8))
+    private val foundBehandlingsKey =
+        BehandlingsKey(aktørId = "1234", vedtakId = 1234, beregningsDato = LocalDate.of(2019, 1, 8))
 
     private val inntektkomponentenFoundRequest = InntektkomponentRequest(
         "1234",
@@ -70,19 +70,19 @@ class UklassifisertInntektApiTest {
 
     init {
         every {
-            inntektStoreMock.getInntektId(notFoundRequest)
+            inntektStoreMock.getInntektId(notFoundBehandlingsKey)
         } returns null
 
         every {
-            inntektStoreMock.getInntektId(foundRequest)
+            inntektStoreMock.getInntektId(foundBehandlingsKey)
         } returns inntektId
 
         every {
-            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt, null)
+            inntektStoreMock.insertInntekt(foundBehandlingsKey, storedInntekt.inntekt, null)
         } returns storedInntekt
 
         every {
-            inntektStoreMock.insertInntekt(foundRequest, storedInntekt.inntekt, ManueltRedigert.from(true, "user"))
+            inntektStoreMock.insertInntekt(foundBehandlingsKey, storedInntekt.inntekt, ManueltRedigert.from(true, "user"))
         } returns storedInntekt
 
         every {
@@ -112,7 +112,7 @@ class UklassifisertInntektApiTest {
     fun `GET unknown uklassifisert inntekt should return 404 not found`() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/${notFoundRequest.aktørId}/${notFoundRequest.vedtakId}/${notFoundRequest.beregningsDato}"
+            "$uklassifisertInntekt/${notFoundBehandlingsKey.aktørId}/${notFoundBehandlingsKey.vedtakId}/${notFoundBehandlingsKey.beregningsDato}"
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
@@ -133,7 +133,7 @@ class UklassifisertInntektApiTest {
     fun `GET uklassifisert without auth cookie should return 401 `() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/${notFoundRequest.aktørId}/${notFoundRequest.vedtakId}/${notFoundRequest.beregningsDato}"
+            "$uklassifisertInntekt/${notFoundBehandlingsKey.aktørId}/${notFoundBehandlingsKey.vedtakId}/${notFoundBehandlingsKey.beregningsDato}"
         ) {
         }.apply {
             assertTrue(requestHandled)
@@ -155,7 +155,7 @@ class UklassifisertInntektApiTest {
         val anotherIssuer = JwtStub("https://anotherissuer")
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/${notFoundRequest.aktørId}/${notFoundRequest.vedtakId}/${notFoundRequest.beregningsDato}"
+            "$uklassifisertInntekt/${notFoundBehandlingsKey.aktørId}/${notFoundBehandlingsKey.vedtakId}/${notFoundBehandlingsKey.beregningsDato}"
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=${anotherIssuer.createTokenFor("user")}")
         }.apply {
@@ -166,7 +166,7 @@ class UklassifisertInntektApiTest {
 
     @Test
     fun `GET uklassifisert inntekt with malformed parameters should return bad request`() = testApp {
-        handleRequest(HttpMethod.Get, "$uklassifisertInntekt/${foundRequest.aktørId}/${foundRequest.vedtakId}/blabla") {
+        handleRequest(HttpMethod.Get, "$uklassifisertInntekt/${foundBehandlingsKey.aktørId}/${foundBehandlingsKey.vedtakId}/blabla") {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
             assertTrue(requestHandled)
@@ -178,7 +178,7 @@ class UklassifisertInntektApiTest {
     fun `Get request for uklassifisert inntekt should return 200 ok`() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
+            "$uklassifisertInntekt/${foundBehandlingsKey.aktørId}/${foundBehandlingsKey.vedtakId}/${foundBehandlingsKey.beregningsDato}"
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
@@ -194,7 +194,7 @@ class UklassifisertInntektApiTest {
     fun `Get request for uncached uklassifisert inntekt should return 200 ok`() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/uncached/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
+            "$uklassifisertInntekt/uncached/${foundBehandlingsKey.aktørId}/${foundBehandlingsKey.vedtakId}/${foundBehandlingsKey.beregningsDato}"
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
@@ -218,7 +218,7 @@ class UklassifisertInntektApiTest {
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
+            "v1/inntekt/uklassifisert/${foundBehandlingsKey.aktørId}/${foundBehandlingsKey.vedtakId}/${foundBehandlingsKey.beregningsDato}"
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
@@ -244,7 +244,7 @@ class UklassifisertInntektApiTest {
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
+            "v1/inntekt/uklassifisert/${foundBehandlingsKey.aktørId}/${foundBehandlingsKey.vedtakId}/${foundBehandlingsKey.beregningsDato}"
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
@@ -271,7 +271,7 @@ class UklassifisertInntektApiTest {
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/uncached/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
+            "v1/inntekt/uklassifisert/uncached/${foundBehandlingsKey.aktørId}/${foundBehandlingsKey.vedtakId}/${foundBehandlingsKey.beregningsDato}"
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
@@ -298,7 +298,7 @@ class UklassifisertInntektApiTest {
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/uncached/${foundRequest.aktørId}/${foundRequest.vedtakId}/${foundRequest.beregningsDato}"
+            "v1/inntekt/uklassifisert/uncached/${foundBehandlingsKey.aktørId}/${foundBehandlingsKey.vedtakId}/${foundBehandlingsKey.beregningsDato}"
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
@@ -325,15 +325,13 @@ class UklassifisertInntektApiTest {
     }
 
     private fun testApp(
-        moduleFunction: Application.() -> Unit = {
-            inntektApi(
-                inntektskomponentClientMock,
-                inntektStoreMock,
-                oppslagClientMock,
-                mockk(relaxed = true),
+        moduleFunction: Application.() -> Unit =
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                oppslagClient = oppslagClientMock,
                 jwkProvider = jwtStub.stubbedJwkProvider()
-            )
-        },
+            ),
         callback: TestApplicationEngine.() -> Unit
     ) {
         withTestApplication(moduleFunction) { callback() }

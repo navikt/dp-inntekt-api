@@ -37,6 +37,8 @@ java {
 dependencies {
     implementation(kotlin("stdlib"))
 
+    implementation(Dagpenger.Events)
+
     implementation(Ktor.server)
     implementation(Ktor.serverNetty)
     implementation(Ktor.auth)
