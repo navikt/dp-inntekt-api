@@ -3,7 +3,6 @@ package no.nav.dagpenger.inntekt.mapping
 import no.nav.dagpenger.events.inntekt.v1.Aktør
 import no.nav.dagpenger.events.inntekt.v1.AktørType
 import no.nav.dagpenger.events.inntekt.v1.InntektId
-import no.nav.dagpenger.events.inntekt.v1.MånedsInntekt
 import no.nav.dagpenger.events.inntekt.v1.Postering
 import no.nav.dagpenger.events.inntekt.v1.PosteringsType
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
@@ -57,7 +56,7 @@ private val storedInntekt = StoredInntekt(
                         ident = Aktoer(AktoerType.AKTOER_ID, "11111111"),
                         opplysningspliktig = Aktoer(AktoerType.AKTOER_ID, "21111111"),
                         virksomhet = Aktoer(AktoerType.ORGANISASJON, "31111111"),
-                        avvikPeriode = YearMonth.of(2019, 2),
+                        avvikPeriode = YearMonth.of(2019, 6),
                         tekst = ""
                     )
                 ),
@@ -116,66 +115,59 @@ private val storedInntekt = StoredInntekt(
 
 private val spesifisertInntekt = SpesifisertInntekt(
     inntektId = InntektId("01DGCVFS44PT6B6ZGEYH2WXVMA"),
-    månedsInntekter = listOf(
-        MånedsInntekt(
-            årMåned = YearMonth.of(2019, 5),
-            avvikListe = emptyList(),
-            posteringer = listOf(
-                Postering(
-                    beløp = BigDecimal.ONE,
-                    fordel = "fordel",
-                    inntektskilde = "kilde",
-                    inntektsstatus = "status",
-                    inntektsperiodetype = "periodetype",
-                    utbetaltIMåned = YearMonth.of(2019, 5),
-                    posteringsType = PosteringsType.L_AKSJER_GRUNNFONDSBEVIS_TIL_UNDERKURS
-                )
-            )
+    avvik = listOf(
+        no.nav.dagpenger.events.inntekt.v1.Avvik(
+            ident = Aktør(AktørType.AKTOER_ID, "11111111"),
+            opplysningspliktig = Aktør(AktørType.AKTOER_ID, "21111111"),
+            virksomhet = Aktør(AktørType.ORGANISASJON, "31111111"),
+            avvikPeriode = YearMonth.of(2019, 6),
+            tekst = ""
+        )
+    ),
+    posteringer = listOf(
+        Postering(
+            posteringsMåned = YearMonth.of(2019, 5),
+            beløp = BigDecimal.ONE,
+            fordel = "fordel",
+            inntektskilde = "kilde",
+            inntektsstatus = "status",
+            inntektsperiodetype = "periodetype",
+            utbetaltIMåned = YearMonth.of(2019, 5),
+            posteringsType = PosteringsType.L_AKSJER_GRUNNFONDSBEVIS_TIL_UNDERKURS
         ),
-        MånedsInntekt(
-            årMåned = YearMonth.of(2019, 6),
-            avvikListe = listOf(
-                no.nav.dagpenger.events.inntekt.v1.Avvik(
-                    ident = Aktør(AktørType.AKTOER_ID, "11111111"),
-                    opplysningspliktig = Aktør(AktørType.AKTOER_ID, "21111111"),
-                    virksomhet = Aktør(AktørType.ORGANISASJON, "31111111"),
-                    avvikPeriode = YearMonth.of(2019, 2),
-                    tekst = ""
-                )
+        Postering(
+            posteringsMåned = YearMonth.of(2019, 6),
+            beløp = BigDecimal.ONE,
+            fordel = "fordel",
+            inntektskilde = "kilde",
+            inntektsstatus = "status",
+            inntektsperiodetype = "periodetype",
+            utbetaltIMåned = YearMonth.of(2019, 6),
+            posteringsType = PosteringsType.L_FASTLØNN
+        ),
+        Postering(
+            posteringsMåned = YearMonth.of(2019, 6),
+            beløp = BigDecimal.ONE,
+            fordel = "fordel",
+            inntektskilde = "kilde",
+            inntektsstatus = "status",
+            inntektsperiodetype = "periodetype",
+            utbetaltIMåned = YearMonth.of(2019, 6),
+            leveringstidspunkt = YearMonth.of(2019, 3),
+            opptjeningsland = "Norge",
+            opptjeningsperiode = no.nav.dagpenger.events.inntekt.v1.Periode(
+                LocalDate.of(2019, 2, 3),
+                LocalDate.of(2019, 5, 12)
             ),
-            posteringer = listOf(
-                Postering(
-                    beløp = BigDecimal.ONE,
-                    fordel = "fordel",
-                    inntektskilde = "kilde",
-                    inntektsstatus = "status",
-                    inntektsperiodetype = "periodetype",
-                    utbetaltIMåned = YearMonth.of(2019, 6),
-                    posteringsType = PosteringsType.L_FASTLØNN
-                ),
-                Postering(
-                    beløp = BigDecimal.ONE,
-                    fordel = "fordel",
-                    inntektskilde = "kilde",
-                    inntektsstatus = "status",
-                    inntektsperiodetype = "periodetype",
-                    utbetaltIMåned = YearMonth.of(2019, 6),
-                    leveringstidspunkt = YearMonth.of(2019, 3),
-                    opptjeningsland = "Norge",
-                    opptjeningsperiode = no.nav.dagpenger.events.inntekt.v1.Periode(
-                        LocalDate.of(2019, 2, 3),
-                        LocalDate.of(2019, 5, 12)),
-                    skattemessigBosattLand = "Norge",
-                    opplysningspliktig = Aktør(AktørType.AKTOER_ID, "11111111"),
-                    inntektsinnsender = Aktør(AktørType.AKTOER_ID, "22222222"),
-                    virksomhet = Aktør(AktørType.ORGANISASJON, "33333333"),
-                    inntektsmottaker = Aktør(AktørType.AKTOER_ID, "44444444"),
-                    inngårIGrunnlagForTrekk = true,
-                    utløserArbeidsgiveravgift = true,
-                    informasjonsstatus = "informasjon",
-                    posteringsType = PosteringsType.L_FASTLØNN_H
-                )
-            )
+            skattemessigBosattLand = "Norge",
+            opplysningspliktig = Aktør(AktørType.AKTOER_ID, "11111111"),
+            inntektsinnsender = Aktør(AktørType.AKTOER_ID, "22222222"),
+            virksomhet = Aktør(AktørType.ORGANISASJON, "33333333"),
+            inntektsmottaker = Aktør(AktørType.AKTOER_ID, "44444444"),
+            inngårIGrunnlagForTrekk = true,
+            utløserArbeidsgiveravgift = true,
+            informasjonsstatus = "informasjon",
+            posteringsType = PosteringsType.L_FASTLØNN_H
         )
     ),
     ident = Aktør(AktørType.AKTOER_ID, "aktorId"),
