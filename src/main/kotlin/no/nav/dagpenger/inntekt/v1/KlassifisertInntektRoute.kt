@@ -8,6 +8,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
+import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.klassifisering.Inntekt
@@ -22,9 +23,15 @@ fun Route.klassifisertInntekt(inntektskomponentClient: InntektskomponentClient, 
 
                 val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
 
-                val storedInntekt = inntektStore.getInntektId(request)?.let { inntektStore.getInntekt(it) }
+                val behandlingsKey = BehandlingsKey(
+                    request.aktørId,
+                    request.vedtakId,
+                    request.beregningsDato
+                )
+
+                val storedInntekt = inntektStore.getInntektId(behandlingsKey)?.let { inntektStore.getInntekt(it) }
                     ?: inntektStore.insertInntekt(
-                        request,
+                        behandlingsKey,
                         inntektskomponentClient.getInntekt(toInntektskomponentRequest(request, opptjeningsperiode))
                     )
 

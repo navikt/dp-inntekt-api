@@ -43,6 +43,7 @@ import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.v1.klassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
+import no.nav.dagpenger.inntekt.v1.spesifisertInntekt
 import no.nav.dagpenger.ktor.auth.ApiKeyCredential
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import no.nav.dagpenger.ktor.auth.ApiPrincipal
@@ -76,11 +77,14 @@ fun main() {
     )
     val oppslagClient = OppslagClient(config.application.oppslagUrl, stsOidcClient)
 
+    val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentHttpClient, postgresInntektStore)
+
     DefaultExports.initialize()
     val application = embeddedServer(Netty, port = config.application.httpPort) {
         inntektApi(
             inntektskomponentHttpClient,
             postgresInntektStore,
+            cachedInntektsGetter,
             oppslagClient,
             AuthApiKeyVerifier(apiKeyVerifier, allowedApiKeys),
             jwkProvider
@@ -95,6 +99,7 @@ fun main() {
 fun Application.inntektApi(
     inntektskomponentHttpClient: InntektskomponentClient,
     inntektStore: InntektStore,
+    behandlingsInntektsGetter: BehandlingsInntektsGetter,
     oppslagClient: OppslagClient,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     jwkProvider: JwkProvider
@@ -221,6 +226,7 @@ fun Application.inntektApi(
             route("/inntekt") {
                 klassifisertInntekt(inntektskomponentHttpClient, inntektStore)
                 uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, oppslagClient)
+                spesifisertInntekt(behandlingsInntektsGetter)
             }
             opptjeningsperiodeApi(inntektStore)
         }
