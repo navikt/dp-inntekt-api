@@ -199,7 +199,7 @@ internal class InntektskomponentHttpClientTest {
 
         result.isFailure.shouldBeTrue()
         result.shouldBeClientException<InntektskomponentenHttpClientException>(
-            status = -1,
+            status = 500,
             message = "Failed to fetch inntekt. Response message: . Problem message: Read timed out"
         )
 
