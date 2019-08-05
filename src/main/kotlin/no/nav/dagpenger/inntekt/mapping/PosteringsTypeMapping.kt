@@ -13,7 +13,7 @@ data class PosteringsTypeGrunnlag(
 )
 
 fun toPosteringsType(posteringsTypeGrunnlag: PosteringsTypeGrunnlag): PosteringsType {
-    //TODO: Temporary fix
+    // TODO: Temporary fix
     val safePosteringsTypeGrunnlag =
         if (posteringsTypeGrunnlag.forhold == SpesielleInntjeningsforhold.UNKNOWN)
             PosteringsTypeGrunnlag(posteringsTypeGrunnlag.type, posteringsTypeGrunnlag.beskrivelse, null)
