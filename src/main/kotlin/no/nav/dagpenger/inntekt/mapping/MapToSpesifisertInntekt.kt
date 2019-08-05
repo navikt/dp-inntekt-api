@@ -60,7 +60,7 @@ private fun mapToPosteringer(list: List<ArbeidsInntektMaaned>?) =
                 utløserArbeidsgiveravgift = it.utloeserArbeidsgiveravgift,
                 informasjonsstatus = it.informasjonsstatus,
                 posteringsType = toPosteringsType(
-                    PosteringsTypeInfo(
+                    PosteringsTypeGrunnlag(
                         it.inntektType,
                         it.beskrivelse,
                         it.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold
