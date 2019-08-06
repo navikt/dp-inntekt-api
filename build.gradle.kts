@@ -66,6 +66,7 @@ dependencies {
 
     implementation(Fuel.fuel)
     implementation(Fuel.fuelMoshi)
+    implementation(Fuel.library("coroutines"))
 
     implementation(Log4j2.api)
     implementation(Log4j2.core)
