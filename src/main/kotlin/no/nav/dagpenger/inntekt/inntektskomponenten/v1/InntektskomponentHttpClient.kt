@@ -78,7 +78,7 @@ class InntektskomponentHttpClient(
                 clientFetchErrors.inc()
 
                 throw InntektskomponentenHttpClientException(
-                    response.statusCode,
+                    if (response.statusCode == -1) 500 else response.statusCode, // we did not get a response status code, ie timeout/network issues
                     "Failed to fetch inntekt. Response message: ${response.responseMessage}. Problem message: $message"
                 )
             })
