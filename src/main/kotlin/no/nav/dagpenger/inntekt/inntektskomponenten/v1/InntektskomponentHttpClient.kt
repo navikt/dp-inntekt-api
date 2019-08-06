@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.inntektskomponenten.v1
 
+import com.github.kittinunf.fuel.core.awaitResponseResult
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
@@ -62,7 +63,7 @@ class InntektskomponentHttpClient(
                 header("Nav-Consumer-Id" to "dp-inntekt-api")
                 header("Nav-Call-Id" to ulid.nextULID())
                 body(jsonBody)
-                responseObject(moshiDeserializerOf(jsonResponseAdapter))
+                awaitResponseResult(moshiDeserializerOf(jsonResponseAdapter))
             }
 
             return result.fold({

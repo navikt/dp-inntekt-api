@@ -89,8 +89,7 @@ fun main() {
             AuthApiKeyVerifier(apiKeyVerifier, allowedApiKeys),
             jwkProvider
         )
-    }
-    application.start(wait = false)
+    }.start()
     Runtime.getRuntime().addShutdownHook(Thread {
         application.stop(5, 60, TimeUnit.SECONDS)
     })
