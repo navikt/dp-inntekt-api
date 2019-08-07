@@ -21,7 +21,7 @@ data class Opptjeningsperiode(val beregningsdato: LocalDate) {
     fun sammeOpptjeningsPeriode(other: Opptjeningsperiode): Boolean =
         this.sisteAvsluttendeKalenderMåned == other.sisteAvsluttendeKalenderMåned
 
-    private fun finnFørsteArbeidsdagEtterRapporterteringsFrist(rapporteringsFrist: LocalDate): LocalDate {
+    private tailrec fun finnFørsteArbeidsdagEtterRapporterteringsFrist(rapporteringsFrist: LocalDate): LocalDate {
         return if (rapporteringsFrist.erArbeidsdag()) rapporteringsFrist else finnFørsteArbeidsdagEtterRapporterteringsFrist(
             rapporteringsFrist.plusDays(1)
         )
