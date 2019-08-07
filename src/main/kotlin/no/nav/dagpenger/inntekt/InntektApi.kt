@@ -127,7 +127,7 @@ fun Application.inntektApi(
             }
             authHeader { call ->
                 val cookie = call.request.cookies["ID_token"]
-                    ?: throw CookieNotSetException("Cookie with name ID_Token not found")
+                    ?: throw CookieNotSetException("Cookie with name ID_token not found")
                 HttpAuthHeader.Single("Bearer", cookie)
             }
             validate { credentials ->
