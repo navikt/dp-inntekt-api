@@ -149,7 +149,7 @@ class UklassifisertInntektApiTest {
             assertEquals("urn:dp:error:inntekt:auth", problem?.type.toString())
             assertEquals(401, problem?.status)
             assertEquals(
-                "Cookie with name ID_Token not found",
+                "Cookie with name ID_token not found",
                 problem?.detail
             )
         }
