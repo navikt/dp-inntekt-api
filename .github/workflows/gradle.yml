@@ -15,3 +15,9 @@ jobs:
         version: 11
     - name: Build with Gradle
       run: ./gradlew build
+    - name: Build docker image
+      run: docker build . --tag ${GITHUB_REPOSITORY}:${$GITHUB_SHA}
+    - name: Push docker image
+      run: | 
+        docker login docker.pkg.github.com -u ${GITHUB_ACTOR} -p ${GITHUB_TOKEN}
+        docker push docker.pgk.github.com/${GITHUB_REPOSITORY}:${$GITHUB_SHA}
