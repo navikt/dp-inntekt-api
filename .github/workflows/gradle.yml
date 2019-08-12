@@ -13,6 +13,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         version: 11
+    - name Login to docker
+      run: docker login docker.pkg.github.com -u ${GITHUB_ACTOR} -p ${GITHUB_TOKEN}
     - name: Build with Gradle
       run: ./gradlew build
     - name: Build docker image
