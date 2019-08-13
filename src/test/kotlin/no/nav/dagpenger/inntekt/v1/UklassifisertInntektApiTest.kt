@@ -34,7 +34,6 @@ import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.GUIInntektsKomponentResponse
 import no.nav.dagpenger.inntekt.mapping.InntektMedVerdikode
 import no.nav.dagpenger.inntekt.moshiInstance
-import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -63,7 +62,6 @@ class UklassifisertInntektApiTest {
         YearMonth.of(2016, 1),
         YearMonth.of(2018, 12)
     )
-    private val oppslagClientMock: OppslagClient = mockk()
     private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234"))
 
     private val storedInntekt = StoredInntekt(
@@ -104,14 +102,6 @@ class UklassifisertInntektApiTest {
         every {
             runBlocking { inntektskomponentClientMock.getInntekt(inntektkomponentenFoundRequest) }
         } returns emptyInntekt
-
-        every {
-            oppslagClientMock.finnNaturligIdent(any())
-        } returns "12345678912"
-
-        every {
-            oppslagClientMock.personNavn(any())
-        } returns "Navn Navnesen"
     }
 
     @Test
@@ -384,7 +374,6 @@ class UklassifisertInntektApiTest {
             mockInntektApi(
                 inntektskomponentClient = inntektskomponentClientMock,
                 inntektStore = inntektStoreMock,
-                oppslagClient = oppslagClientMock,
                 jwkProvider = jwtStub.stubbedJwkProvider()
             ),
         callback: TestApplicationEngine.() -> Unit

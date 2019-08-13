@@ -9,23 +9,24 @@ import java.time.LocalDateTime
 
 fun mapToGUIInntekt(
     inntekt: InntektkomponentResponse,
-    opptjeningsPeriode: Opptjeningsperiode,
-    inntektsmottaker: Inntektsmottaker?
+    opptjeningsPeriode: Opptjeningsperiode
 ) = GUIInntekt(
-    null,
-    LocalDateTime.now(),
-    GUIInntektsKomponentResponse(
+    inntektId = null,
+    timestamp = LocalDateTime.now(),
+    inntekt = GUIInntektsKomponentResponse(
         tilDato = opptjeningsPeriode.sisteAvsluttendeKalenderMåned,
         fraDato = opptjeningsPeriode.førsteMåned,
         arbeidsInntektMaaned = mapToArbeidsInntektMaaneder(inntekt.arbeidsInntektMaaned),
         ident = inntekt.ident
     ),
-    false,
-    false,
-    inntektsmottaker
+    manueltRedigert = false,
+    redigertAvSaksbehandler = false
 )
 
-fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjeningsperiode, inntektsMottaker: Inntektsmottaker?) =
+fun mapToGUIInntekt(
+    storedInntekt: StoredInntekt,
+    opptjeningsPeriode: Opptjeningsperiode
+) =
     GUIInntekt(
         storedInntekt.inntektId,
         storedInntekt.timestamp,
@@ -36,8 +37,7 @@ fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjening
             ident = storedInntekt.inntekt.ident
         ),
         storedInntekt.manueltRedigert,
-        storedInntekt.manueltRedigert,
-        inntektsmottaker = inntektsMottaker
+        storedInntekt.manueltRedigert
     )
 
 private fun mapToArbeidsInntektMaaneder(list: List<ArbeidsInntektMaaned>?) =

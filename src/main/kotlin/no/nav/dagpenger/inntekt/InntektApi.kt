@@ -39,11 +39,10 @@ import no.nav.dagpenger.inntekt.db.migrate
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
-import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.v1.klassifisertInntekt
-import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
 import no.nav.dagpenger.inntekt.v1.spesifisertInntekt
+import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
 import no.nav.dagpenger.ktor.auth.ApiKeyCredential
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import no.nav.dagpenger.ktor.auth.ApiPrincipal
@@ -69,25 +68,24 @@ fun main() {
     val allowedApiKeys = config.application.allowedApiKeys
 
     val postgresInntektStore = PostgresInntektStore(dataSourceFrom(config))
-    val stsOidcClient = StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
+    val stsOidcClient =
+        StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
 
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
         config.application.hentinntektListeUrl,
         stsOidcClient
     )
-    val oppslagClient = OppslagClient(config.application.oppslagUrl, stsOidcClient)
 
     val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentHttpClient, postgresInntektStore)
 
     DefaultExports.initialize()
     val application = embeddedServer(Netty, port = config.application.httpPort) {
         inntektApi(
-            inntektskomponentHttpClient,
-            postgresInntektStore,
-            cachedInntektsGetter,
-            oppslagClient,
-            AuthApiKeyVerifier(apiKeyVerifier, allowedApiKeys),
-            jwkProvider
+            inntektskomponentHttpClient = inntektskomponentHttpClient,
+            inntektStore = postgresInntektStore,
+            behandlingsInntektsGetter = cachedInntektsGetter,
+            apiAuthApiKeyVerifier = AuthApiKeyVerifier(apiKeyVerifier, allowedApiKeys),
+            jwkProvider = jwkProvider
         )
     }.start()
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -99,7 +97,6 @@ fun Application.inntektApi(
     inntektskomponentHttpClient: InntektskomponentClient,
     inntektStore: InntektStore,
     behandlingsInntektsGetter: BehandlingsInntektsGetter,
-    oppslagClient: OppslagClient,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     jwkProvider: JwkProvider
 ) {
@@ -224,7 +221,7 @@ fun Application.inntektApi(
         route("/v1") {
             route("/inntekt") {
                 klassifisertInntekt(inntektskomponentHttpClient, inntektStore)
-                uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, oppslagClient)
+                uklassifisertInntekt(inntektskomponentHttpClient, inntektStore)
                 spesifisertInntekt(behandlingsInntektsGetter)
             }
             opptjeningsperiodeApi(inntektStore)

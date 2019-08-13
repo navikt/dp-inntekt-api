@@ -25,12 +25,10 @@ import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
-import no.nav.dagpenger.inntekt.mapping.Inntektsmottaker
 import no.nav.dagpenger.inntekt.mapping.dataGrunnlagKlassifiseringToVerdikode
 import no.nav.dagpenger.inntekt.mapping.mapToDetachedInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToStoredInntekt
-import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
 
@@ -38,8 +36,7 @@ private val LOGGER = KotlinLogging.logger {}
 
 fun Route.uklassifisertInntekt(
     inntektskomponentClient: InntektskomponentClient,
-    inntektStore: InntektStore,
-    oppslagClient: OppslagClient
+    inntektStore: InntektStore
 ) {
     authenticate("jwt") {
         route("/uklassifisert/{aktørId}/{vedtakId}/{beregningsDato}") {
@@ -49,10 +46,7 @@ fun Route.uklassifisertInntekt(
                         ?.let {
                             inntektStore.getInntekt(it)
                         }?.let {
-                            val personNummer = oppslagClient.finnNaturligIdent(this.aktørId)
-                            val navn = personNummer?.let { pnr -> oppslagClient.personNavn(pnr) }
-                            val inntektsmottaker = Inntektsmottaker(personNummer, navn)
-                            mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), inntektsmottaker)
+                            mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato))
                         }?.let {
                             call.respond(HttpStatusCode.OK, it)
                         } ?: throw InntektNotFoundException("Inntekt with for $this not found.")
@@ -66,12 +60,13 @@ fun Route.uklassifisertInntekt(
                             inntektStore.insertInntekt(
                                 BehandlingsKey(this.aktørId, this.vedtakId, this.beregningsDato),
                                 it.inntekt,
-                                ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject()))
+                                ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject())
+                            )
                         }
                         .let {
                             call.respond(
                                 HttpStatusCode.OK,
-                                mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), guiInntekt.inntektsmottaker)
+                                mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato))
                             )
                         }
                 }
@@ -87,10 +82,7 @@ fun Route.uklassifisertInntekt(
                             inntektskomponentClient.getInntekt(it)
                         }
                         .let {
-                            val personNummer = oppslagClient.finnNaturligIdent(this.aktørId)
-                            val navn = personNummer?.let { pnr -> oppslagClient.personNavn(pnr) }
-                            val inntektsmottaker = Inntektsmottaker(personNummer, navn)
-                            mapToGUIInntekt(it, opptjeningsperiode, inntektsmottaker)
+                            mapToGUIInntekt(it, opptjeningsperiode)
                         }
                         .let {
                             call.respond(HttpStatusCode.OK, it)
@@ -106,12 +98,13 @@ fun Route.uklassifisertInntekt(
                             inntektStore.insertInntekt(
                                 BehandlingsKey(this.aktørId, this.vedtakId, this.beregningsDato),
                                 it.inntekt,
-                                ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject()))
+                                ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject())
+                            )
                         }
                         .let {
                             call.respond(
                                 HttpStatusCode.OK,
-                                mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), guiInntekt.inntektsmottaker)
+                                mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato))
                             )
                         }
                 }

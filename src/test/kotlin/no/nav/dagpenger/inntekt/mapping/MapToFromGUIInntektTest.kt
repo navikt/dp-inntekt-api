@@ -118,7 +118,7 @@ internal class KategoriseringTest {
             false,
             LocalDateTime.now()
         )
-        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), inntektsmottaker)
+        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))
         assertEquals(
             "Aksjer/grunnfondsbevis til underkurs",
             guiInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode
@@ -151,7 +151,7 @@ internal class KategoriseringTest {
             false,
             LocalDateTime.now()
         )
-        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), inntektsmottaker)
+        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))
 
         assertNotNull(guiInntekt.inntekt.fraDato)
         assertNotNull(guiInntekt.inntekt.tilDato)
@@ -165,7 +165,7 @@ internal class KategoriseringTest {
             false,
             LocalDateTime.now()
         )
-        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), inntektsmottaker)
+        val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()))
 
         val beforeJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(rawInntekt)
         val mappedJson = moshiInstance.adapter(GUIInntektsKomponentResponse::class.java).toJson(guiInntekt.inntekt)
@@ -244,7 +244,7 @@ internal class KategoriseringTest {
             LocalDateTime.now()
         )
 
-        val mapFromGUIInntekt = mapToStoredInntekt(mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), null))
+        val mapFromGUIInntekt = mapToStoredInntekt(mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now())))
         assertEquals(storedInntekt.manueltRedigert, mapFromGUIInntekt.manueltRedigert)
         assertEquals(storedInntekt.inntekt, mapFromGUIInntekt.inntekt)
         assertEquals(storedInntekt.inntektId, mapFromGUIInntekt.inntektId)
