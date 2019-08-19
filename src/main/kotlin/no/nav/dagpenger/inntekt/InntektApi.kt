@@ -30,6 +30,7 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -40,6 +41,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
+import no.nav.dagpenger.inntekt.subasumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
 import no.nav.dagpenger.inntekt.v1.klassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
@@ -57,7 +59,7 @@ import java.util.concurrent.TimeUnit
 private val LOGGER = KotlinLogging.logger {}
 val config = Configuration()
 
-fun main() {
+fun main() = runBlocking {
 
     migrate(config)
     val jwkProvider = JwkProviderBuilder(URL(config.application.jwksUrl))
@@ -70,6 +72,11 @@ fun main() {
 
     val postgresInntektStore = PostgresInntektStore(dataSourceFrom(config))
     val stsOidcClient = StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
+
+    val subsumsjonBruktDataConsumer = KafkaSubsumsjonBruktDataConsumer.apply {
+        create(config, postgresInntektStore)
+        listen()
+    }
 
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
         config.application.hentinntektListeUrl,
@@ -91,6 +98,7 @@ fun main() {
         )
     }.start()
     Runtime.getRuntime().addShutdownHook(Thread {
+        subsumsjonBruktDataConsumer.stop()
         application.stop(5, 60, TimeUnit.SECONDS)
     })
 }
