@@ -60,7 +60,7 @@ class KafkaSubsumsjonBruktDataConsumerTest {
                 .get(5, TimeUnit.SECONDS)
             LOGGER.info("Producer produced $bruktSubsumsjonData with meta $metaData")
 
-            Thread.sleep(200)
+            TimeUnit.MILLISECONDS.sleep(500)
 
             verify(exactly = 1) {
                 storeMock.markerInntektBrukt(InntektId(id))
