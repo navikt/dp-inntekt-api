@@ -18,7 +18,10 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import java.time.Duration
 import kotlin.coroutines.CoroutineContext
 
-internal class KafkaSubsumsjonBruktDataConsumer(private val config: Configuration, private val inntektStore: InntektStore) : CoroutineScope {
+internal class KafkaSubsumsjonBruktDataConsumer(
+    private val config: Configuration,
+    private val inntektStore: InntektStore
+) : CoroutineScope {
 
     private val SERVICE_APP_ID = "dp-inntekt-api-consumer"
     private val LOGGER = KotlinLogging.logger { }
@@ -60,7 +63,8 @@ internal class KafkaSubsumsjonBruktDataConsumer(private val config: Configuratio
                     records.asSequence()
                         .map { record -> Packet(record.value()) }
                         .map { packet -> InntektId(packet.getMapValue("faktum")["inntektsId"] as String) }
-                        .forEach { id -> inntektStore.markerInntektBrukt(id); LOGGER.info("Marked inntekt with id $id as used") }
+                        .onEach { id -> LOGGER.info("Mark inntekt with id $id as used") }
+                        .forEach { id -> inntektStore.markerInntektBrukt(id) }
                     consumer.commitSync()
                 }
             }
