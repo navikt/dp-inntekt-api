@@ -1,6 +1,7 @@
 package no.nav.dagpenger.inntekt.db
 
 import com.zaxxer.hikari.HikariDataSource
+import io.kotlintest.shouldBe
 import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.Configuration
 import no.nav.dagpenger.inntekt.dummyConfigs
@@ -23,7 +24,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(5, migrations, "Wrong number of migrations")
+            assertEquals(6, migrations, "Wrong number of migrations")
         }
     }
 
@@ -41,7 +42,7 @@ internal class PostgresTest {
     fun `Migration of testdata `() {
         withCleanDb {
             val migrations = migrate(DataSource.instance, locations = listOf("db/migration", "db/testdata"))
-            assertEquals(9, migrations, "Wrong number of migrations")
+            assertEquals(10, migrations, "Wrong number of migrations")
         }
     }
 
@@ -185,6 +186,23 @@ internal class PostgresInntektStoreTest {
                 }
                 assertTrue("Result is not failure") { result.isFailure }
                 assertTrue("Result is $result") { result.exceptionOrNull() is InntektNotFoundException }
+            }
+        }
+    }
+    @Test
+    fun ` Should mark an inntekt as used `() {
+
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+                val hentInntektListeResponse = InntektkomponentResponse(
+                    emptyList(),
+                    Aktoer(AktoerType.AKTOER_ID, "1234")
+                )
+                val storedInntekt = insertInntekt(BehandlingsKey("1234", 12345, LocalDate.now()), hentInntektListeResponse)
+                val updated = markerInntektBrukt(storedInntekt.inntektId)
+                val updatedSecond = markerInntektBrukt(storedInntekt.inntektId)
+                updated shouldBe 1
+                updatedSecond shouldBe 0
             }
         }
     }

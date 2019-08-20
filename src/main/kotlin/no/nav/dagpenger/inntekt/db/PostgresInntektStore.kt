@@ -14,6 +14,7 @@ import java.time.LocalDate
 import javax.sql.DataSource
 
 internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore {
+
     override fun getManueltRedigert(inntektId: InntektId): ManueltRedigert? {
         try {
             return using(sessionOf(dataSource)) { session ->
@@ -25,14 +26,16 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                             """.trimMargin(), inntektId.id
                     ).map { row ->
                         ManueltRedigert(row.string(1))
-                    }.asSingle)
+                    }.asSingle
+                )
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
         }
     }
 
-    private val adapter: JsonAdapter<InntektkomponentResponse> = moshiInstance.adapter(InntektkomponentResponse::class.java)
+    private val adapter: JsonAdapter<InntektkomponentResponse> =
+        moshiInstance.adapter(InntektkomponentResponse::class.java)
     private val ulidGenerator = ULID()
 
     override fun getInntektId(request: BehandlingsKey): InntektId? {
@@ -44,9 +47,11 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                                     FROM inntekt_V1_arena_mapping
                                     WHERE aktørId = ? AND vedtakid = ? AND beregningsdato = ?
                                     ORDER BY timestamp DESC LIMIT 1
-                            """.trimMargin(), request.aktørId, request.vedtakId, request.beregningsDato).map { row ->
+                            """.trimMargin(), request.aktørId, request.vedtakId, request.beregningsDato
+                    ).map { row ->
                         InntektId(row.string("inntektId"))
-                    }.asSingle)
+                    }.asSingle
+                )
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
@@ -129,6 +134,24 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                 }
             }
             return getInntekt(inntektId)
+        } catch (p: PSQLException) {
+            throw StoreException(p.message!!)
+        }
+    }
+
+    override fun markerInntektBrukt(inntektId: InntektId): Int {
+        try {
+            return using(sessionOf(dataSource)) { session ->
+                session.transaction { tx ->
+                    tx.run(
+                        queryOf(
+                            "UPDATE inntekt_V1 SET brukt = true WHERE id = :id AND NOT EXISTS (" +
+                                "   SELECT 1 FROM inntekt_V1 WHERE brukt = true AND id = :id" + ");",
+                            mapOf("id" to inntektId.id)
+                        ).asUpdate
+                    )
+                }
+            }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
         }

@@ -7,6 +7,7 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
+import no.nav.dagpenger.streams.KafkaCredential
 
 private val localProperties = ConfigurationMap(
     mapOf(
@@ -28,7 +29,10 @@ private val localProperties = ConfigurationMap(
         "srvdp.inntekt.api.password" to "postgres",
         "flyway.locations" to "db/migration,db/testdata",
         "api.secret" to "secret",
-        "api.keys" to "dp-datalaster-inntekt"
+        "api.keys" to "dp-datalaster-inntekt",
+        "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
+        "kafka.bootstrap.servers" to "localhost:9092"
+
     )
 )
 private val devProperties = ConfigurationMap(
@@ -44,7 +48,9 @@ private val devProperties = ConfigurationMap(
         "jwks.url" to "https://isso-q.adeo.no:443/isso/oauth2/connect/jwk_uri",
         "jwks.issuer" to "https://isso-q.adeo.no:443/isso/oauth2",
         "application.profile" to "DEV",
-        "application.httpPort" to "8099"
+        "application.httpPort" to "8099",
+        "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
+        "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443"
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -60,14 +66,18 @@ private val prodProperties = ConfigurationMap(
         "jwks.url" to "https://isso.adeo.no:443/isso/oauth2/connect/jwk_uri",
         "jwks.issuer" to "https://isso.adeo.no:443/isso/oauth2",
         "application.profile" to "PROD",
-        "application.httpPort" to "8099"
+        "application.httpPort" to "8099",
+        "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
+        "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl150.adeo.no:8443"
     )
 )
 
 data class Configuration(
     val database: Database = Database(),
     val vault: Vault = Vault(),
-    val application: Application = Application()
+    val application: Application = Application(),
+    val kafka: Kafka = Kafka(),
+    val subsumsjonBruktDataTopic: String = config()[Key("kafka.subsumsjon.brukt.data.topic", stringType)]
 
 ) {
     data class Database(
@@ -84,6 +94,18 @@ data class Configuration(
     data class Vault(
         val mountPath: String = config()[Key("vault.mountpath", stringType)]
     )
+
+    data class Kafka(
+        val brokers: String = config()[Key("kafka.bootstrap.servers", stringType)],
+        val user: String? = config().getOrNull(Key("srvdp.inntekt.api.username", stringType)),
+        val password: String? = config().getOrNull(Key("srvdp.inntekt.api.password", stringType))
+    ) {
+        fun credential(): KafkaCredential? {
+            return if (user != null && password != null) {
+                KafkaCredential(user, password)
+            } else null
+        }
+    }
 
     data class Application(
         val profile: Profile = config()[Key("application.profile", stringType)].let { Profile.valueOf(it) },

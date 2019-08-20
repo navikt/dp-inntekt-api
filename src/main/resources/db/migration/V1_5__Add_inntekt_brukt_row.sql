@@ -1,0 +1,2 @@
+ALTER TABLE inntekt_v1
+    ADD COLUMN IF NOT EXISTS brukt BOOLEAN DEFAULT false;

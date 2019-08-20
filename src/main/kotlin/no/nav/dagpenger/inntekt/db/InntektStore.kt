@@ -13,6 +13,7 @@ interface InntektStore {
     fun insertInntekt(request: BehandlingsKey, inntekt: InntektkomponentResponse, manueltRedigert: ManueltRedigert?): StoredInntekt
     fun insertInntekt(request: BehandlingsKey, inntekt: InntektkomponentResponse): StoredInntekt
     fun getManueltRedigert(inntektId: InntektId): ManueltRedigert?
+    fun markerInntektBrukt(inntektId: InntektId): Int
 }
 
 data class ManueltRedigert(val redigertAv: String) {

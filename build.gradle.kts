@@ -21,6 +21,7 @@ apply {
 repositories {
     mavenCentral()
     jcenter()
+    maven("http://packages.confluent.io/maven/")
     maven("https://jitpack.io")
 }
 
@@ -61,6 +62,9 @@ dependencies {
     implementation(Moshi.moshiAdapters)
     implementation(Moshi.moshiKotlin)
     implementation(Moshi.moshiKtor)
+
+    implementation(Dagpenger.Streams)
+    implementation(Kafka.clients)
 
     implementation(Kotlin.Logging.kotlinLogging)
 
@@ -104,6 +108,7 @@ dependencies {
     testImplementation(Wiremock.standalone)
     testImplementation(Junit5.kotlinRunner)
     testImplementation(TestContainers.postgresql)
+    testImplementation(TestContainers.kafka)
     testImplementation(Mockk.mockk)
     testImplementation(JsonAssert.jsonassert)
 }
