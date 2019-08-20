@@ -18,26 +18,19 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import java.time.Duration
 import kotlin.coroutines.CoroutineContext
 
-internal object KafkaSubsumsjonBruktDataConsumer : CoroutineScope {
+internal class KafkaSubsumsjonBruktDataConsumer(private val config: Configuration, private val inntektStore: InntektStore) : CoroutineScope {
 
-    private const val SERVICE_APP_ID = "dp-inntekt-api-consumer"
+    private val SERVICE_APP_ID = "dp-inntekt-api-consumer"
     private val LOGGER = KotlinLogging.logger { }
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job + handler
 
-    lateinit var config: Configuration
-    lateinit var inntektStore: InntektStore
     private val job: Job by lazy {
         Job()
     }
 
     private val handler = CoroutineExceptionHandler { _, exception ->
         LOGGER.error(exception) { "Caught unhandled exception in ${this::javaClass.name}. Will keep running!" }
-    }
-
-    fun create(config: Configuration, inntektStore: InntektStore) {
-        this.config = config
-        this.inntektStore = inntektStore
     }
 
     suspend fun listen() {

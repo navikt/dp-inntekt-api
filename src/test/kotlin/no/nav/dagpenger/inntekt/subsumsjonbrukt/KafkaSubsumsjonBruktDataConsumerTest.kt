@@ -39,8 +39,7 @@ class KafkaSubsumsjonBruktDataConsumerTest {
                 copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers, user = null, password = null))
             }
 
-            KafkaSubsumsjonBruktDataConsumer.apply {
-                create(config, storeMock)
+            KafkaSubsumsjonBruktDataConsumer(config, storeMock).apply {
                 listen()
             }
 

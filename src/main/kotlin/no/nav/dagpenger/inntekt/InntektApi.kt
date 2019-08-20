@@ -73,8 +73,7 @@ fun main() = runBlocking {
     val postgresInntektStore = PostgresInntektStore(dataSourceFrom(config))
     val stsOidcClient = StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
 
-    val subsumsjonBruktDataConsumer = KafkaSubsumsjonBruktDataConsumer.apply {
-        create(config, postgresInntektStore)
+    val subsumsjonBruktDataConsumer = KafkaSubsumsjonBruktDataConsumer(config, postgresInntektStore).apply {
         listen()
     }
 
