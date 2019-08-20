@@ -30,7 +30,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(private val config: Configuratio
     }
 
     private val handler = CoroutineExceptionHandler { _, exception ->
-        LOGGER.error(exception) { "Caught unhandled exception in ${this::javaClass.name}. Will keep running!" }
+        LOGGER.error(exception) { "Caught unhandled exception in $SERVICE_APP_ID. Will keep running!" }
     }
 
     suspend fun listen() {
@@ -40,7 +40,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(private val config: Configuratio
                     KafkaCredential(username = u, password = p)
                 }
             }
-            LOGGER.info { "Starting KafkaSubsumsjonBruktConsumer" }
+            LOGGER.info { "Starting $SERVICE_APP_ID" }
 
             KafkaConsumer<String, String>(
                 consumerConfig(
@@ -51,6 +51,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(private val config: Configuratio
                     it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
                     it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
                     it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = "false"
+                    it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
                 }
             ).use { consumer ->
                 consumer.subscribe(listOf(config.subsumsjonBruktDataTopic))
@@ -67,7 +68,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(private val config: Configuratio
     }
 
     fun stop() {
-        LOGGER.info { "Stopping ${this::javaClass.name} consumer" }
+        LOGGER.info { "Stopping $SERVICE_APP_ID consumer" }
         job.cancel()
     }
 }
