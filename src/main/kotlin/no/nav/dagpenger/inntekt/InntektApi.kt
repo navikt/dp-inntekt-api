@@ -230,9 +230,9 @@ fun Application.inntektApi(
     routing {
         route("/v1") {
             route("/inntekt") {
+                spesifisertInntekt(behandlingsInntektsGetter)
                 klassifisertInntekt(inntektskomponentHttpClient, inntektStore)
                 uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, oppslagClient)
-                spesifisertInntekt(behandlingsInntektsGetter)
             }
             opptjeningsperiodeApi(inntektStore)
         }
