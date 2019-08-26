@@ -63,7 +63,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                     records.asSequence()
                         .map { record -> Packet(record.value()) }
                         .map { packet -> InntektId(packet.getMapValue("faktum")["inntektsId"] as String) }
-                        .forEach { id -> if(inntektStore.markerInntektBrukt(id) == 1) logger.info("Marked inntekt with id $id as used") }
+                        .forEach { id -> if (inntektStore.markerInntektBrukt(id) == 1) logger.info("Marked inntekt with id $id as used") }
                     consumer.commitSync()
                 }
             }
