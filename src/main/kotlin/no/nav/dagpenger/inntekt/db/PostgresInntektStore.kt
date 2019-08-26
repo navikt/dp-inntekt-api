@@ -81,10 +81,10 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                     inntektId.id
                 ).map { row ->
                     StoredInntekt(
-                        InntektId(row.string("id")),
-                        adapter.fromJson(row.string("inntekt"))!!,
-                        row.boolean("manuelt_redigert"),
-                        row.zonedDateTime("timestamp").toLocalDateTime()
+                        inntektId = InntektId(row.string("id")),
+                        inntekt = adapter.fromJson(row.string("inntekt"))!!,
+                        manueltRedigert = row.boolean("manuelt_redigert"),
+                        timestamp = row.zonedDateTime("timestamp").toLocalDateTime()
                     )
                 }
                     .asSingle)

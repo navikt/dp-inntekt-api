@@ -1,5 +1,7 @@
 package no.nav.dagpenger.inntekt.v1
 
+import de.huxhorn.sulky.ulid.ULID
+import io.kotlintest.matchers.string.shouldContain
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -11,13 +13,14 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
-
 import no.nav.dagpenger.inntekt.Problem
+import no.nav.dagpenger.inntekt.db.InntektId
+import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
-
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
@@ -25,6 +28,7 @@ import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 import java.time.YearMonth
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -111,6 +115,59 @@ class KlassifisertInntektApiTest {
         }.apply {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
+        }
+    }
+
+    @Test
+    fun `Get klassifisert inntekt by ID should return 200 ok`() = testApp {
+        val inntektId = InntektId(ULID().nextULID())
+
+        every {
+            runBlocking {
+                inntektStoreMock.getInntekt(inntektId)
+            }
+        } returns StoredInntekt(
+            inntektId = inntektId,
+            inntekt = InntektkomponentResponse(
+                arbeidsInntektMaaned = emptyList(),
+                ident = Aktoer(AktoerType.AKTOER_ID, "1234")
+            ),
+            manueltRedigert = false,
+            timestamp = LocalDateTime.now()
+        )
+
+        handleRequest(HttpMethod.Post, "$inntektPath/${inntektId.id}") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
+            setBody(validJson)
+        }.apply {
+            assertTrue(requestHandled)
+            response.content.shouldContain(inntektId.id)
+            assertEquals(HttpStatusCode.OK, response.status())
+        }
+    }
+
+    @Test
+    fun `Get klassifisert inntekt by non-existing ID should return 404 Not Found`() = testApp {
+        val inntektId = InntektId(ULID().nextULID())
+
+        every {
+            runBlocking {
+                inntektStoreMock.getInntekt(inntektId)
+            }
+        } throws InntektNotFoundException("Test inntekt not found")
+
+        handleRequest(HttpMethod.Post, "$inntektPath/${inntektId.id}") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
+            setBody(validJson)
+        }.apply {
+            assertTrue(requestHandled)
+            val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
+            assertEquals("Kunne ikke finne inntekt i databasen", problem?.title)
+            assertEquals("urn:dp:error:inntekt", problem?.type.toString())
+            assertEquals(404, problem?.status)
+            assertEquals(HttpStatusCode.NotFound, response.status())
         }
     }
 
