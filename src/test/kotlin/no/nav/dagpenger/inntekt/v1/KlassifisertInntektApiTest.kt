@@ -148,6 +148,54 @@ class KlassifisertInntektApiTest {
     }
 
     @Test
+    fun `Get klassifisert inntekt by ID should verify that aktorId matched the inntekt`() = testApp {
+        val inntektId = InntektId(ULID().nextULID())
+
+        every {
+            runBlocking {
+                inntektStoreMock.getInntekt(inntektId)
+            }
+        } returns StoredInntekt(
+            inntektId = inntektId,
+            inntekt = InntektkomponentResponse(
+                arbeidsInntektMaaned = emptyList(),
+                ident = Aktoer(AktoerType.AKTOER_ID, "3245")
+            ),
+            manueltRedigert = false,
+            timestamp = LocalDateTime.now()
+        )
+
+        handleRequest(HttpMethod.Post, "$inntektPath/${inntektId.id}") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
+            setBody(validJson)
+        }.apply {
+            assertTrue(requestHandled)
+            val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
+            assertEquals("AktørId i request stemmer ikke med aktørId på inntekten du spør etter.", problem?.title)
+            assertEquals("urn:dp:error:inntekt", problem?.type.toString())
+            assertEquals(401, problem?.status)
+            assertEquals(HttpStatusCode.Unauthorized, response.status())
+        }
+    }
+
+    @Test
+    fun `Get klassifisert inntekt by invalid ULID should return 400 Bad Request`() = testApp {
+        handleRequest(HttpMethod.Post, "$inntektPath/123") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
+            setBody(validJson)
+        }.apply {
+            assertTrue(requestHandled)
+            val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
+            assertEquals("InntektsId må være en gyldig ULID", problem?.title)
+            assertEquals("urn:dp:error:inntekt", problem?.type.toString())
+            assertEquals(400, problem?.status)
+            assertEquals(HttpStatusCode.BadRequest, response.status())
+        }
+    }
+
+    @Test
     fun `Get klassifisert inntekt by non-existing ID should return 404 Not Found`() = testApp {
         val inntektId = InntektId(ULID().nextULID())
 
