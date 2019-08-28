@@ -32,6 +32,7 @@ import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
@@ -42,10 +43,11 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClie
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.subasumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
+import no.nav.dagpenger.inntekt.v1.InntektNotAuthorizedException
 import no.nav.dagpenger.inntekt.v1.klassifisertInntekt
-import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
 import no.nav.dagpenger.inntekt.v1.spesifisertInntekt
+import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
 import no.nav.dagpenger.ktor.auth.ApiKeyCredential
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import no.nav.dagpenger.ktor.auth.ApiPrincipal
@@ -71,7 +73,8 @@ fun main() = runBlocking {
     val allowedApiKeys = config.application.allowedApiKeys
 
     val postgresInntektStore = PostgresInntektStore(dataSourceFrom(config))
-    val stsOidcClient = StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
+    val stsOidcClient =
+        StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
 
     val subsumsjonBruktDataConsumer = KafkaSubsumsjonBruktDataConsumer(config, postgresInntektStore).apply {
         listen()
@@ -162,6 +165,26 @@ fun Application.inntektApi(
             )
             call.respond(HttpStatusCode.NotFound, problem)
         }
+        exception<InntektNotAuthorizedException> { cause ->
+            LOGGER.warn("Request failed!", cause)
+            val problem = Problem(
+                type = URI("urn:dp:error:inntekt"),
+                title = "AktørId i request stemmer ikke med aktørId på inntekten du spør etter.",
+                detail = cause.message,
+                status = HttpStatusCode.Unauthorized.value
+            )
+            call.respond(HttpStatusCode.Unauthorized, problem)
+        }
+        exception<IllegalInntektIdException> { cause ->
+            LOGGER.warn("Request failed!", cause)
+            val problem = Problem(
+                type = URI("urn:dp:error:inntekt"),
+                title = "InntektsId må være en gyldig ULID",
+                detail = cause.message,
+                status = HttpStatusCode.BadRequest.value
+            )
+            call.respond(HttpStatusCode.BadRequest, problem)
+        }
         exception<InntektskomponentenHttpClientException> { cause ->
             val statusCode =
                 if (HttpStatusCode.fromValue(cause.status).isSuccess()) HttpStatusCode.InternalServerError else HttpStatusCode.fromValue(
@@ -230,9 +253,9 @@ fun Application.inntektApi(
     routing {
         route("/v1") {
             route("/inntekt") {
+                spesifisertInntekt(behandlingsInntektsGetter)
                 klassifisertInntekt(inntektskomponentHttpClient, inntektStore)
                 uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, oppslagClient)
-                spesifisertInntekt(behandlingsInntektsGetter)
             }
             opptjeningsperiodeApi(inntektStore)
         }

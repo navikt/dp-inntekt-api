@@ -9,7 +9,10 @@ import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
 import no.nav.dagpenger.inntekt.BehandlingsKey
+import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.klassifisering.Inntekt
 import no.nav.dagpenger.inntekt.klassifisering.klassifiserInntekter
@@ -21,7 +24,7 @@ fun Route.klassifisertInntekt(inntektskomponentClient: InntektskomponentClient, 
             post {
                 val request = call.receive<InntektRequest>()
 
-                val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
+                val opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
 
                 val behandlingsKey = BehandlingsKey(
                     request.aktørId,
@@ -47,5 +50,38 @@ fun Route.klassifisertInntekt(inntektskomponentClient: InntektskomponentClient, 
                 call.respond(HttpStatusCode.OK, klassifisertInntekt)
             }
         }
+
+        route("/{inntektId}") {
+            post {
+                val request = call.receive<InntektRequest>()
+                val inntektId = call.parameters["inntektId"].runCatching {
+                    InntektId(call.parameters["inntektId"]!!)
+                }.getOrThrow()
+                val opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
+                val aktor = Aktoer(
+                    aktoerType = AktoerType.AKTOER_ID,
+                    identifikator = request.aktørId
+                )
+
+                val storedInntekt = inntektStore.getInntekt(inntektId)
+
+                if (storedInntekt.inntekt.ident != aktor) {
+                    throw InntektNotAuthorizedException("Aktøren har ikke tilgang til denne inntekten.")
+                }
+
+                val klassifisertInntekt = storedInntekt.let {
+                    Inntekt(
+                        inntektsId = it.inntektId.id,
+                        inntektsListe = klassifiserInntekter(it.inntekt),
+                        manueltRedigert = it.manueltRedigert,
+                        sisteAvsluttendeKalenderMåned = opptjeningsperiode.sisteAvsluttendeKalenderMåned
+                    )
+                }
+
+                call.respond(HttpStatusCode.OK, klassifisertInntekt)
+            }
+        }
     }
 }
+
+class InntektNotAuthorizedException(override val message: String) : RuntimeException(message)
