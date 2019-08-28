@@ -42,6 +42,13 @@ class KlassifisertInntektApiTest {
         }
         """.trimIndent()
 
+    val validJsonById = """
+        {
+        	"aktørId": "1234",
+            "beregningsDato": "2019-01-08"
+        }
+        """.trimIndent()
+
     val jsonMissingFields = """
         {
         	"aktørId": "1234",
@@ -184,7 +191,7 @@ class KlassifisertInntektApiTest {
         handleRequest(HttpMethod.Post, "$inntektPath/123") {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader("X-API-KEY", apiKey)
-            setBody(validJson)
+            setBody(validJsonById)
         }.apply {
             assertTrue(requestHandled)
             val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
@@ -208,7 +215,7 @@ class KlassifisertInntektApiTest {
         handleRequest(HttpMethod.Post, "$inntektPath/${inntektId.id}") {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader("X-API-KEY", apiKey)
-            setBody(validJson)
+            setBody(validJsonById)
         }.apply {
             assertTrue(requestHandled)
             val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)

@@ -53,7 +53,7 @@ fun Route.klassifisertInntekt(inntektskomponentClient: InntektskomponentClient, 
 
         route("/{inntektId}") {
             post {
-                val request = call.receive<InntektRequest>()
+                val request = call.receive<InntektByIdRequest>()
                 val inntektId = call.parameters["inntektId"].runCatching {
                     InntektId(call.parameters["inntektId"]!!)
                 }.getOrThrow()

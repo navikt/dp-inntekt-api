@@ -154,6 +154,11 @@ data class InntektRequest(
     val beregningsDato: LocalDate
 )
 
+data class InntektByIdRequest(
+    val aktørId: String,
+    val beregningsDato: LocalDate
+)
+
 val toInntektskomponentRequest: (InntektRequest, Opptjeningsperiode) -> InntektkomponentRequest =
     { inntektRequest: InntektRequest, opptjeningsperiode: Opptjeningsperiode ->
         val sisteAvsluttendeKalendermåned = opptjeningsperiode.sisteAvsluttendeKalenderMåned
