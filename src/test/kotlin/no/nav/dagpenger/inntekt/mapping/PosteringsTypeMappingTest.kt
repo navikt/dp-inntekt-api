@@ -187,6 +187,14 @@ internal class PosteringsTypeMappingTest {
     }
 
     @Test
+    fun `test at inntjeningsforhold uten mapping er det samme som null`() {
+        val posteringsTypeWithNull = PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.FERIEPENGER, null)
+        val posteringsTypeWithoutMapping = PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.FERIEPENGER, SpesielleInntjeningsforhold.STATSANSATT_UTLANDET)
+
+        assertEquals(toPosteringsType(posteringsTypeWithNull), toPosteringsType(posteringsTypeWithoutMapping))
+    }
+
+    @Test
     fun `test at ukjent inntjeningsforhold er det samme som null`() {
         val posteringsTypeWithNull = PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.FERIEPENGER, null)
         val posteringsTypeWithUnknown = PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.FERIEPENGER, SpesielleInntjeningsforhold.UNKNOWN)
