@@ -7,8 +7,13 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforho
 import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
 
 fun verdiKode(datagrunnlagKlassifisering: DatagrunnlagKlassifisering): String {
-    return dataGrunnlagKlassifiseringToVerdikode[datagrunnlagKlassifisering]
-        ?: throw VerdiKodeMappingException("No verdikode found for datagrunnlagKlassifisering=$datagrunnlagKlassifisering")
+    val safePosteringsTypeGrunnlag =
+        if (datagrunnlagKlassifisering.forhold == SpesielleInntjeningsforhold.UNKNOWN)
+            DatagrunnlagKlassifisering(datagrunnlagKlassifisering.type, datagrunnlagKlassifisering.beskrivelse, null)
+        else datagrunnlagKlassifisering
+
+    return dataGrunnlagKlassifiseringToVerdikode[safePosteringsTypeGrunnlag]
+        ?: throw VerdiKodeMappingException("No verdikode found for datagrunnlagKlassifisering=$safePosteringsTypeGrunnlag")
 }
 
 fun dataGrunnlag(verdiKode: String): DatagrunnlagKlassifisering {
