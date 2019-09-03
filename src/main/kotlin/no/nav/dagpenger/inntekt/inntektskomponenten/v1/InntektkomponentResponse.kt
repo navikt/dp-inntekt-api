@@ -103,10 +103,6 @@ enum class SpesielleInntjeningsforhold {
     HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
     @Json(name = "loennVedArbeidsmarkedstiltak")
     LOENN_VED_ARBEIDSMARKEDSTILTAK,
-    UNKNOWN
-    /**
-     * Alle andre typer spesielle inntjeningsforhold som kan komme. Dagens oppførsel er at "UNKNOWN" og NULL regnes som
-     * det samme.
     @Json(name = "loennOgAnnenGodtgjoerelseSomIkkeErSkattepliktig")
     LOENN_OG_ANNEN_GODTGJOERELSE_SOM_IKKE_ER_SKATTEPLIKTIG,
     @Json(name = "loennUtbetaltFraDenNorskeStatOpptjentIUtlandet")
@@ -118,7 +114,8 @@ enum class SpesielleInntjeningsforhold {
     @Json(name = "statsansattUtlandet")
     STATSANSATT_UTLANDET,
     @Json(name = "utenlandskeSjoefolkSomIkkeErSkattepliktig")
-    UTELANDSKE_SJOEFOLK_SOM_IKKE_ER_SKATTEPLIKTIG,*/
+    UTELANDSKE_SJOEFOLK_SOM_IKKE_ER_SKATTEPLIKTIG,
+    UNKNOWN
 }
 
 enum class InntektBeskrivelse {
