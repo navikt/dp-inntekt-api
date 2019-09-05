@@ -239,7 +239,8 @@ internal class InntektskomponentHttpClientTest {
         result.isFailure.shouldBeTrue()
         result.shouldBeClientException<InntektskomponentenHttpClientException>(
             status = 500,
-            message = "Failed to fetch inntekt. Response message: Server Error. Problem message: Feil i filtrering: En feil oppstod i filteret DagpengerGrunnlagA-Inntekt, Regel no.nav.inntektskomponenten.filter.regler.dagpenger.DagpengerHovedregel støtter ikke inntekter av type no.nav.inntektskomponenten.domain.Loennsinntekt"
+            message = "Failed to fetch inntekt. Response message: Server Error. Problem message: Feil i filtrering: En feil oppstod i filteret DagpengerGrunnlagA-Inntekt, Regel no.nav.inntektskomponenten.filter.regler.dagpenger.DagpengerHovedregel støtter ikke inntekter av type no.nav.inntektskomponenten.domain.Loennsinntekt",
+            detail = "Feil i filtrering: En feil oppstod i filteret DagpengerGrunnlagA-Inntekt, Regel no.nav.inntektskomponenten.filter.regler.dagpenger.DagpengerHovedregel støtter ikke inntekter av type no.nav.inntektskomponenten.domain.Loennsinntekt"
         )
     }
 
@@ -256,11 +257,13 @@ internal class InntektskomponentHttpClientTest {
 
 private inline fun <reified T : InntektskomponentenHttpClientException> Result<InntektkomponentResponse>.shouldBeClientException(
     status: Int? = null,
-    message: String? = null
+    message: String? = null,
+    detail: String? = null
 ) {
     val exception = exceptionOrNull() as T
     status?.let { exception.status shouldBe status }
     message?.let { exception.message shouldBe message }
+    detail?.let { exception.detail shouldBe detail }
 }
 
 private fun shouldBeCounted(metricName: String) {

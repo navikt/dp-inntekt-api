@@ -171,7 +171,8 @@ fun Application.inntektApi(
             val error = Problem(
                 type = URI("urn:dp:error:inntektskomponenten"),
                 title = "Innhenting av inntekt mot a-inntekt feilet. Prøv igjen senere",
-                status = statusCode.value
+                status = statusCode.value,
+                detail = cause.detail
             )
             call.respond(statusCode, error)
         }
