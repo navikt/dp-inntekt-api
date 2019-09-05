@@ -70,7 +70,8 @@ class InntektskomponentHttpClient(
                 it
             }, { error ->
                 val resp = error.response.body().asString("application/json")
-                val message = runCatching {
+                val detail = runCatching {
+
                     jsonMapAdapter.fromJson(resp)
                 }.let {
                     it.getOrNull()?.get("message")?.toString() ?: error.message
@@ -80,7 +81,8 @@ class InntektskomponentHttpClient(
 
                 throw InntektskomponentenHttpClientException(
                     if (response.statusCode == -1) 500 else response.statusCode, // we did not get a response status code, ie timeout/network issues
-                    "Failed to fetch inntekt. Response message: ${response.responseMessage}. Problem message: $message"
+                    "Failed to fetch inntekt. Response message: ${response.responseMessage}. Problem message: $detail",
+                    detail
                 )
             })
         } finally {
@@ -99,5 +101,6 @@ data class HentInntektListeRequest(
 
 class InntektskomponentenHttpClientException(
     val status: Int,
-    override val message: String
+    override val message: String,
+    val detail: String? = null
 ) : RuntimeException(message)
