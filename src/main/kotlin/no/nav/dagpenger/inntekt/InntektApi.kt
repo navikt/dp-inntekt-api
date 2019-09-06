@@ -42,7 +42,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
-import no.nav.dagpenger.inntekt.subasumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
+import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
 import no.nav.dagpenger.inntekt.v1.InntektNotAuthorizedException
 import no.nav.dagpenger.inntekt.v1.klassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
