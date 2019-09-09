@@ -16,6 +16,7 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.util.pipeline.PipelineContext
+import io.prometheus.client.Counter
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
@@ -35,6 +36,24 @@ import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
+
+const val INNTEKT_KORRIGERING = "inntekt_korrigering"
+private val inntektKorrigeringCounter = Counter.build()
+    .name(INNTEKT_KORRIGERING)
+    .help("Antall ganger saksbehandler har korrigert inntekter")
+    .register()
+
+const val INNTEKT_OPPFRISKING = "inntekt_oppfrisking"
+private val inntektOppfriskingCounter = Counter.build()
+    .name(INNTEKT_OPPFRISKING)
+    .help("Antall ganger saksbehandler har oppdatert inntekter")
+    .register()
+
+const val INNTEKT_OPPFRISKING_BRUKT = "inntekt_oppfrisking_brukt"
+private val inntektOppfriskingBruktCounter = Counter.build()
+    .name(INNTEKT_OPPFRISKING_BRUKT)
+    .help("Antall ganger saksbehandler har brukt oppdaterte inntekter")
+    .register()
 
 fun Route.uklassifisertInntekt(
     inntektskomponentClient: InntektskomponentClient,
@@ -66,13 +85,20 @@ fun Route.uklassifisertInntekt(
                             inntektStore.insertInntekt(
                                 BehandlingsKey(this.aktørId, this.vedtakId, this.beregningsDato),
                                 it.inntekt,
-                                ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject()))
+                                ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject())
+                            )
                         }
                         .let {
                             call.respond(
                                 HttpStatusCode.OK,
-                                mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), guiInntekt.inntektsmottaker)
+                                mapToGUIInntekt(
+                                    it,
+                                    Opptjeningsperiode(this.beregningsDato),
+                                    guiInntekt.inntektsmottaker
+                                )
                             )
+                        }.also {
+                            inntektKorrigeringCounter.inc()
                         }
                 }
             }
@@ -94,6 +120,8 @@ fun Route.uklassifisertInntekt(
                         }
                         .let {
                             call.respond(HttpStatusCode.OK, it)
+                        }.also {
+                            inntektOppfriskingCounter.inc()
                         }
                 }
             }
@@ -106,13 +134,20 @@ fun Route.uklassifisertInntekt(
                             inntektStore.insertInntekt(
                                 BehandlingsKey(this.aktørId, this.vedtakId, this.beregningsDato),
                                 it.inntekt,
-                                ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject()))
+                                ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject())
+                            )
                         }
                         .let {
                             call.respond(
                                 HttpStatusCode.OK,
-                                mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), guiInntekt.inntektsmottaker)
+                                mapToGUIInntekt(
+                                    it,
+                                    Opptjeningsperiode(this.beregningsDato),
+                                    guiInntekt.inntektsmottaker
+                                )
                             )
+                        }.also {
+                            inntektOppfriskingBruktCounter.inc()
                         }
                 }
             }

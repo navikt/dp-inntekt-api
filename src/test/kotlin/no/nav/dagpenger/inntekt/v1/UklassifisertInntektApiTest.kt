@@ -1,6 +1,8 @@
 package no.nav.dagpenger.inntekt.v1
 
 import de.huxhorn.sulky.ulid.ULID
+import io.kotlintest.matchers.doubles.shouldBeGreaterThan
+import io.kotlintest.shouldNotBe
 import io.ktor.application.Application
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -11,6 +13,7 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
+import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.JwtStub
@@ -88,7 +91,11 @@ class UklassifisertInntektApiTest {
         } returns storedInntekt
 
         every {
-            inntektStoreMock.insertInntekt(foundBehandlingsKey, storedInntekt.inntekt, ManueltRedigert.from(true, "user"))
+            inntektStoreMock.insertInntekt(
+                foundBehandlingsKey,
+                storedInntekt.inntekt,
+                ManueltRedigert.from(true, "user")
+            )
         } returns storedInntekt
 
         every {
@@ -172,7 +179,10 @@ class UklassifisertInntektApiTest {
 
     @Test
     fun `GET uklassifisert inntekt with malformed parameters should return bad request`() = testApp {
-        handleRequest(HttpMethod.Get, "$uklassifisertInntekt/${foundBehandlingsKey.aktørId}/${foundBehandlingsKey.vedtakId}/blabla") {
+        handleRequest(
+            HttpMethod.Get,
+            "$uklassifisertInntekt/${foundBehandlingsKey.aktørId}/${foundBehandlingsKey.vedtakId}/blabla"
+        ) {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
             assertTrue(requestHandled)
@@ -261,6 +271,7 @@ class UklassifisertInntektApiTest {
             val storedInntekt =
                 moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
             assertEquals(storedInntekt.inntektId, inntektId)
+            shouldBeCounted(metricName = INNTEKT_KORRIGERING)
         }
     }
 
@@ -337,6 +348,7 @@ class UklassifisertInntektApiTest {
             val storedInntekt =
                 moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
             assertEquals(storedInntekt.inntektId, inntektId)
+            shouldBeCounted(metricName = INNTEKT_OPPFRISKING)
         }
     }
 
@@ -364,6 +376,7 @@ class UklassifisertInntektApiTest {
             val storedInntekt =
                 moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
             assertEquals(storedInntekt.inntektId, inntektId)
+            shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
         }
     }
 
@@ -391,4 +404,12 @@ class UklassifisertInntektApiTest {
     ) {
         withTestApplication(moduleFunction) { callback() }
     }
+}
+
+private fun shouldBeCounted(metricName: String) {
+    CollectorRegistry.defaultRegistry.metricFamilySamples().asSequence().find { it.name == metricName }
+        ?.let { metric ->
+            metric.samples[0].value shouldNotBe null
+            metric.samples[0].value shouldBeGreaterThan 0.0
+        }
 }
