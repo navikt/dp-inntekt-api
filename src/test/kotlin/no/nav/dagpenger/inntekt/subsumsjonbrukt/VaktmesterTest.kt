@@ -1,7 +1,9 @@
 package no.nav.dagpenger.inntekt.subsumsjonbrukt
 
+import io.kotlintest.matchers.doubles.shouldBeGreaterThan
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
+import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.DataSource
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
@@ -96,5 +98,10 @@ internal class VaktmesterTest {
             assertThrows<InntektNotFoundException> { inntektStore.getInntekt(ubruktEldreEnn90Dager.inntektId) }
             inntektStore.getInntekt(ubruktYngreEnn90Dager.inntektId) shouldBe ubruktYngreEnn90Dager
         }
+        CollectorRegistry.defaultRegistry.metricFamilySamples().asSequence().find { it.name == "inntekt_slettet" }
+            ?.let { metric ->
+                metric.samples[0].value shouldNotBe null
+                metric.samples[0].value shouldBeGreaterThan 0.0
+            } ?: AssertionError("Could not find metric")
     }
 }
