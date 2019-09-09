@@ -6,7 +6,6 @@ import kotliquery.sessionOf
 import kotliquery.using
 import javax.sql.DataSource
 
-
 const val INNTEKT_SLETTET = "inntekt_slettet"
 private val deleteCounter = Counter.build()
     .name(INNTEKT_SLETTET)
@@ -14,7 +13,6 @@ private val deleteCounter = Counter.build()
     .register()
 
 class Vaktmester(private val dataSource: DataSource, private val lifeSpanInDays: Int = 90) {
-
 
     fun rydd() {
         val rowCount =
@@ -33,6 +31,4 @@ class Vaktmester(private val dataSource: DataSource, private val lifeSpanInDays:
         }
         deleteCounter.inc(rowCount.toDouble())
     }
-
-
 }
