@@ -14,12 +14,12 @@ jobs:
       with:
         version: 11
     - name: Login to docker
-      run: docker login docker.pkg.github.com -u $GITHUB_ACTOR -p $GITHUB_TOKEN
+      run: env && docker login docker.pkg.github.com -u ${GITHUB_ACTOR} -p ${GITHUB_TOKEN}
     - name: Build with Gradle
       run: ./gradlew build
     - name: Build docker image
       run: docker build . --tag ${GITHUB_REPOSITORY}:${$GITHUB_SHA}
     - name: Push docker image
-      run: | 
+      run: |
         docker login docker.pkg.github.com -u ${GITHUB_ACTOR} -p ${GITHUB_TOKEN}
         docker push docker.pkg.github.com/${GITHUB_REPOSITORY}:${$GITHUB_SHA}
