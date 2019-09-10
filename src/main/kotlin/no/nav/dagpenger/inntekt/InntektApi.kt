@@ -30,7 +30,6 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
@@ -86,11 +85,11 @@ fun main() = runBlocking {
 
     val vaktmester = Vaktmester(dataSource)
 
-    if(config.aktivVaktmester) {
+    if (config.aktivVaktmester) {
         val timer = fixedRateTimer(
             name = "vaktmester",
             initialDelay = TimeUnit.MINUTES.toMillis(10),
-            period =  TimeUnit.HOURS.toMillis(12),
+            period = TimeUnit.HOURS.toMillis(12),
             action = {
                 LOGGER.info { "Vaktmesteren rydder" }
                 vaktmester.rydd()

@@ -85,7 +85,6 @@ data class Configuration(
     val subsumsjonBruktDataTopic: String = config()[Key("kafka.subsumsjon.brukt.data.topic", stringType)],
     val aktivVaktmester: Boolean = config().getOrElse(Key("vaktmester.aktiv", booleanType), false)
 
-
 ) {
 
     data class Database(
