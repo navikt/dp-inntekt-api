@@ -9,6 +9,8 @@ jobs:
       - uses: actions/checkout@master
       - name: Checkout event data
         run: cat ${GITHUB_EVENT_PATH}
+      - name: Has jq?
+        run: cat ${GITHUB_EVENT_PATH} | jq .status
       - name: Create deployment
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
