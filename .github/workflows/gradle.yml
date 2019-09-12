@@ -36,7 +36,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: docker login docker.pkg.github.com -u github -p ${GITHUB_TOKEN} || true
       - name: Build with Gradle
-        run: ./gradlew build
+        run: false && ./gradlew build
       - name: Build docker image
         run: docker build . --tag ${GITHUB_REPOSITORY}:${$GITHUB_SHA}
       - name: Push docker image
