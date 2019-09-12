@@ -1,9 +1,9 @@
 name: Deploy
 
-on: [push,status,check_suite]
+on: [status,check_suite]
 
 jobs:
-  create-deplyoment:
+  create-deployment:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
