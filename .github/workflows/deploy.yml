@@ -1,9 +1,6 @@
 name: Deploy
 
-on:
-  status:
-    branches:
-      - feature/github-actions
+on: [status]
 
 jobs:
   create-deplyoment:
