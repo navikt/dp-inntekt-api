@@ -1,8 +1,9 @@
 name: Java CI
 
-on:
-  check_suite:
-    types: [completed]
+on: [status]
+#on:
+#  status:
+#    types: [success]
 
 jobs:
   create-deplyoment:
