@@ -4,7 +4,7 @@ on:
   status:
     #branches:
     #  - master
-    types: [success,failure]
+    types: [success, failure]
 
 jobs:
   create-deplyoment:
