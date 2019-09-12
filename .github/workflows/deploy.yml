@@ -1,6 +1,6 @@
 name: Deploy
 
-on: [status]
+on: status
 
 jobs:
   create-deplyoment:
