@@ -2,8 +2,8 @@ name: Deploy
 
 on:
   status:
-    #branches:
-    #  - master
+    branches:
+      - feature/github-actions
 
 jobs:
   create-deplyoment:
