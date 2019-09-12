@@ -1,9 +1,8 @@
 name: Java CI
 
-on: [status]
-#on:
-#  status:
-#    types: [success]
+on:
+  status:
+    types: [success,failure]
 
 jobs:
   create-deplyoment:
