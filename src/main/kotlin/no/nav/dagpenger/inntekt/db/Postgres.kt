@@ -11,12 +11,16 @@ fun migrate(config: Configuration): Int {
     return when (config.application.profile) {
         Profile.LOCAL -> HikariDataSource(hikariConfigFrom(config)).use {
             migrate(
-                it,
+                dataSource = it,
                 locations = config.database.flywayLocations
             )
         }
         else -> hikariDataSourceWithVaultIntegration(config, Role.ADMIN).use {
-            migrate(it, "SET ROLE \"${config.database.name}-${Role.ADMIN}\"")
+            migrate(
+                dataSource = it,
+                initSql = "SET ROLE \"${config.database.name}-${Role.ADMIN}\"",
+                locations = config.database.flywayLocations
+            )
         }
     }
 }
