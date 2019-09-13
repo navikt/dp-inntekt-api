@@ -42,7 +42,8 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
-import no.nav.dagpenger.inntekt.subasumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
+import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
+import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
 import no.nav.dagpenger.inntekt.v1.InntektNotAuthorizedException
 import no.nav.dagpenger.inntekt.v1.klassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
@@ -57,6 +58,7 @@ import org.slf4j.event.Level
 import java.net.URI
 import java.net.URL
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.fixedRateTimer
 
 private val LOGGER = KotlinLogging.logger {}
 val config = Configuration()
@@ -72,12 +74,27 @@ fun main() = runBlocking {
     val apiKeyVerifier = ApiKeyVerifier(config.application.apiSecret)
     val allowedApiKeys = config.application.allowedApiKeys
 
-    val postgresInntektStore = PostgresInntektStore(dataSourceFrom(config))
+    val dataSource = dataSourceFrom(config)
+    val postgresInntektStore = PostgresInntektStore(dataSource)
     val stsOidcClient =
         StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
 
     val subsumsjonBruktDataConsumer = KafkaSubsumsjonBruktDataConsumer(config, postgresInntektStore).apply {
         listen()
+    }
+
+    val vaktmester = Vaktmester(dataSource)
+
+    if (config.aktivVaktmester) {
+        val timer = fixedRateTimer(
+            name = "vaktmester",
+            initialDelay = TimeUnit.MINUTES.toMillis(10),
+            period = TimeUnit.HOURS.toMillis(12),
+            action = {
+                LOGGER.info { "Vaktmesteren rydder" }
+                vaktmester.rydd()
+                LOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
+            })
     }
 
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
