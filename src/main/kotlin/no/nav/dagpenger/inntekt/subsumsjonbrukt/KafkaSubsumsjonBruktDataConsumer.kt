@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.subsumsjonbrukt
 
+import io.prometheus.client.Summary
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +19,14 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
 import java.time.Duration
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import kotlin.coroutines.CoroutineContext
+
+private val markerInntektTimer = Summary.build()
+    .name("marker_inntekt_brukt")
+    .help("Hvor lang tid det tar å markere en inntekt brukt (i sekunder")
+    .create()
 
 internal class KafkaSubsumsjonBruktDataConsumer(
     private val config: Configuration,
@@ -29,6 +37,15 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     private val logger = KotlinLogging.logger { }
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job + handler
+
+    val grace by lazy {
+        Grace()
+    }
+
+    data class Grace(val duration: Duration = Duration.ofHours(3), val from: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)) {
+        private val expires = from.plus(duration)
+        fun expired() = ZonedDateTime.now(ZoneOffset.UTC).isAfter(expires)
+    }
 
     private val job: Job by lazy {
         Job()
@@ -66,7 +83,13 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                     records.asSequence()
                         .map { record -> Packet(record.value()) }
                         .map { packet -> InntektId(packet.getMapValue("faktum")["inntektsId"] as String) }
-                        .forEach { id -> if (inntektStore.markerInntektBrukt(id) == 1) logger.info("Marked inntekt with id $id as used") }
+                        .forEach { id ->
+                            val timer = markerInntektTimer.startTimer()
+                            if (inntektStore.markerInntektBrukt(id) == 1) {
+                                logger.info("Marked inntekt with id $id as used")
+                            }
+                            timer.observeDuration()
+                        }
                     consumer.commitSync()
                 }
             }
@@ -74,7 +97,13 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     }
 
     override fun status(): HealthStatus {
-        return if (job.isActive) HealthStatus.UP else HealthStatus.DOWN
+        return if (job.isActive) HealthStatus.UP else {
+            return if (grace.expired()) {
+                HealthStatus.DOWN
+            } else {
+                HealthStatus.UP
+            }
+        }
     }
 
     fun stop() {
