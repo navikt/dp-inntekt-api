@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.subasumsjonbrukt
+package no.nav.dagpenger.inntekt.subsumsjonbrukt
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
