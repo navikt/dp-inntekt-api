@@ -11,6 +11,7 @@ import io.ktor.routing.route
 import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.mapping.mapToSpesifisertInntekt
+import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
 
 fun Route.spesifisertInntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
@@ -23,7 +24,9 @@ fun Route.spesifisertInntekt(behandlingsInntektsGetter: BehandlingsInntektsGette
                     BehandlingsKey(request.aktørId, request.vedtakId, request.beregningsDato)
                 )
 
-                val specifiedInntekt = mapToSpesifisertInntekt(storedInntekt)
+                val sisteAvsluttendeKalenderMåned = Opptjeningsperiode(request.beregningsDato).sisteAvsluttendeKalenderMåned
+
+                val specifiedInntekt = mapToSpesifisertInntekt(storedInntekt, sisteAvsluttendeKalenderMåned)
 
                 call.respond(HttpStatusCode.OK, specifiedInntekt)
             }
