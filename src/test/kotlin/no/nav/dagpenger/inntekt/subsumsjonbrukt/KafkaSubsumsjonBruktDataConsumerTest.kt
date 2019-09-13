@@ -110,8 +110,9 @@ class KafkaSubsumsjonBruktDataConsumerTest {
 
     @Test
     fun `Grace period is over`() {
-        val grace = KafkaSubsumsjonBruktDataConsumer.Grace(from = ZonedDateTime.now(ZoneOffset.UTC).minusHours(1))
-        grace.expired() shouldBe false
-        grace.copy(from = ZonedDateTime.now(ZoneOffset.UTC).minusHours(3)).expired() shouldBe true
+        val graceperiod1 = KafkaSubsumsjonBruktDataConsumer.Grace(from = ZonedDateTime.now(ZoneOffset.UTC).minusHours(1))
+        graceperiod1.expired() shouldBe false
+        val graceperiod2 = KafkaSubsumsjonBruktDataConsumer.Grace(from = ZonedDateTime.now(ZoneOffset.UTC).minusHours(4))
+        graceperiod2.expired() shouldBe true
     }
 }
