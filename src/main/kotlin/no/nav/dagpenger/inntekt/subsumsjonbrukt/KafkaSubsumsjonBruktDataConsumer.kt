@@ -18,6 +18,8 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
 import java.time.Duration
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import kotlin.coroutines.CoroutineContext
 
 internal class KafkaSubsumsjonBruktDataConsumer(
@@ -29,6 +31,15 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     private val logger = KotlinLogging.logger { }
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job + handler
+
+    val grace by lazy {
+        Grace()
+    }
+
+    data class Grace(val duration: Duration = Duration.ofHours(3), val from: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)) {
+        private val expires = from.plus(duration)
+        fun expired() = ZonedDateTime.now(ZoneOffset.UTC).isAfter(expires)
+    }
 
     private val job: Job by lazy {
         Job()
@@ -74,7 +85,13 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     }
 
     override fun status(): HealthStatus {
-        return if (job.isActive) HealthStatus.UP else HealthStatus.DOWN
+        return if (job.isActive) HealthStatus.UP else {
+            if (grace.expired()) {
+                HealthStatus.DOWN
+            } else {
+                HealthStatus.UP
+            }
+        }
     }
 
     fun stop() {
