@@ -20,12 +20,13 @@ internal fun mockInntektApi(
 ): Application.() -> Unit {
     return fun Application.() {
         inntektApi(
-            inntektskomponentClient,
-            inntektStore,
-            behandlingsInntektsGetter,
-            oppslagClient,
-            apiAuthApiKeyVerifier,
-            jwkProvider
+            inntektskomponentHttpClient = inntektskomponentClient,
+            inntektStore = inntektStore,
+            behandlingsInntektsGetter = behandlingsInntektsGetter,
+            oppslagClient = oppslagClient,
+            apiAuthApiKeyVerifier = apiAuthApiKeyVerifier,
+            jwkProvider = jwkProvider,
+            healthChecks = emptyList()
         )
     }
 }

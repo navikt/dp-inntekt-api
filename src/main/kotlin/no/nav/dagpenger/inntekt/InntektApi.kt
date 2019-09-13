@@ -96,7 +96,11 @@ fun main() = runBlocking {
             cachedInntektsGetter,
             oppslagClient,
             AuthApiKeyVerifier(apiKeyVerifier, allowedApiKeys),
-            jwkProvider
+            jwkProvider,
+            listOf(
+                postgresInntektStore as HealthCheck,
+                subsumsjonBruktDataConsumer as HealthCheck
+            )
         )
     }.start()
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -111,7 +115,8 @@ fun Application.inntektApi(
     behandlingsInntektsGetter: BehandlingsInntektsGetter,
     oppslagClient: OppslagClient,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
-    jwkProvider: JwkProvider
+    jwkProvider: JwkProvider,
+    healthChecks: List<HealthCheck>
 ) {
 
     install(DefaultHeaders)
@@ -260,7 +265,7 @@ fun Application.inntektApi(
             }
             opptjeningsperiodeApi(inntektStore)
         }
-        naischecks()
+        naischecks(healthChecks)
     }
 }
 

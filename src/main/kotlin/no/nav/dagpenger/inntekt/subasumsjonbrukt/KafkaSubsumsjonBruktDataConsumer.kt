@@ -8,6 +8,8 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.inntekt.Configuration
+import no.nav.dagpenger.inntekt.HealthCheck
+import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.plain.consumerConfig
@@ -21,7 +23,7 @@ import kotlin.coroutines.CoroutineContext
 internal class KafkaSubsumsjonBruktDataConsumer(
     private val config: Configuration,
     private val inntektStore: InntektStore
-) : CoroutineScope {
+) : CoroutineScope, HealthCheck {
 
     private val SERVICE_APP_ID = "dp-inntekt-api-consumer"
     private val logger = KotlinLogging.logger { }
@@ -55,6 +57,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                     it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
                     it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = "false"
                     it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
+                    it[ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG] = 20000
                 }
             ).use { consumer ->
                 consumer.subscribe(listOf(config.subsumsjonBruktDataTopic))
@@ -68,6 +71,10 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                 }
             }
         }
+    }
+
+    override fun status(): HealthStatus {
+        return if (job.isActive) HealthStatus.UP else HealthStatus.DOWN
     }
 
     fun stop() {
