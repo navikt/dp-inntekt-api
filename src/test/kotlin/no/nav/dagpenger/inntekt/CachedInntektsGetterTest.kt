@@ -81,14 +81,14 @@ class CachedInntektsGetterTest {
         } returns null
 
         every {
-            inntektStoreMock.insertInntekt(unknownBehandlingsKey, emptyInntektsKomponentResponse)
+            inntektStoreMock.insertInntekt(unknownBehandlingsKey, emptyInntektsKomponentResponse, any(), any())
         } returns StoredInntekt(InntektId("01DH179R2HW0FYEP1FABAXV150"), emptyInntektsKomponentResponse, false)
 
         val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentClientMock, inntektStoreMock)
         val storedInntektResult = runBlocking { cachedInntektsGetter.getBehandlingsInntekt(unknownBehandlingsKey) }
 
         verify(exactly = 1) { runBlocking { inntektskomponentClientMock.getInntekt(any()) } }
-        verify(exactly = 1) { runBlocking { inntektStoreMock.insertInntekt(any(), any()) } }
+        verify(exactly = 1) { runBlocking { inntektStoreMock.insertInntekt(any(), any(), any(), any()) } }
         assertEquals(emptyInntektsKomponentResponse.ident, storedInntektResult.inntekt.ident)
     }
 }

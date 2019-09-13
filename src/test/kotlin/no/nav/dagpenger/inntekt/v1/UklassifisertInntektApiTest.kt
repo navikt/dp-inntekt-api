@@ -87,14 +87,15 @@ class UklassifisertInntektApiTest {
         } returns inntektId
 
         every {
-            inntektStoreMock.insertInntekt(foundBehandlingsKey, storedInntekt.inntekt, null)
+            inntektStoreMock.insertInntekt(foundBehandlingsKey, storedInntekt.inntekt, null, any())
         } returns storedInntekt
 
         every {
             inntektStoreMock.insertInntekt(
                 foundBehandlingsKey,
                 storedInntekt.inntekt,
-                ManueltRedigert.from(true, "user")
+                ManueltRedigert.from(true, "user"),
+                any()
             )
         } returns storedInntekt
 
