@@ -1,17 +1,16 @@
 package no.nav.dagpenger.inntekt.db
 
+import com.zaxxer.hikari.HikariDataSource
 import io.kotlintest.shouldBe
 import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.Configuration
-import no.nav.dagpenger.inntekt.DataSource
 import no.nav.dagpenger.inntekt.dummyConfigs
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
-import no.nav.dagpenger.inntekt.withCleanDb
-import no.nav.dagpenger.inntekt.withMigratedDb
 import no.nav.dagpenger.inntekt.withProps
 import org.junit.Test
+import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -25,7 +24,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(7, migrations, "Wrong number of migrations")
+            assertEquals(6, migrations, "Wrong number of migrations")
         }
     }
 
@@ -43,7 +42,7 @@ internal class PostgresTest {
     fun `Migration of testdata `() {
         withCleanDb {
             val migrations = migrate(DataSource.instance, locations = listOf("db/migration", "db/testdata"))
-            assertEquals(11, migrations, "Wrong number of migrations")
+            assertEquals(10, migrations, "Wrong number of migrations")
         }
     }
 
@@ -179,6 +178,7 @@ internal class PostgresInntektStoreTest {
 
     @Test
     fun ` Getting beregningsdato for unknown inntektId should throw error`() {
+
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
                 val result = runCatching {
@@ -191,6 +191,7 @@ internal class PostgresInntektStoreTest {
     }
     @Test
     fun ` Should mark an inntekt as used `() {
+
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
                 val hentInntektListeResponse = InntektkomponentResponse(
@@ -199,8 +200,34 @@ internal class PostgresInntektStoreTest {
                 )
                 val storedInntekt = insertInntekt(BehandlingsKey("1234", 12345, LocalDate.now()), hentInntektListeResponse)
                 val updated = markerInntektBrukt(storedInntekt.inntektId)
+                val updatedSecond = markerInntektBrukt(storedInntekt.inntektId)
                 updated shouldBe 1
+                updatedSecond shouldBe 0
             }
+        }
+    }
+}
+
+private fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }
+
+private fun withMigratedDb(test: () -> Unit) =
+    DataSource.instance.also { clean(it) }.also { migrate(it) }.run { test() }
+
+private object PostgresContainer {
+    val instance by lazy {
+        PostgreSQLContainer<Nothing>("postgres:11.2").apply {
+            start()
+        }
+    }
+}
+
+private object DataSource {
+    val instance: HikariDataSource by lazy {
+        HikariDataSource().apply {
+            username = PostgresContainer.instance.username
+            password = PostgresContainer.instance.password
+            jdbcUrl = PostgresContainer.instance.jdbcUrl
+            connectionTimeout = 1000L
         }
     }
 }

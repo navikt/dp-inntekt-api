@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.subsumsjonbrukt
+package no.nav.dagpenger.inntekt.subasumsjonbrukt
 
 import io.prometheus.client.Summary
 import kotlinx.coroutines.CoroutineExceptionHandler
