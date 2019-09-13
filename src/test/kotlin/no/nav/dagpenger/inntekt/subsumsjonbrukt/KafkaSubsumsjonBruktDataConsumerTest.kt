@@ -12,6 +12,7 @@ import no.nav.dagpenger.inntekt.Configuration
 import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.subasumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
 import no.nav.dagpenger.plain.producerConfig
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig

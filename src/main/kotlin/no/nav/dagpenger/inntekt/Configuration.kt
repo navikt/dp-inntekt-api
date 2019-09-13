@@ -4,7 +4,6 @@ import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.ConfigurationProperties
 import com.natpryce.konfig.EnvironmentVariables
 import com.natpryce.konfig.Key
-import com.natpryce.konfig.booleanType
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
@@ -32,8 +31,7 @@ private val localProperties = ConfigurationMap(
         "api.secret" to "secret",
         "api.keys" to "dp-datalaster-inntekt",
         "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
-        "kafka.bootstrap.servers" to "localhost:9092",
-        "vaktmester.aktiv" to true.toString()
+        "kafka.bootstrap.servers" to "localhost:9092"
 
     )
 )
@@ -53,8 +51,7 @@ private val devProperties = ConfigurationMap(
         "application.profile" to "DEV",
         "application.httpPort" to "8099",
         "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
-        "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
-        "vaktmester.aktiv" to true.toString()
+        "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443"
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -82,11 +79,9 @@ data class Configuration(
     val vault: Vault = Vault(),
     val application: Application = Application(),
     val kafka: Kafka = Kafka(),
-    val subsumsjonBruktDataTopic: String = config()[Key("kafka.subsumsjon.brukt.data.topic", stringType)],
-    val aktivVaktmester: Boolean = config().getOrElse(Key("vaktmester.aktiv", booleanType), false)
+    val subsumsjonBruktDataTopic: String = config()[Key("kafka.subsumsjon.brukt.data.topic", stringType)]
 
 ) {
-
     data class Database(
         val host: String = config()[Key("database.host", stringType)],
         val port: String = config()[Key("database.port", stringType)],

@@ -12,10 +12,8 @@ import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 
 import no.nav.dagpenger.inntekt.moshiInstance
-import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
 import java.time.LocalDate
-import java.time.ZonedDateTime
 import javax.sql.DataSource
 
 internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore, HealthCheck {
@@ -98,52 +96,42 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
         }
     }
 
+    override fun insertInntekt(request: BehandlingsKey, inntekt: InntektkomponentResponse): StoredInntekt =
+        insertInntekt(request, inntekt, null)
+
     override fun insertInntekt(
         request: BehandlingsKey,
         inntekt: InntektkomponentResponse,
-        manueltRedigert: ManueltRedigert?,
-        created: ZonedDateTime
+        manueltRedigert: ManueltRedigert?
     ): StoredInntekt {
         try {
-
             val inntektId = InntektId(ulidGenerator.nextULID())
             using(sessionOf(dataSource)) { session ->
                 session.transaction { tx ->
                     tx.run(
                         queryOf(
-                            "INSERT INTO inntekt_V1 (id, inntekt, manuelt_redigert, timestamp) VALUES (:id, :data, :manuelt, :created)", mapOf(
-                                "id" to inntektId.id,
-                                "created" to created,
-                                "data" to PGobject().apply {
-                                    type = "jsonb"
-                                    value = adapter.toJson(inntekt)
-                                },
-                                when (manueltRedigert) {
-                                    null -> "manuelt" to false
-                                    else -> "manuelt" to true
-                                }
-                            )
-
+                            "INSERT INTO inntekt_V1 (id, inntekt, manuelt_redigert) VALUES (?, (to_json(?::json)), ?)",
+                            inntektId.id,
+                            adapter.toJson(inntekt),
+                            manueltRedigert?.let { true } ?: false
                         ).asUpdate
                     )
                     tx.run(
                         queryOf(
-                            "INSERT INTO inntekt_V1_arena_mapping VALUES (:id, :aktor, :vedtak, :beregningsdato)", mapOf(
-                                "id" to inntektId.id,
-                                "aktor" to request.aktørId,
-                                "vedtak" to request.vedtakId,
-                                "beregningsdato" to request.beregningsDato
-                            )
+                            "INSERT INTO inntekt_V1_arena_mapping VALUES (?, ?, ?, ?)",
+                            inntektId.id,
+                            request.aktørId,
+                            request.vedtakId,
+                            request.beregningsDato
                         ).asUpdate
                     )
 
                     manueltRedigert?.let {
                         tx.run(
                             queryOf(
-                                "INSERT INTO inntekt_V1_manuelt_redigert VALUES(:id,:redigert)", mapOf(
-                                    "id" to inntektId.id,
-                                    "redigert" to it.redigertAv
-                                )
+                                "INSERT INTO inntekt_V1_manuelt_redigert VALUES(?,?)",
+                                inntektId.id,
+                                it.redigertAv
                             ).asUpdate
                         )
                     }
@@ -161,9 +149,8 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                 session.transaction { tx ->
                     tx.run(
                         queryOf(
-                            """
-                                UPDATE inntekt_V1 SET brukt = true WHERE id = :id;
-                            """.trimIndent(),
+                            "UPDATE inntekt_V1 SET brukt = true WHERE id = :id AND NOT EXISTS (" +
+                                "   SELECT 1 FROM inntekt_V1 WHERE brukt = true AND id = :id" + ");",
                             mapOf("id" to inntektId.id)
                         ).asUpdate
                     )
