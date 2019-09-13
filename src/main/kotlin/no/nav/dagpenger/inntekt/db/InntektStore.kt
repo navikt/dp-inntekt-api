@@ -5,13 +5,14 @@ import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 interface InntektStore {
     fun getInntekt(inntektId: InntektId): StoredInntekt
     fun getInntektId(request: BehandlingsKey): InntektId?
     fun getBeregningsdato(inntektId: InntektId): LocalDate
-    fun insertInntekt(request: BehandlingsKey, inntekt: InntektkomponentResponse, manueltRedigert: ManueltRedigert?): StoredInntekt
-    fun insertInntekt(request: BehandlingsKey, inntekt: InntektkomponentResponse): StoredInntekt
+    fun insertInntekt(request: BehandlingsKey, inntekt: InntektkomponentResponse, manueltRedigert: ManueltRedigert? = null, created: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)): StoredInntekt
     fun getManueltRedigert(inntektId: InntektId): ManueltRedigert?
     fun markerInntektBrukt(inntektId: InntektId): Int
 }
