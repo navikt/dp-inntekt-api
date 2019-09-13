@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.subsumsjonbrukt
 
+import io.prometheus.client.Summary
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +22,11 @@ import java.time.Duration
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import kotlin.coroutines.CoroutineContext
+
+private val markerInntektTimer = Summary.build()
+    .name("marker_inntekt_brukt")
+    .help("Hvor lang tid det tar å markere en inntekt brukt (i sekunder")
+    .create()
 
 internal class KafkaSubsumsjonBruktDataConsumer(
     private val config: Configuration,
@@ -77,7 +83,13 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                     records.asSequence()
                         .map { record -> Packet(record.value()) }
                         .map { packet -> InntektId(packet.getMapValue("faktum")["inntektsId"] as String) }
-                        .forEach { id -> if (inntektStore.markerInntektBrukt(id) == 1) logger.info("Marked inntekt with id $id as used") }
+                        .forEach { id ->
+                            val timer = markerInntektTimer.startTimer()
+                            if (inntektStore.markerInntektBrukt(id) == 1) {
+                                logger.info("Marked inntekt with id $id as used")
+                            }
+                            timer.observeDuration()
+                        }
                     consumer.commitSync()
                 }
             }
@@ -86,7 +98,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(
 
     override fun status(): HealthStatus {
         return if (job.isActive) HealthStatus.UP else {
-            if (grace.expired()) {
+            return if (grace.expired()) {
                 HealthStatus.DOWN
             } else {
                 HealthStatus.UP
