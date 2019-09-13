@@ -5,7 +5,10 @@ import de.huxhorn.sulky.ulid.ULID
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
+import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.BehandlingsKey
+import no.nav.dagpenger.inntekt.HealthCheck
+import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 
 import no.nav.dagpenger.inntekt.moshiInstance
@@ -13,7 +16,8 @@ import org.postgresql.util.PSQLException
 import java.time.LocalDate
 import javax.sql.DataSource
 
-internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore {
+internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore, HealthCheck {
+    private val LOGGER = KotlinLogging.logger {}
 
     override fun getManueltRedigert(inntektId: InntektId): ManueltRedigert? {
         try {
@@ -154,6 +158,15 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
+        }
+    }
+
+    override fun status(): HealthStatus {
+        return try {
+            using(sessionOf(dataSource)) { session -> session.run(queryOf(""" SELECT 1""").asExecute) }.let { HealthStatus.UP }
+        } catch (p: PSQLException) {
+            LOGGER.error("Failed health check", p)
+            return HealthStatus.DOWN
         }
     }
 }

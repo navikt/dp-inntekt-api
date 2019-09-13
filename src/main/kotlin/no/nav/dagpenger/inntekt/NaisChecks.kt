@@ -2,6 +2,7 @@ package no.nav.dagpenger.inntekt
 
 import io.ktor.application.call
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.response.respondText
 import io.ktor.response.respondTextWriter
 import io.ktor.routing.Routing
@@ -11,9 +12,10 @@ import io.prometheus.client.exporter.common.TextFormat
 
 private val collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
 
-fun Routing.naischecks() {
+fun Routing.naischecks(healthChecks: List<HealthCheck>) {
     get("/isAlive") {
-        call.respondText("ALIVE", ContentType.Text.Plain)
+        if (healthChecks.all { it.status() == HealthStatus.UP }) call.respondText("ALIVE", ContentType.Text.Plain) else
+            call.response.status(HttpStatusCode.ServiceUnavailable)
     }
     get("/isReady") {
         call.respondText("READY", ContentType.Text.Plain)
