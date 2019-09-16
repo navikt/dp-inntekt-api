@@ -17,6 +17,7 @@ import no.nav.dagpenger.plain.consumerConfig
 import no.nav.dagpenger.streams.KafkaCredential
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.errors.RetriableException
 import org.apache.kafka.common.serialization.StringDeserializer
 import java.time.Duration
 import java.time.ZoneOffset
@@ -77,20 +78,24 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                     it[ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG] = 20000
                 }
             ).use { consumer ->
-                consumer.subscribe(listOf(config.subsumsjonBruktDataTopic))
-                while (job.isActive) {
-                    val records = consumer.poll(Duration.ofMillis(100))
-                    records.asSequence()
-                        .map { record -> Packet(record.value()) }
-                        .map { packet -> InntektId(packet.getMapValue("faktum")["inntektsId"] as String) }
-                        .forEach { id ->
-                            val timer = markerInntektTimer.startTimer()
-                            if (inntektStore.markerInntektBrukt(id) == 1) {
-                                logger.info("Marked inntekt with id $id as used")
+                try {
+                    consumer.subscribe(listOf(config.subsumsjonBruktDataTopic))
+                    while (job.isActive) {
+                        val records = consumer.poll(Duration.ofMillis(100))
+                        records.asSequence()
+                            .map { record -> Packet(record.value()) }
+                            .map { packet -> InntektId(packet.getMapValue("faktum")["inntektsId"] as String) }
+                            .forEach { id ->
+                                val timer = markerInntektTimer.startTimer()
+                                if (inntektStore.markerInntektBrukt(id) == 1) {
+                                    logger.info("Marked inntekt with id $id as used")
+                                }
+                                timer.observeDuration()
                             }
-                            timer.observeDuration()
-                        }
-                    consumer.commitSync()
+                        consumer.commitSync()
+                    }
+                } catch (e: RetriableException) {
+                    logger.warn("Kafka threw a retriable exception, looping back", e)
                 }
             }
         }
