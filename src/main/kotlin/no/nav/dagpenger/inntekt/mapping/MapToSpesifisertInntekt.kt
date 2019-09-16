@@ -11,8 +11,9 @@ import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
 import java.time.LocalDateTime
+import java.time.YearMonth
 
-fun mapToSpesifisertInntekt(storedInntekt: StoredInntekt) =
+fun mapToSpesifisertInntekt(storedInntekt: StoredInntekt, sisteAvsluttendeKalenderMåned: YearMonth) =
     SpesifisertInntekt(
         inntektId = InntektId(storedInntekt.inntektId.id),
         ident = Aktør(
@@ -21,7 +22,8 @@ fun mapToSpesifisertInntekt(storedInntekt: StoredInntekt) =
         avvik = mapAvvik(storedInntekt.inntekt.arbeidsInntektMaaned),
         posteringer = mapToPosteringer(storedInntekt.inntekt.arbeidsInntektMaaned),
         manueltRedigert = storedInntekt.manueltRedigert,
-        timestamp = storedInntekt.timestamp ?: LocalDateTime.now()
+        timestamp = storedInntekt.timestamp ?: LocalDateTime.now(),
+        sisteAvsluttendeKalenderMåned = sisteAvsluttendeKalenderMåned
     )
 
 private fun mapAvvik(list: List<ArbeidsInntektMaaned>?) =

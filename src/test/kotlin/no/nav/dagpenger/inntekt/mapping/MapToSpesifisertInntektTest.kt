@@ -170,6 +170,7 @@ private val spesifisertInntekt = SpesifisertInntekt(
             posteringsType = PosteringsType.L_FASTLØNN_H
         )
     ),
+    sisteAvsluttendeKalenderMåned = YearMonth.of(2019, 9),
     ident = Aktør(AktørType.AKTOER_ID, "aktorId"),
     manueltRedigert = false,
     timestamp = LocalDateTime.of(2019, 7, 14, 1, 1, 1, 1)
@@ -180,7 +181,7 @@ class MapToSpesifisertInntektTest {
     @Test
     fun `Map inntekt to spesifisertInntekt`() {
 
-        val mappedSpesifisertInntekt = mapToSpesifisertInntekt(storedInntekt)
+        val mappedSpesifisertInntekt = mapToSpesifisertInntekt(storedInntekt, YearMonth.of(2019, 9))
 
         assertEquals(spesifisertInntekt, mappedSpesifisertInntekt)
     }
