@@ -2,6 +2,7 @@ package no.nav.dagpenger.inntekt.db
 
 import com.squareup.moshi.JsonAdapter
 import de.huxhorn.sulky.ulid.ULID
+import io.prometheus.client.Summary
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -21,6 +22,12 @@ import javax.sql.DataSource
 internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore, HealthCheck {
     private val LOGGER = KotlinLogging.logger {}
 
+    companion object {
+        private val markerInntektTimer = Summary.build()
+            .name("marker_inntekt_brukt")
+            .help("Hvor lang tid det tar å markere en inntekt brukt (i sekunder")
+            .register()
+    }
     override fun getManueltRedigert(inntektId: InntektId): ManueltRedigert? {
         try {
             return using(sessionOf(dataSource)) { session ->
@@ -156,6 +163,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
     }
 
     override fun markerInntektBrukt(inntektId: InntektId): Int {
+        val timer = markerInntektTimer.startTimer()
         try {
             return using(sessionOf(dataSource)) { session ->
                 session.transaction { tx ->
@@ -171,6 +179,8 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
+        } finally {
+            timer.observeDuration()
         }
     }
 
