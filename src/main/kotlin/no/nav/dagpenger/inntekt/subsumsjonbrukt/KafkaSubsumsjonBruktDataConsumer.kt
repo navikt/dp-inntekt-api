@@ -27,7 +27,7 @@ import kotlin.coroutines.CoroutineContext
 private val markerInntektTimer = Summary.build()
     .name("marker_inntekt_brukt")
     .help("Hvor lang tid det tar å markere en inntekt brukt (i sekunder")
-    .create()
+    .register()
 
 internal class KafkaSubsumsjonBruktDataConsumer(
     private val config: Configuration,
@@ -56,7 +56,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(
         logger.error(exception) { "Caught unhandled exception in $SERVICE_APP_ID. Will keep running!" }
     }
 
-    suspend fun listen() {
+    fun listen() {
         launch {
             val creds = config.kafka.user?.let { u ->
                 config.kafka.password?.let { p ->
@@ -75,7 +75,6 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                     it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
                     it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = "false"
                     it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
-                    it[ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG] = 20000
                 }
             ).use { consumer ->
                 try {
