@@ -1,7 +1,5 @@
 package no.nav.dagpenger.inntekt.subsumsjonbrukt
 
-import io.prometheus.client.Summary
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -24,11 +22,6 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import kotlin.coroutines.CoroutineContext
 
-private val markerInntektTimer = Summary.build()
-    .name("marker_inntekt_brukt")
-    .help("Hvor lang tid det tar å markere en inntekt brukt (i sekunder")
-    .register()
-
 internal class KafkaSubsumsjonBruktDataConsumer(
     private val config: Configuration,
     private val inntektStore: InntektStore
@@ -37,7 +30,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     private val SERVICE_APP_ID = "dp-inntekt-api-consumer"
     private val logger = KotlinLogging.logger { }
     override val coroutineContext: CoroutineContext
-        get() = Dispatchers.IO + job + handler
+        get() = Dispatchers.IO + job
 
     val grace by lazy {
         Grace()
@@ -50,10 +43,6 @@ internal class KafkaSubsumsjonBruktDataConsumer(
 
     private val job: Job by lazy {
         Job()
-    }
-
-    private val handler = CoroutineExceptionHandler { _, exception ->
-        logger.error(exception) { "Caught unhandled exception in $SERVICE_APP_ID. Will keep running!" }
     }
 
     fun listen() {
@@ -85,17 +74,18 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                             .map { record -> Packet(record.value()) }
                             .map { packet -> InntektId(packet.getMapValue("faktum")["inntektsId"] as String) }
                             .forEach { id ->
-                                val timer = markerInntektTimer.startTimer()
                                 if (inntektStore.markerInntektBrukt(id) == 1) {
                                     logger.info("Marked inntekt with id $id as used")
                                 }
-                                timer.observeDuration()
                             }
                         consumer.commitSync()
                     }
                 } catch (e: RetriableException) {
                     logger.warn("Kafka threw a retriable exception, looping back", e)
-                }
+                } catch (e: Exception) {
+                    logger.error("Unexpected exception while consuming messages. Stopping", e)
+                    stop()
+        }
             }
         }
     }
