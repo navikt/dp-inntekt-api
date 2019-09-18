@@ -5,6 +5,7 @@ import io.ktor.application.Application
 import io.mockk.mockk
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
+import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
@@ -16,7 +17,8 @@ internal fun mockInntektApi(
     behandlingsInntektsGetter: BehandlingsInntektsGetter = mockk(),
     oppslagClient: OppslagClient = mockk(),
     apiAuthApiKeyVerifier: AuthApiKeyVerifier = mockk(relaxed = true),
-    jwkProvider: JwkProvider = mockk(relaxed = true)
+    jwkProvider: JwkProvider = mockk(relaxed = true),
+    healthChecks: List<HealthCheck> = emptyList()
 ): Application.() -> Unit {
     return fun Application.() {
         inntektApi(
@@ -26,7 +28,7 @@ internal fun mockInntektApi(
             oppslagClient = oppslagClient,
             apiAuthApiKeyVerifier = apiAuthApiKeyVerifier,
             jwkProvider = jwkProvider,
-            healthChecks = emptyList()
+            healthChecks = healthChecks
         )
     }
 }
