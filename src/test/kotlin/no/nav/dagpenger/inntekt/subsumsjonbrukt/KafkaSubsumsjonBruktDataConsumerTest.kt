@@ -31,6 +31,16 @@ class KafkaSubsumsjonBruktDataConsumerTest {
         }
     }
 
+    private val producer by lazy {
+        KafkaProducer<String, String>(
+            producerConfig(
+                clientId = "test",
+                bootstrapServers = Kafka.instance.bootstrapServers
+            ).also {
+                it[ProducerConfig.ACKS_CONFIG] = "all"
+                it[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
+            })
+    }
     private val adapter = moshiInstance.adapter<Map<String, Any?>>(Map::class.java).lenient()
     @Test
     fun `Should mark inntekt id as used`() {
@@ -45,15 +55,6 @@ class KafkaSubsumsjonBruktDataConsumerTest {
             val consumer = KafkaSubsumsjonBruktDataConsumer(config, storeMock).apply {
                 listen()
             }
-
-            val producer = KafkaProducer<String, String>(
-                producerConfig(
-                    clientId = "test",
-                    bootstrapServers = Kafka.instance.bootstrapServers
-                ).also {
-                    it[ProducerConfig.ACKS_CONFIG] = "all"
-                    it[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
-                })
 
             val id = ULID().nextULID()
             val bruktSubsumsjonData = mapOf("faktum" to mapOf("inntektsId" to id))
@@ -85,15 +86,6 @@ class KafkaSubsumsjonBruktDataConsumerTest {
             val consumer = KafkaSubsumsjonBruktDataConsumer(config, storeMock).apply {
                 listen()
             }
-
-            val producer = KafkaProducer<String, String>(
-                producerConfig(
-                    clientId = "test",
-                    bootstrapServers = Kafka.instance.bootstrapServers
-                ).also {
-                    it[ProducerConfig.ACKS_CONFIG] = "all"
-                    it[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
-                })
 
             val illegalInntektId = "bla bla bla" // should
             val bruktSubsumsjonData = mapOf("faktum" to mapOf("inntektsId" to illegalInntektId))

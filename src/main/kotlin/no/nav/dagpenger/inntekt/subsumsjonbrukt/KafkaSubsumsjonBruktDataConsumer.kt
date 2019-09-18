@@ -13,10 +13,11 @@ import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.plain.consumerConfig
 import no.nav.dagpenger.streams.KafkaCredential
+import no.nav.dagpenger.streams.PacketDeserializer
+import org.apache.kafka.clients.consumer.CommitFailedException
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.errors.RetriableException
-import org.apache.kafka.common.serialization.StringDeserializer
 import java.time.Duration
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -36,7 +37,10 @@ internal class KafkaSubsumsjonBruktDataConsumer(
         Grace()
     }
 
-    data class Grace(val duration: Duration = Duration.ofHours(3), val from: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)) {
+    data class Grace(
+        val duration: Duration = Duration.ofHours(3),
+        val from: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
+    ) {
         private val expires = from.plus(duration)
         fun expired() = ZonedDateTime.now(ZoneOffset.UTC).isAfter(expires)
     }
@@ -54,13 +58,13 @@ internal class KafkaSubsumsjonBruktDataConsumer(
             }
             logger.info { "Starting $SERVICE_APP_ID" }
 
-            KafkaConsumer<String, String>(
+            KafkaConsumer<String, Packet>(
                 consumerConfig(
                     groupId = SERVICE_APP_ID,
                     bootstrapServerUrl = config.kafka.brokers,
                     credential = creds
                 ).also {
-                    it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
+                    it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = PacketDeserializer::class.java
                     it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
                     it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = "false"
                     it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
@@ -70,22 +74,30 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                     consumer.subscribe(listOf(config.subsumsjonBruktDataTopic))
                     while (job.isActive) {
                         val records = consumer.poll(Duration.ofMillis(100))
-                        records.asSequence()
-                            .map { record -> Packet(record.value()) }
+                        val ids = records.asSequence()
+                            .map { record -> record.value() }
                             .map { packet -> InntektId(packet.getMapValue("faktum")["inntektsId"] as String) }
-                            .forEach { id ->
+                            .toList()
+
+                        try {
+                            ids.forEach { id ->
                                 if (inntektStore.markerInntektBrukt(id) == 1) {
                                     logger.info("Marked inntekt with id $id as used")
                                 }
                             }
-                        consumer.commitSync()
+                            if (ids.isNotEmpty()) {
+                                consumer.commitSync()
+                            }
+                        } catch (e: CommitFailedException) {
+                            logger.warn("Kafka threw a commit fail exception, looping back", e)
+                        }
                     }
                 } catch (e: RetriableException) {
                     logger.warn("Kafka threw a retriable exception, looping back", e)
                 } catch (e: Exception) {
                     logger.error("Unexpected exception while consuming messages. Stopping", e)
                     stop()
-        }
+                }
             }
         }
     }
