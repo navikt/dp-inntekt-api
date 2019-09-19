@@ -18,6 +18,7 @@ import org.apache.kafka.clients.consumer.CommitFailedException
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.errors.RetriableException
+import java.sql.SQLTransientConnectionException
 import java.time.Duration
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -92,11 +93,17 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                             logger.warn("Kafka threw a commit fail exception, looping back", e)
                         }
                     }
-                } catch (e: RetriableException) {
-                    logger.warn("Kafka threw a retriable exception, looping back", e)
                 } catch (e: Exception) {
-                    logger.error("Unexpected exception while consuming messages. Stopping", e)
-                    stop()
+                    when (e) {
+                        is RetriableException,
+                        is SQLTransientConnectionException -> {
+                            logger.warn("Retriable exception, looping back", e)
+                        }
+                        else -> {
+                            logger.error("Unexpected exception while consuming messages. Stopping", e)
+                            stop()
+                        }
+                    }
                 }
             }
         }
