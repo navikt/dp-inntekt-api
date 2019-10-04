@@ -21,11 +21,9 @@ parse_command_line() {
   while [ "$1" != "" ]; do
     case $1 in
         -j | --jobname )        shift 
-                                echo $1
                                 job_name=$1
                                 ;;
         -p | --overlayPath)     shift 
-                                echo $1
                                 overlay_path=$1
                                 ;;
         -h | --help )           usage
