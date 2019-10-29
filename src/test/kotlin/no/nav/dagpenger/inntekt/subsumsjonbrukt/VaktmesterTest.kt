@@ -106,7 +106,6 @@ internal class VaktmesterTest {
             } ?: AssertionError("Could not find metric")
     }
 
-
     @Test
     fun `Skal kun slette manuelt redigerte, ubrukte inntekter som er eldre enn 90 dager`() {
         withMigratedDb {
@@ -124,7 +123,6 @@ internal class VaktmesterTest {
             vaktmester.rydd()
             assertThrows<InntektNotFoundException> { inntektStore.getInntekt(ubruktEldreEnn90Dager.inntektId) }
             inntektStore.getManueltRedigert(ubruktEldreEnn90Dager.inntektId) shouldBe null
-
         }
     }
 }
