@@ -7,6 +7,7 @@ import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.DataSource
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
+import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
@@ -103,5 +104,27 @@ internal class VaktmesterTest {
                 metric.samples[0].value shouldNotBe null
                 metric.samples[0].value shouldBeGreaterThan 0.0
             } ?: AssertionError("Could not find metric")
+    }
+
+
+    @Test
+    fun `Skal kun slette manuelt redigerte, ubrukte inntekter som er eldre enn 90 dager`() {
+        withMigratedDb {
+            val inntektStore = PostgresInntektStore(DataSource.instance)
+            val ubruktEldreEnn90Dager = inntektStore.insertInntekt(
+                request = behandlingsKey,
+                inntekt = inntekter,
+                created = ZonedDateTime.now().minusMonths(4),
+                manueltRedigert = ManueltRedigert(
+                    redigertAv = "test"
+                )
+            )
+
+            val vaktmester = Vaktmester(DataSource.instance)
+            vaktmester.rydd()
+            assertThrows<InntektNotFoundException> { inntektStore.getInntekt(ubruktEldreEnn90Dager.inntektId) }
+            inntektStore.getManueltRedigert(ubruktEldreEnn90Dager.inntektId) shouldBe null
+
+        }
     }
 }
