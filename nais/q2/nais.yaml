@@ -9,7 +9,9 @@ spec:
   - name: DATABASE_NAME
     value: dp-inntekt-api-q2
   - name: KAFKA_SUBSUMSJON_BRUKT_DATA_TOPIC
-    value: privat-dagpenger-subsumsjon-brukt-data-q2
+    value: "privat-dagpenger-subsumsjon-brukt-data-q2"
   - name: HENTINNTEKTLISTE_URL
     value: "https://app-q2.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste"
+  - name: APPLICATION_ID
+    value: "dp-inntekt-api-consumer-q2"
 

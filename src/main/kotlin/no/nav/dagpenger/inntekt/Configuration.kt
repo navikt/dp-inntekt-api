@@ -109,6 +109,7 @@ data class Configuration(
     }
 
     data class Application(
+        val id: String = config().getOrElse(Key("application.id", stringType), "dp-inntekt-api-consumer"),
         val profile: Profile = config()[Key("application.profile", stringType)].let { Profile.valueOf(it) },
         val httpPort: Int = config()[Key("application.httpPort", intType)],
         val username: String = config()[Key("srvdp.inntekt.api.username", stringType)],
