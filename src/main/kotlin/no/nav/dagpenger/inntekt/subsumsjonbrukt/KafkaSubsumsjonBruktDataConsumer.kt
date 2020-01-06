@@ -29,7 +29,6 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     private val inntektStore: InntektStore
 ) : CoroutineScope, HealthCheck {
 
-    private val SERVICE_APP_ID = "dp-inntekt-api-consumer"
     private val logger = KotlinLogging.logger { }
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
@@ -57,11 +56,11 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                     KafkaCredential(username = u, password = p)
                 }
             }
-            logger.info { "Starting $SERVICE_APP_ID" }
+            logger.info { "Starting ${config.application.id}" }
 
             KafkaConsumer<String, Packet>(
                 consumerConfig(
-                    groupId = SERVICE_APP_ID,
+                    groupId = config.application.id,
                     bootstrapServerUrl = config.kafka.brokers,
                     credential = creds
                 ).also {
@@ -120,7 +119,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     }
 
     fun stop() {
-        logger.info { "Stopping $SERVICE_APP_ID consumer" }
+        logger.info { "Stopping ${config.application.id} consumer" }
         job.cancel()
     }
 }
