@@ -7,7 +7,7 @@ spec:
   - name: DATABASE_HOST
     value: b27dbvl009.preprod.local
   - name: DATABASE_NAME
-    value: dp-inntekt-api-q2
+    value: dp-inntekt-db-q2
   - name: KAFKA_SUBSUMSJON_BRUKT_DATA_TOPIC
     value: "privat-dagpenger-subsumsjon-brukt-data-q2"
   - name: HENTINNTEKTLISTE_URL
