@@ -33,6 +33,12 @@ private val clientFetchErrors = Counter.build()
     .help("Number of times fetching form inntektskomponenten has failed")
     .register()
 
+const val INNTEKTSKOMPONENT_STATUS_CODES= "inntektskomponent_status_codes"
+private val inntektskomponentStatusCodesCounter = Counter.build()
+    .name(INNTEKTSKOMPONENT_STATUS_CODES)
+    .help("Number of times inntektskomponenten has returned a specific status code")
+    .register()
+
 class InntektskomponentHttpClient(
     private val hentInntektlisteUrl: String,
     private val oidcClient: OidcClient
@@ -65,6 +71,8 @@ class InntektskomponentHttpClient(
                 body(jsonBody)
                 awaitResponseResult(moshiDeserializerOf(jsonResponseAdapter))
             }
+
+            inntektskomponentStatusCodesCounter.labels(response.statusCode.toString()).inc()
 
             return result.fold({
                 it
