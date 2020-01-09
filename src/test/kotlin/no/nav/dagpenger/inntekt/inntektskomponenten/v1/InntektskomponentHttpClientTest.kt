@@ -200,7 +200,7 @@ internal class InntektskomponentHttpClientTest {
         result.isFailure.shouldBeTrue()
         result.shouldBeClientException<InntektskomponentenHttpClientException>(
             status = 500,
-            message = "Failed to fetch inntekt. Response message: . Problem message: Read timed out"
+            message = "Failed to fetch inntekt. Status code -1. Response message: . Problem message: Read timed out"
         )
 
         shouldBeCounted(metricName = INNTEKTSKOMPONENT_FETCH_ERROR)
@@ -239,7 +239,7 @@ internal class InntektskomponentHttpClientTest {
         result.isFailure.shouldBeTrue()
         result.shouldBeClientException<InntektskomponentenHttpClientException>(
             status = 500,
-            message = "Failed to fetch inntekt. Response message: Server Error. Problem message: Feil i filtrering: En feil oppstod i filteret DagpengerGrunnlagA-Inntekt, Regel no.nav.inntektskomponenten.filter.regler.dagpenger.DagpengerHovedregel støtter ikke inntekter av type no.nav.inntektskomponenten.domain.Loennsinntekt",
+            message = "Failed to fetch inntekt. Status code 500. Response message: Server Error. Problem message: Feil i filtrering: En feil oppstod i filteret DagpengerGrunnlagA-Inntekt, Regel no.nav.inntektskomponenten.filter.regler.dagpenger.DagpengerHovedregel støtter ikke inntekter av type no.nav.inntektskomponenten.domain.Loennsinntekt",
             detail = "Feil i filtrering: En feil oppstod i filteret DagpengerGrunnlagA-Inntekt, Regel no.nav.inntektskomponenten.filter.regler.dagpenger.DagpengerHovedregel støtter ikke inntekter av type no.nav.inntektskomponenten.domain.Loennsinntekt"
         )
     }
