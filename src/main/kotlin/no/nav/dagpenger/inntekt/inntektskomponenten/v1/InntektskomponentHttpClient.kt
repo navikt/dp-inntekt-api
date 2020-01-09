@@ -37,6 +37,7 @@ const val INNTEKTSKOMPONENT_STATUS_CODES = "inntektskomponent_status_codes"
 private val inntektskomponentStatusCodesCounter = Counter.build()
     .name(INNTEKTSKOMPONENT_STATUS_CODES)
     .help("Number of times inntektskomponenten has returned a specific status code")
+    .labelNames("status_code")
     .register()
 
 class InntektskomponentHttpClient(
