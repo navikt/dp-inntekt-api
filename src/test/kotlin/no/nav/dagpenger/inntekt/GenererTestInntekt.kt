@@ -1,51 +1,73 @@
 package no.nav.dagpenger.inntekt
 
 import no.nav.dagpenger.events.inntekt.v1.PosteringsType
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.mapping.toPosteringsTypeGrunnlag
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.YearMonth
 
 class GenererTestInntekt {
 
+    val adapter = moshiInstance.adapter(InntektBeskrivelse::class.java)
 
     @Test
     fun `generer inntekt`() {
-        val posteringstyper = listOf(PosteringsType.L_AKSJER_GRUNNFONDSBEVIS_TIL_UNDERKURS, PosteringsType.L_ANNET, PosteringsType.L_BEREGNET_SKATT, PosteringsType.L_BIL, PosteringsType.L_ARBEIDSOPPHOLD_KOST, PosteringsType.L_BIL, PosteringsType.L_FERIEPENGER)
-        val beløp = 45
-        //val måned = neste måned
-        val måned = LocalDate.now().toString()
+        val måneder = (36L downTo 1L).map { YearMonth.from(LocalDate.now().minusMonths(it)) }
+        val posteringstyper = listOf(
+            PosteringsType.L_AKSJER_GRUNNFONDSBEVIS_TIL_UNDERKURS,
+            PosteringsType.L_ANNET,
+            PosteringsType.L_BEREGNET_SKATT,
+            PosteringsType.L_BIL,
+            PosteringsType.L_ARBEIDSOPPHOLD_KOST,
+            PosteringsType.L_BIL,
+            PosteringsType.L_FERIEPENGER
+        )
 
-        val posteringer = posteringstyper.subList(0, 5)
+        val resultat = måneder.fold("") { månedsjson, måned ->
+            val beløp = (1000..10_000).random()
 
-        val inntektListe = posteringer.fold("") { sum, postering ->
-            val posteringsTypeGrunnlag = toPosteringsTypeGrunnlag(postering)
-            val beskrivelse = posteringsTypeGrunnlag.beskrivelse.toString()
-            val type = posteringsTypeGrunnlag.type.toString()
+            val posteringer = posteringstyper.subList(0, 5)
 
-            sum + genererInntekt(beløp, beskrivelse, type)
+            val inntektListe = posteringer.fold("") { sum, postering ->
+                val posteringsTypeGrunnlag = toPosteringsTypeGrunnlag(postering)
+                val beskrivelse = adapter.toJson(posteringsTypeGrunnlag.beskrivelse)
+                val type = posteringsTypeGrunnlag.type.toString()
+
+                sum + genererInntekt(beløp, beskrivelse, type)
+            }
+
+            val inntektJson = "[${inntektListe.dropLast(1)}]"
+
+            månedsjson + "${genererInntektMåned(inntektJson, måned.toString())},"
         }
 
-        val inntektJson = "[${inntektListe.dropLast(1)}]"
+        val månedsjson = resultat.dropLast(1)
 
-        val result = "{${genererInntektMåned(inntektJson, måned)}}"
-
-        println(result)
-    }
-
-    private fun genererInntektMåned(inntektListe: String, måned: String): String {
-        return """
+        val json = """
+            {
             "arbeidsInntektMaaned": [
-                {
-                  "aarMaaned": "$måned",
-                  "arbeidsInntektInformasjon": {
-                    "inntektListe": $inntektListe
-                  }
-                }
+                $månedsjson
               ],
               "ident": {
                 "identifikator": "8888888888",
                 "aktoerType": "AKTOER_ID"
               }
+            }
+        """.trimIndent()
+
+        println(json)
+    }
+
+    private fun genererInntektMåned(inntektListe: String, måned: String): String {
+        return """
+            {
+                  "aarMaaned": "$måned",
+                  "arbeidsInntektInformasjon": {
+                    "inntektListe": $inntektListe
+                  }
+                }
+             
         """.trimIndent()
     }
 
@@ -75,7 +97,7 @@ class GenererTestInntekt {
             "inngaarIGrunnlagForTrekk": true,
             "utloeserArbeidsgiveravgift": true,
             "informasjonsstatus": "InngaarAlltid",
-            "beskrivelse": "$beskrivelse"
+            "beskrivelse": $beskrivelse
         },
     """.trimIndent()
     }
