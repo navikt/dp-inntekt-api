@@ -2,4 +2,6 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: dp-inntekt-api
-
+spec:
+  ingresses:
+    - "https://dp-inntekt-api.nais.preprod.local"
