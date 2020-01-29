@@ -1,5 +1,5 @@
-INSERT INTO inntekt_v1(id, inntekt)
-values ('01D8FSKGXWHE1KBXBSR9BBFAMA', '
+INSERT INTO inntekt_v1(id, brukt, inntekt)
+VALUES ('01D8FSKGXWHE1KBXBSR9BBFAMA', TRUE, '
 {
   "arbeidsInntektMaaned": [],
   "ident": {

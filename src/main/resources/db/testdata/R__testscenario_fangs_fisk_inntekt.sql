@@ -1,5 +1,5 @@
-INSERT INTO inntekt_v1(id, inntekt)
-values ('01D8G9HAJRSA552SP8135X387J', '
+INSERT INTO inntekt_v1(id, brukt, inntekt)
+VALUES ('01D8G9HAJRSA552SP8135X387J', TRUE, '
 {
   "arbeidsInntektMaaned": [
     {
