@@ -1,40 +1,7 @@
 INSERT INTO inntekt_v1(id, brukt, inntekt)
 VALUES ('01D8FSKGXWHE1KBXBSR9BBFAMA', TRUE, '
 {
-  "arbeidsInntektMaaned": [
-    {
-      "aarMaaned": "2019-01",
-      "arbeidsInntektInformasjon": {
-        "inntektListe": [
-          {
-            "inntektType": "NAERINGSINNTEKT",
-            "beloep": 250000,
-            "fordel": "kontantytelse",
-            "inntektskilde": "A-ordningen",
-            "inntektsperiodetype": "Maaned",
-            "inntektsstatus": "LoependeInnrapportert",
-            "leveringstidspunkt": "2019-02",
-            "utbetaltIMaaned": "2018-03",
-            "opplysningspliktig": {
-              "identifikator": "1111111",
-              "aktoerType": "ORGANISASJON"
-            },
-            "virksomhet": {
-              "identifikator": "1111111",
-              "aktoerType": "ORGANISASJON"
-            },
-            "inntektsmottaker": {
-              "identifikator": "99999999999",
-              "aktoerType": "NATURLIG_IDENT"
-            },
-            "inngaarIGrunnlagForTrekk": true,
-            "utloeserArbeidsgiveravgift": true,
-            "informasjonsstatus": "InngaarAlltid",
-            "beskrivelse": "lottKunTrygdeavgift"
-          }
-        ]
-      }
-    }],
+  "arbeidsInntektMaaned": [],
   "ident": {
     "identifikator": "-1",
     "aktoerType": "NATURLIG_IDENT"
