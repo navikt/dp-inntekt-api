@@ -1,4 +1,5 @@
 # dagpenger-inntekt-api
+
 Holder kopi av inntekter fra inntektskomponenten for regelkjøring av dagpenger-behov
 
 Er API for inntektsredigeringsverkøyet i https://github.com/navikt/dagpenger-regel-ui
