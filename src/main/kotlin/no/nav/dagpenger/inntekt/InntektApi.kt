@@ -43,6 +43,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClie
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
+import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
 import no.nav.dagpenger.inntekt.v1.InntektNotAuthorizedException
 import no.nav.dagpenger.inntekt.v1.klassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
@@ -57,6 +58,7 @@ import org.slf4j.event.Level
 import java.net.URI
 import java.net.URL
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.fixedRateTimer
 
 private val LOGGER = KotlinLogging.logger {}
 val config = Configuration()
@@ -81,17 +83,17 @@ fun main() = runBlocking {
         listen()
     }
 
-    // val vaktmester = Vaktmester(dataSource)
-    //
-    // fixedRateTimer(
-    //     name = "vaktmester",
-    //     initialDelay = TimeUnit.MINUTES.toMillis(10),
-    //     period = TimeUnit.HOURS.toMillis(12),
-    //     action = {
-    //         LOGGER.info { "Vaktmesteren rydder" }
-    //         vaktmester.rydd()
-    //         LOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
-    //     })
+    val vaktmester = Vaktmester(dataSource)
+
+    fixedRateTimer(
+        name = "vaktmester",
+        initialDelay = TimeUnit.MINUTES.toMillis(10),
+        period = TimeUnit.HOURS.toMillis(12),
+        action = {
+            LOGGER.info { "Vaktmesteren rydder" }
+            vaktmester.rydd()
+            LOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
+        })
 
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
         config.application.hentinntektListeUrl,
