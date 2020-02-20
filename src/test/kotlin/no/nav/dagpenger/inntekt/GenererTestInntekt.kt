@@ -6,9 +6,11 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Avvik
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
 import no.nav.dagpenger.inntekt.mapping.toPosteringsTypeGrunnlag
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -17,22 +19,11 @@ import java.time.YearMonth
 
 class GenererTestInntekt {
 
-    val adapter = moshiInstance.adapter(InntektBeskrivelse::class.java)
-
     @Test
     fun `generer all inntekt`() {
         val måneder = (36L downTo 1L).map { YearMonth.from(LocalDate.now().minusMonths(it)) }
-        val posteringstyper = listOf(
-            PosteringsType.Y_DAGPENGER_VED_ARBEIDSLØSHET,
-            PosteringsType.Y_FORELDREPENGER,
-            PosteringsType.Y_SVANGERSKAPSPENGER,
-            PosteringsType.Y_SYKEPENGER,
-            PosteringsType.Y_SYKEPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE
-        )
 
         var count = 0
-
-        val antallPerMåned = 4
 
         val arbeidsInntektMaaneder = måneder.map { måned ->
             if (count + 4 >= allePosteringer.size) count = allePosteringer.size - 4
@@ -47,7 +38,13 @@ class GenererTestInntekt {
                     inntektsperiodetype = "",
                     utbetaltIMaaned = måned,
                     inntektType = posteringsTypeGrunnlag.type,
-                    virksomhet = Aktoer(AktoerType.ORGANISASJON, "123456789")
+                    virksomhet = Aktoer(AktoerType.ORGANISASJON, "123456789"),
+                    tilleggsinformasjon = posteringsTypeGrunnlag.forhold?.let {
+                        TilleggInformasjon(
+                            null,
+                            TilleggInformasjonsDetaljer(null, it)
+                        )
+                    }
                 )
             }
 
@@ -93,6 +90,59 @@ class GenererTestInntekt {
             val arbeidsInntektInformasjon = ArbeidsInntektInformasjon(inntektListe)
 
             ArbeidsInntektMaaned(måned, emptyList(), arbeidsInntektInformasjon)
+        }
+
+        val inntekt = InntektkomponentResponse(arbeidsInntektMaaneder, Aktoer(AktoerType.AKTOER_ID, "8888888888"))
+        val adapter: JsonAdapter<InntektkomponentResponse> =
+            moshiInstance.adapter(InntektkomponentResponse::class.java)
+        println(adapter.toJson(inntekt))
+    }
+
+    @Test
+    fun `Generer inntekt med avvik`() {
+        val måneder = (36L downTo 1L).map { YearMonth.from(LocalDate.now().minusMonths(it)) }
+        val posteringstyper = listOf(
+            PosteringsType.Y_DAGPENGER_VED_ARBEIDSLØSHET,
+            PosteringsType.Y_FORELDREPENGER,
+            PosteringsType.Y_SVANGERSKAPSPENGER,
+            PosteringsType.Y_SYKEPENGER,
+            PosteringsType.Y_SYKEPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE
+        )
+
+        val arbeidsInntektMaaneder = måneder.mapIndexed { index, måned ->
+            val inntektListe = posteringstyper.map {
+                val posteringsTypeGrunnlag = toPosteringsTypeGrunnlag(it)
+                Inntekt(
+                    beloep = BigDecimal((1000..10_000).random()),
+                    fordel = "",
+                    beskrivelse = posteringsTypeGrunnlag.beskrivelse,
+                    inntektskilde = "",
+                    inntektsstatus = "",
+                    inntektsperiodetype = "",
+                    utbetaltIMaaned = måned,
+                    inntektType = posteringsTypeGrunnlag.type,
+                    virksomhet = Aktoer(AktoerType.ORGANISASJON, "123456789")
+                )
+            }
+
+            val arbeidsInntektInformasjon = ArbeidsInntektInformasjon(inntektListe)
+
+            val avvikListe = if (index == 3 || index == 30) listOf(
+                Avvik(
+                    ident = Aktoer(AktoerType.AKTOER_ID, "123456786910"),
+                    opplysningspliktig = Aktoer(AktoerType.AKTOER_ID, "123456786910"),
+                    avvikPeriode = måned,
+                    virksomhet = null,
+                    tekst = "tekst"
+                )
+            )
+            else emptyList()
+
+            ArbeidsInntektMaaned(
+                aarMaaned = måned,
+                avvikListe = avvikListe,
+                arbeidsInntektInformasjon = arbeidsInntektInformasjon
+            )
         }
 
         val inntekt = InntektkomponentResponse(arbeidsInntektMaaneder, Aktoer(AktoerType.AKTOER_ID, "8888888888"))
