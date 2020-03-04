@@ -44,6 +44,6 @@ fun Route.spesifisertInntekt(behandlingsInntektsGetter: BehandlingsInntektsGette
 
 data class SpesifisertInntektRequest(
     val aktørId: String,
-    val vedtakId: Long,
+    val vedtakId: Long? = null,
     val beregningsDato: LocalDate
 )
