@@ -25,11 +25,11 @@ class BehandlingsInntektsGetter(
         )
 
         if (hasVedtakAssociation(behandlingsKey)) {
-            return getUnstoredInntekt(inntektkomponentRequest)
+            return isInntektStored(behandlingsKey)?.let { inntektStore.getInntekt(it) }
+                ?: fetchAndStoreInntekt(behandlingsKey, inntektkomponentRequest)
         }
 
-        return isInntektStored(behandlingsKey)?.let { inntektStore.getInntekt(it) }
-            ?: fetchAndStoreInntekt(behandlingsKey, inntektkomponentRequest)
+        return getUnstoredInntekt(inntektkomponentRequest)
     }
 
     private suspend fun fetchAndStoreInntekt(
@@ -55,5 +55,5 @@ class BehandlingsInntektsGetter(
     }
 
     private fun hasVedtakAssociation(behandlingsKey: BehandlingsKey) =
-        behandlingsKey.vedtakId == null
+        behandlingsKey.vedtakId != null
 }
