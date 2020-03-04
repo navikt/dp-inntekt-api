@@ -7,13 +7,13 @@ import no.nav.dagpenger.events.inntekt.v1.InntektId
 import no.nav.dagpenger.events.inntekt.v1.Periode
 import no.nav.dagpenger.events.inntekt.v1.Postering
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
-import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
+import no.nav.dagpenger.inntekt.v1.models.Inntekt
 import java.time.LocalDateTime
 import java.time.YearMonth
 
-fun mapToSpesifisertInntekt(storedInntekt: StoredInntekt, sisteAvsluttendeKalenderMåned: YearMonth) =
+fun mapToSpesifisertInntekt(storedInntekt: Inntekt, sisteAvsluttendeKalenderMåned: YearMonth) =
     SpesifisertInntekt(
         inntektId = InntektId(storedInntekt.inntektId.id),
         ident = Aktør(

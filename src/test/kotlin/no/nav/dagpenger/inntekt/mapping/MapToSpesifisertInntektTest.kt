@@ -6,7 +6,6 @@ import no.nav.dagpenger.events.inntekt.v1.InntektId
 import no.nav.dagpenger.events.inntekt.v1.Postering
 import no.nav.dagpenger.events.inntekt.v1.PosteringsType
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
-import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
@@ -26,8 +25,9 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
 import kotlin.test.assertEquals
+import no.nav.dagpenger.inntekt.v1.models.Inntekt as ApiInntekt
 
-private val storedInntekt = StoredInntekt(
+private val storedInntekt = ApiInntekt(
     inntektId = no.nav.dagpenger.inntekt.db.InntektId("01DGCVFS44PT6B6ZGEYH2WXVMA"),
     inntekt = InntektkomponentResponse(
         listOf(
