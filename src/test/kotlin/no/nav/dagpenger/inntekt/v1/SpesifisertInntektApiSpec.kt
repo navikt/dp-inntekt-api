@@ -33,6 +33,13 @@ class SpesifisertInntektApiSpec {
         }
         """.trimIndent()
 
+    val validJsonWithoutVedtak = """
+        {
+            "aktørId": "1234",
+            "beregningsDato": "2019-01-08"
+        }
+        """.trimIndent()
+
     val jsonMissingFields = """
         {
         	"aktørId": "1234",
@@ -75,6 +82,18 @@ class SpesifisertInntektApiSpec {
     }
 
     @Test
+    fun `Requests without vedtakId works, and does not store data`() = testApp {
+        handleRequest(HttpMethod.Post, spesifisertInntektPath) {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
+            setBody(validJsonWithoutVedtak)
+        }.apply {
+            assertTrue(requestHandled)
+            assertEquals(HttpStatusCode.OK, response.status())
+        }
+    }
+
+    @Test
     fun `Fails on post request with missing fields`() = testApp {
         handleRequest(HttpMethod.Post, spesifisertInntektPath) {
             addHeader(HttpHeaders.ContentType, "application/json")
@@ -87,9 +106,11 @@ class SpesifisertInntektApiSpec {
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        withTestApplication(mockInntektApi(
-            behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-            apiAuthApiKeyVerifier = authApiKeyVerifier
-        )) { callback() }
+        withTestApplication(
+            mockInntektApi(
+                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+                apiAuthApiKeyVerifier = authApiKeyVerifier
+            )
+        ) { callback() }
     }
 }

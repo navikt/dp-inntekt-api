@@ -4,6 +4,6 @@ import java.time.LocalDate
 
 data class BehandlingsKey(
     val aktørId: String,
-    val vedtakId: Long,
+    val vedtakId: Long? = null,
     val beregningsDato: LocalDate
 )
