@@ -7,6 +7,7 @@ import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
+import no.nav.dagpenger.inntekt.v1.models.Inntekt
 import java.time.LocalDateTime
 
 class BehandlingsInntektsGetter(
@@ -15,7 +16,7 @@ class BehandlingsInntektsGetter(
 ) {
     private val ulidGenerator = ULID()
 
-    suspend fun getBehandlingsInntekt(behandlingsKey: BehandlingsKey): StoredInntekt {
+    suspend fun getBehandlingsInntekt(behandlingsKey: BehandlingsKey): Inntekt {
         val opptjeningsperiode = Opptjeningsperiode(behandlingsKey.beregningsDato)
 
         val inntektkomponentRequest = InntektkomponentRequest(
@@ -24,12 +25,26 @@ class BehandlingsInntektsGetter(
             opptjeningsperiode.sisteAvsluttendeKalenderMåned
         )
 
-        if (hasVedtakAssociation(behandlingsKey)) {
-            return getUnstoredInntekt(inntektkomponentRequest)
+        if (!hasVedtakAssociation(behandlingsKey)) {
+            return getUnassociatedInntekt(inntektkomponentRequest)
         }
 
-        return isInntektStored(behandlingsKey)?.let { inntektStore.getInntekt(it) }
-            ?: fetchAndStoreInntekt(behandlingsKey, inntektkomponentRequest)
+        return getAssociatedInntekt(behandlingsKey, inntektkomponentRequest)
+    }
+
+    private suspend fun getAssociatedInntekt(
+        behandlingsKey: BehandlingsKey,
+        inntektkomponentRequest: InntektkomponentRequest
+    ): Inntekt {
+        val storedInntekt = (isInntektStored(behandlingsKey)?.let { inntektStore.getInntekt(it) }
+            ?: fetchAndStoreInntekt(behandlingsKey, inntektkomponentRequest))
+
+        return Inntekt(
+            storedInntekt.inntektId,
+            storedInntekt.inntekt,
+            storedInntekt.manueltRedigert,
+            storedInntekt.timestamp
+        )
     }
 
     private suspend fun fetchAndStoreInntekt(
@@ -45,8 +60,8 @@ class BehandlingsInntektsGetter(
     private fun isInntektStored(behandlingsKey: BehandlingsKey) =
         inntektStore.getInntektId(behandlingsKey)
 
-    private suspend fun getUnstoredInntekt(inntektkomponentRequest: InntektkomponentRequest): StoredInntekt {
-        return StoredInntekt(
+    private suspend fun getUnassociatedInntekt(inntektkomponentRequest: InntektkomponentRequest): Inntekt {
+        return Inntekt(
             inntektId = InntektId(ulidGenerator.nextULID()),
             inntekt = inntektskomponentClient.getInntekt(inntektkomponentRequest),
             manueltRedigert = false,
@@ -55,5 +70,5 @@ class BehandlingsInntektsGetter(
     }
 
     private fun hasVedtakAssociation(behandlingsKey: BehandlingsKey) =
-        behandlingsKey.vedtakId == null
+        behandlingsKey.vedtakId != null
 }

@@ -14,10 +14,10 @@ import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.db.InntektId
-import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
+import no.nav.dagpenger.inntekt.v1.models.Inntekt
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -57,7 +57,7 @@ class SpesifisertInntektApiSpec {
     private val inntektId = InntektId(ULID().nextULID())
     private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234"))
 
-    private val storedInntekt = StoredInntekt(
+    private val inntekt = Inntekt(
         inntektId,
         emptyInntekt,
         false
@@ -66,7 +66,7 @@ class SpesifisertInntektApiSpec {
     init {
         every {
             runBlocking { behandlingsInntektsGetterMock.getBehandlingsInntekt(any()) }
-        } returns storedInntekt
+        } returns inntekt
     }
 
     @Test
