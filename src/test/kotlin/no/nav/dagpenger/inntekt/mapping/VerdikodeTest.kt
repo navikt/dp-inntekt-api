@@ -22,6 +22,33 @@ internal class VerdikodeTest {
     }
 
     @Test
+    fun `test verdikode-mapping for Annen arbeidsinntekt - Ikke skattepliktig`() {
+        val verdiKode = "Annen arbeidsinntekt - Ikke skattepliktig"
+        val datagrunnlag = DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_OG_ANNEN_GODTGJOERELSE_SOM_IKKE_ER_SKATTEPLIKTIG)
+
+        assertEquals(verdiKode, verdiKode(datagrunnlag))
+        assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
+    }
+
+    @Test
+    fun `test verdikode-mapping for Annen arbeidsinntekt - Utlandet`() {
+        val verdiKode = "Annen arbeidsinntekt - Utlandet"
+        val datagrunnlag = DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_UTBETALT_FRA_DEN_NORSKE_STAT_OPPTJENT_I_UTLANDET)
+
+        assertEquals(verdiKode, verdiKode(datagrunnlag))
+        assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
+    }
+
+    @Test
+    fun `test verdikode-mapping for Annen arbeidsinntekt - Konkurs`() {
+        val verdiKode = "Annen arbeidsinntekt - Konkurs"
+        val datagrunnlag = DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_VED_KONKURS_ELLER_STATSGARANTI_OSV)
+
+        assertEquals(verdiKode, verdiKode(datagrunnlag))
+        assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
+    }
+
+    @Test
     fun `test verdikode-mapping for Annen arbeidsinntekt`() {
         val verdiKode = "Annen arbeidsinntekt"
         val datagrunnlag = DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, null)

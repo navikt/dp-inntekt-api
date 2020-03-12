@@ -112,5 +112,8 @@ val dataGrunnlagKlassifiseringToVerdikode = biMapOf(
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_IKKE_ARBEIDET_TID, SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK) to "Tiltak - Uregelmessige tillegg knyttet til ikke-arbeidet tid",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TREKK_I_LOENN_FOR_FERIE, SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK) to "Trekk i lønn for ferie - Tiltak",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TIPS, null) to "Tips",
-    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.SKATTEPLIKTIG_PERSONALRABATT, null) to "Skattepliktig personalrabatt"
+    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.SKATTEPLIKTIG_PERSONALRABATT, null) to "Skattepliktig personalrabatt",
+    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_OG_ANNEN_GODTGJOERELSE_SOM_IKKE_ER_SKATTEPLIKTIG) to "Annen arbeidsinntekt - Ikke skattepliktig",
+    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_UTBETALT_FRA_DEN_NORSKE_STAT_OPPTJENT_I_UTLANDET) to "Annen arbeidsinntekt - Utlandet",
+    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_VED_KONKURS_ELLER_STATSGARANTI_OSV) to "Annen arbeidsinntekt - Konkurs"
 )
