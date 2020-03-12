@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.YearMonth
 
-class CachedInntektsGetterTest {
+class BehandlingsInntektsGetterTest {
 
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val inntektStoreMock: InntektStore = mockk()
