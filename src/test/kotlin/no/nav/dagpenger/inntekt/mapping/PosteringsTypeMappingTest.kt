@@ -40,6 +40,33 @@ internal class PosteringsTypeMappingTest {
     }
 
     @Test
+    fun `test posteringstype-mapping for Annen arbeidsinntekt - Ikke skattepliktig`() {
+        val posteringsType = PosteringsType.L_ANNET_IKKE_SKATTEPLIKTIG
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_OG_ANNEN_GODTGJOERELSE_SOM_IKKE_ER_SKATTEPLIKTIG)
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
+    fun `test posteringstype-mapping for Annen arbeidsinntekt - Utlandet`() {
+        val posteringsType = PosteringsType.L_ANNET_UTLANDET
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_UTBETALT_FRA_DEN_NORSKE_STAT_OPPTJENT_I_UTLANDET)
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
+    fun `test posteringstype-mapping for Annen arbeidsinntekt - Konkurs`() {
+        val posteringsType = PosteringsType.L_ANNET_KONKURS
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_VED_KONKURS_ELLER_STATSGARANTI_OSV)
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
     fun `test posteringstype-mapping for Arbeidsopphold kost`() {
         val posteringsType = PosteringsType.L_ARBEIDSOPPHOLD_KOST
         val posteringsTypeInfo =
