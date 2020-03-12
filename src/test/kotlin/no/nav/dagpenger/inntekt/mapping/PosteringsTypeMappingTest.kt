@@ -273,6 +273,19 @@ internal class PosteringsTypeMappingTest {
     }
 
     @Test
+    fun `test posteringstype-mapping for Hyre - Honorar, akkord, prosent eller provisjonslønn`() {
+        val posteringsType = PosteringsType.L_HONORAR_AKKORD_PROSENT_PROVISJON_H
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(
+            InntektType.LOENNSINNTEKT,
+            InntektBeskrivelse.HONORAR_AKKORD_PROSENT_PROVISJON,
+            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
+        )
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
     fun `test posteringstype-mapping for Hyretillegg`() {
         val posteringsType = PosteringsType.L_HYRETILLEGG
         val posteringsTypeInfo = PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.HYRETILLEGG, null)

@@ -50,6 +50,7 @@ private val posteringsTypeMapping = biMapOf(
     PosteringsTypeGrunnlag(InntektType.YTELSE_FRA_OFFENTLIGE, InntektBeskrivelse.FORELDREPENGER, null) to PosteringsType.Y_FORELDREPENGER,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.HELLIGDAGSTILLEGG, null) to PosteringsType.L_HELLIGDAGSTILLEGG,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.HONORAR_AKKORD_PROSENT_PROVISJON, null) to PosteringsType.L_HONORAR_AKKORD_PROSENT_PROVISJON,
+    PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.HONORAR_AKKORD_PROSENT_PROVISJON, SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY) to PosteringsType.L_HONORAR_AKKORD_PROSENT_PROVISJON_H,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.HYRETILLEGG, null) to PosteringsType.L_HYRETILLEGG,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.INNBETALING_TIL_UTENLANDSK_PENSJONSORDNING, null) to PosteringsType.L_INNBETALING_TIL_UTENLANDSK_PENSJONSORDNING,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.KILOMETERGODTGJOERELSE_BIL, null) to PosteringsType.L_KILOMETERGODTGJØRELSE_BIL,

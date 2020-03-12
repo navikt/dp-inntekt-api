@@ -248,6 +248,19 @@ internal class VerdikodeTest {
     }
 
     @Test
+    fun `test verdikode-mapping for Hyre - Honorar, akkord, prosent eller provisjonslønn`() {
+        val verdiKode = "Hyre - Honorar, akkord, prosent eller provisjonslønn"
+        val datagrunnlag = DatagrunnlagKlassifisering(
+            InntektType.LOENNSINNTEKT,
+            InntektBeskrivelse.HONORAR_AKKORD_PROSENT_PROVISJON,
+            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
+        )
+
+        assertEquals(verdiKode, verdiKode(datagrunnlag))
+        assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
+    }
+
+    @Test
     fun `test verdikode-mapping for Hyretillegg`() {
         val verdiKode = "Hyretillegg"
         val datagrunnlag = DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.HYRETILLEGG, null)

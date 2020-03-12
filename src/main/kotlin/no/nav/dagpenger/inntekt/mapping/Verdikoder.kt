@@ -47,6 +47,7 @@ val dataGrunnlagKlassifiseringToVerdikode = biMapOf(
     DatagrunnlagKlassifisering(InntektType.YTELSE_FRA_OFFENTLIGE, InntektBeskrivelse.FORELDREPENGER, null) to "Foreldrepenger fra folketrygden",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.HELLIGDAGSTILLEGG, null) to "Helligdagstillegg",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.HONORAR_AKKORD_PROSENT_PROVISJON, null) to "Honorar, akkord, prosent eller provisjonslønn",
+    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.HONORAR_AKKORD_PROSENT_PROVISJON, SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY) to "Hyre - Honorar, akkord, prosent eller provisjonslønn",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.HYRETILLEGG, null) to "Hyretillegg",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.INNBETALING_TIL_UTENLANDSK_PENSJONSORDNING, null) to "Innbetaling til utenlandsk pensjonsordning",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.KILOMETERGODTGJOERELSE_BIL, null) to "Kilometergodtgjørelse bil",
