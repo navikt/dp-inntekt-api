@@ -8,11 +8,16 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
-import no.nav.dagpenger.inntekt.BehandlingsKey
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.withContext
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
+import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.mapping.mapToSpesifisertInntekt
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
+import java.util.concurrent.Executors
+
+val api = Executors.newFixedThreadPool(4).asCoroutineDispatcher()
 
 fun Route.spesifisertInntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
     authenticate {
@@ -20,11 +25,14 @@ fun Route.spesifisertInntekt(behandlingsInntektsGetter: BehandlingsInntektsGette
             post {
                 val request = call.receive<SpesifisertInntektRequest>()
 
-                val storedInntekt = behandlingsInntektsGetter.getBehandlingsInntekt(
-                    BehandlingsKey(request.aktørId, request.vedtakId, request.beregningsDato)
-                )
+                val storedInntekt = withContext(api) {
+                    behandlingsInntektsGetter.getBehandlingsInntekt(
+                        BehandlingsKey(request.aktørId, request.vedtakId, request.beregningsDato)
+                    )
+                }
 
-                val sisteAvsluttendeKalenderMåned = Opptjeningsperiode(request.beregningsDato).sisteAvsluttendeKalenderMåned
+                val sisteAvsluttendeKalenderMåned =
+                    Opptjeningsperiode(request.beregningsDato).sisteAvsluttendeKalenderMåned
 
                 val specifiedInntekt = mapToSpesifisertInntekt(storedInntekt, sisteAvsluttendeKalenderMåned)
 
