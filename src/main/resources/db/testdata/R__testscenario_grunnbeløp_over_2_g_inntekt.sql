@@ -1,5 +1,5 @@
 INSERT INTO inntekt_v1(id, brukt, inntekt)
-values ('01D8G6FS9QGRT3JKBTA5KEE64C', TRUE, '
+values ('01E4644N0H1YBGQXKBF4A17PE6', TRUE, '
 {
   "arbeidsInntektMaaned": [
     {
@@ -143,5 +143,5 @@ values ('01D8G6FS9QGRT3JKBTA5KEE64C', TRUE, '
 ON CONFLICT DO NOTHING;
 
 INSERT INTO inntekt_v1_arena_mapping (inntektid, aktørid, vedtakid, beregningsdato)
-VALUES ('01D8G6FS9QGRT3JKBTA5KEE64C', '3_G_INNTEKT', 12345, '2019-07-01')
+VALUES ('01E4644N0H1YBGQXKBF4A17PE6', '3_G_INNTEKT', 12345, '2019-07-01')
 ON CONFLICT DO NOTHING;;
