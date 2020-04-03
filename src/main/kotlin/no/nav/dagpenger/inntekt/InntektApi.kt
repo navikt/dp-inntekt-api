@@ -58,7 +58,6 @@ import org.slf4j.event.Level
 import java.net.URI
 import java.net.URL
 import java.util.concurrent.TimeUnit
-import kotlin.concurrent.fixedRateTimer
 
 private val LOGGER = KotlinLogging.logger {}
 val config = Configuration()
@@ -85,15 +84,15 @@ fun main() = runBlocking {
 
     val vaktmester = Vaktmester(dataSource)
 
-    fixedRateTimer(
-        name = "vaktmester",
-        initialDelay = TimeUnit.MINUTES.toMillis(10),
-        period = TimeUnit.HOURS.toMillis(12),
-        action = {
-            LOGGER.info { "Vaktmesteren rydder" }
-            vaktmester.rydd()
-            LOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
-        })
+    // fixedRateTimer(
+    //     name = "vaktmester",
+    //     initialDelay = TimeUnit.MINUTES.toMillis(10),
+    //     period = TimeUnit.HOURS.toMillis(12),
+    //     action = {
+    //         LOGGER.info { "Vaktmesteren rydder" }
+    //         vaktmester.rydd()
+    //         LOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
+    //     })
 
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
         config.application.hentinntektListeUrl,
