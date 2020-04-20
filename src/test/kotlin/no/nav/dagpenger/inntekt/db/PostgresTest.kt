@@ -1,6 +1,6 @@
 package no.nav.dagpenger.inntekt.db
 
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
 import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.Configuration
 import no.nav.dagpenger.inntekt.DataSource

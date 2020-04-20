@@ -11,10 +11,10 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import com.github.tomakehurst.wiremock.matching.RegexPattern
-import io.kotlintest.matchers.boolean.shouldBeTrue
-import io.kotlintest.matchers.doubles.shouldBeGreaterThan
-import io.kotlintest.shouldBe
-import io.kotlintest.shouldNotBe
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.doubles.shouldBeGreaterThan
+import io.kotest.matchers.booleans.shouldBeTrue
 import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.oidc.OidcClient

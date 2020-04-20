@@ -1,7 +1,7 @@
 package no.nav.dagpenger.inntekt.v1
 
 import de.huxhorn.sulky.ulid.ULID
-import io.kotlintest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldContain
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode

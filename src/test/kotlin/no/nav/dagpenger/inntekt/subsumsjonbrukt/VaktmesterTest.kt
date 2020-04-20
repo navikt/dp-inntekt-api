@@ -1,8 +1,8 @@
 package no.nav.dagpenger.inntekt.subsumsjonbrukt
 
-import io.kotlintest.matchers.doubles.shouldBeGreaterThan
-import io.kotlintest.shouldBe
-import io.kotlintest.shouldNotBe
+import io.kotest.matchers.doubles.shouldBeGreaterThan
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.DataSource
