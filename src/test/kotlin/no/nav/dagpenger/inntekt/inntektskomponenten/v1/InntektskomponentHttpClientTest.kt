@@ -11,11 +11,15 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import com.github.tomakehurst.wiremock.matching.RegexPattern
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.doubles.shouldBeGreaterThan
-import io.kotest.matchers.booleans.shouldBeTrue
 import io.prometheus.client.CollectorRegistry
+import java.time.Duration
+import java.time.YearMonth
+import java.util.UUID
+import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.oidc.OidcClient
 import no.nav.dagpenger.oidc.OidcToken
@@ -23,10 +27,6 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.Duration
-import java.time.YearMonth
-import java.util.UUID
-import kotlin.test.assertEquals
 
 internal class InntektskomponentHttpClientTest {
 

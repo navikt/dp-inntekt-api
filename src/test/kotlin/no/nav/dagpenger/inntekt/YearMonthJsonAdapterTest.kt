@@ -1,8 +1,8 @@
 package no.nav.dagpenger.inntekt
 
-import org.junit.jupiter.api.Test
 import java.time.YearMonth
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Test
 
 internal class YearMonthJsonAdapterTest {
 

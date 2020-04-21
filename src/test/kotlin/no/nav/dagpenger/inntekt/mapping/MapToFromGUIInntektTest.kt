@@ -1,6 +1,10 @@
 package no.nav.dagpenger.inntekt.mapping
 
 import de.huxhorn.sulky.ulid.ULID
+import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.YearMonth
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
@@ -28,10 +32,6 @@ import org.skyscreamer.jsonassert.JSONCompareResult
 import org.skyscreamer.jsonassert.comparator.CustomComparator
 import org.skyscreamer.jsonassert.comparator.JSONCompareUtil.getKeys
 import org.skyscreamer.jsonassert.comparator.JSONCompareUtil.qualify
-import java.math.BigDecimal
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.LocalDateTime
 
 private val rawInntekt = InntektkomponentResponse(
     listOf(

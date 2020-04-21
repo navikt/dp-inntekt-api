@@ -1,5 +1,7 @@
 package no.nav.dagpenger.inntekt.mapping
 
+import java.time.LocalDateTime
+import java.time.YearMonth
 import no.nav.dagpenger.events.inntekt.v1.Aktør
 import no.nav.dagpenger.events.inntekt.v1.AktørType
 import no.nav.dagpenger.events.inntekt.v1.Avvik
@@ -10,8 +12,6 @@ import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
-import java.time.LocalDateTime
-import java.time.YearMonth
 
 fun mapToSpesifisertInntekt(storedInntekt: StoredInntekt, sisteAvsluttendeKalenderMåned: YearMonth) =
     SpesifisertInntekt(

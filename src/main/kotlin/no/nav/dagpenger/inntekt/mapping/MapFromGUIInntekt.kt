@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.mapping
 
+import java.lang.IllegalArgumentException
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
@@ -9,7 +10,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
 import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
-import java.lang.IllegalArgumentException
 
 fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt = guiInntekt.inntektId?.let {
     StoredInntekt(guiInntekt.inntektId, InntektkomponentResponse(mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)

@@ -1,5 +1,10 @@
 package no.nav.dagpenger.inntekt.mapping
 
+import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.YearMonth
+import kotlin.test.assertEquals
 import no.nav.dagpenger.events.inntekt.v1.Aktør
 import no.nav.dagpenger.events.inntekt.v1.AktørType
 import no.nav.dagpenger.events.inntekt.v1.InntektId
@@ -21,11 +26,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforho
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
 import org.junit.Test
-import java.math.BigDecimal
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.YearMonth
-import kotlin.test.assertEquals
 
 private val storedInntekt = StoredInntekt(
     inntektId = no.nav.dagpenger.inntekt.db.InntektId("01DGCVFS44PT6B6ZGEYH2WXVMA"),

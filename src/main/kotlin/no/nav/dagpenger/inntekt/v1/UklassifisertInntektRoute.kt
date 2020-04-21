@@ -17,6 +17,7 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.util.pipeline.PipelineContext
 import io.prometheus.client.Counter
+import java.time.LocalDate
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
@@ -33,7 +34,6 @@ import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToStoredInntekt
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
-import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 

@@ -1,9 +1,9 @@
 package no.nav.dagpenger.inntekt.v1
 
+import java.time.LocalDate
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 
 internal class InntektRequestTest {
     @Test

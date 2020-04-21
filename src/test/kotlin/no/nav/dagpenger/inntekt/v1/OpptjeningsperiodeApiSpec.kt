@@ -8,11 +8,11 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
+import java.time.LocalDate
+import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.db.InntektStore
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
-import kotlin.test.assertEquals
 
 class OpptjeningsperiodeApiSpec {
     @Test

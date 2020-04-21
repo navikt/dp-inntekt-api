@@ -3,6 +3,9 @@ package no.nav.dagpenger.inntekt.db
 import com.squareup.moshi.JsonAdapter
 import de.huxhorn.sulky.ulid.ULID
 import io.prometheus.client.Summary
+import java.time.LocalDate
+import java.time.ZonedDateTime
+import javax.sql.DataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -11,13 +14,9 @@ import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
-
 import no.nav.dagpenger.inntekt.moshiInstance
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
-import java.time.LocalDate
-import java.time.ZonedDateTime
-import javax.sql.DataSource
 
 internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore, HealthCheck {
     private val LOGGER = KotlinLogging.logger {}

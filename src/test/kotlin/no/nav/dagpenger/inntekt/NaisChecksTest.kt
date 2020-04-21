@@ -7,13 +7,13 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
+import kotlin.test.assertEquals
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.v1.mockInntektApi
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 class NaisChecksTest {
     private val apiKeyVerifier = ApiKeyVerifier("secret")

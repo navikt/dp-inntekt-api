@@ -1,6 +1,7 @@
 package no.nav.dagpenger.inntekt.klassifisering
 
 import io.kotest.matchers.shouldBe
+import java.time.YearMonth
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
@@ -17,7 +18,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetalj
 import no.nav.dagpenger.inntekt.moshiInstance
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.time.YearMonth
 
 internal class InntektsklassifiseringTest {
 

@@ -4,6 +4,9 @@ import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.prometheus.client.CollectorRegistry
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZonedDateTime
 import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.DataSource
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
@@ -17,9 +20,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.withMigratedDb
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.ZonedDateTime
 
 internal class VaktmesterTest {
 

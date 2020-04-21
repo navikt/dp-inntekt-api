@@ -1,11 +1,11 @@
 package no.nav.dagpenger.inntekt.mapping
 
+import java.time.LocalDateTime
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
-import java.time.LocalDateTime
 
 fun mapToGUIInntekt(
     inntekt: InntektkomponentResponse,

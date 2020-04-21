@@ -7,10 +7,10 @@ import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import de.huxhorn.sulky.ulid.ULID
 import io.prometheus.client.Counter
 import io.prometheus.client.Summary
+import java.time.YearMonth
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.oidc.OidcClient
-import java.time.YearMonth
 
 private val LOGGER = KotlinLogging.logger {}
 private val jsonResponseAdapter = moshiInstance.adapter(InntektkomponentResponse::class.java)

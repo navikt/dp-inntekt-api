@@ -11,6 +11,10 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
+import java.time.LocalDateTime
+import java.time.YearMonth
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.Problem
@@ -28,10 +32,6 @@ import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
-import java.time.YearMonth
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class KlassifisertInntektApiTest {
     val validJson = """

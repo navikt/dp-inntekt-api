@@ -1,10 +1,10 @@
 package no.nav.dagpenger.inntekt.db
 
 import de.huxhorn.sulky.ulid.ULID
-import org.junit.Test
-import org.junit.jupiter.api.Assertions.assertEquals
 import java.util.UUID
 import kotlin.test.assertTrue
+import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
 
 internal class InntektIdTest {
 

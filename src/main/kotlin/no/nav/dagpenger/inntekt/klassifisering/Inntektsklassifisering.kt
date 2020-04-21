@@ -1,10 +1,10 @@
 package no.nav.dagpenger.inntekt.klassifisering
 
+import kotlin.reflect.KFunction
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
-import kotlin.reflect.KFunction
 
 fun klassifiserInntekter(uklassifiserteInntekter: InntektkomponentResponse): List<KlassifisertInntektMåned> {
 

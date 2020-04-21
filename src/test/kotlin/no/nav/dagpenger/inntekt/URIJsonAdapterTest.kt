@@ -1,8 +1,8 @@
 package no.nav.dagpenger.inntekt
 
+import java.net.URI
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.net.URI
 
 internal class URIJsonAdapterTest {
 

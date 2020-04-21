@@ -6,6 +6,8 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import com.github.tomakehurst.wiremock.matching.RegexPattern
+import java.util.UUID
+import kotlin.test.assertTrue
 import no.nav.dagpenger.oidc.OidcClient
 import no.nav.dagpenger.oidc.OidcToken
 import no.nav.dagpenger.oidc.StsOidcClientException
@@ -15,8 +17,6 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.UUID
-import kotlin.test.assertTrue
 
 class OppslagClientTest {
     val validResponse = """{

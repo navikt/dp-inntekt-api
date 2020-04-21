@@ -1,11 +1,11 @@
 package no.nav.dagpenger.inntekt.klassifisering
 
+import kotlin.test.assertFalse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFalse
 
 class PredicatesNæringsinntektTest {
 

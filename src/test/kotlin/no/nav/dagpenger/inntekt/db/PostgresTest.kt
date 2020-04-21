@@ -1,6 +1,12 @@
 package no.nav.dagpenger.inntekt.db
 
 import io.kotest.matchers.shouldBe
+import java.time.LocalDate
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.Configuration
 import no.nav.dagpenger.inntekt.DataSource
@@ -12,12 +18,6 @@ import no.nav.dagpenger.inntekt.withCleanDb
 import no.nav.dagpenger.inntekt.withMigratedDb
 import no.nav.dagpenger.inntekt.withProps
 import org.junit.Test
-import java.time.LocalDate
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 internal class PostgresTest {
 
