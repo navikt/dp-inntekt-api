@@ -50,8 +50,8 @@ recreate_job() {
 }
 
 watch_job() {
-   while true; do
-    res=$(kubectl get jobs ${job_name}  -n ${namespace} -o=jsonpath='{.status.conditions[*].type}')
+    while true; do
+        res=$(kubectl get jobs ${job_name}  -n ${namespace} -o=jsonpath='{.status.conditions[*].type}')
         if [ "$res" == "Complete" ]; then
             log_job
             exit 0
@@ -61,8 +61,9 @@ watch_job() {
         else
           sleep 2
         fi
-   done
+    done
 }
+
 
 log_job() {
   kubectl -n ${namespace} logs -l job-name=${job_name} --tail=1000
