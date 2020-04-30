@@ -43,8 +43,8 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                 session.run(
                     queryOf(statement, inntektId.id)
                         .map { row ->
-                        ManueltRedigert(row.string(1))
-                    }.asSingle
+                            ManueltRedigert(row.string(1))
+                        }.asSingle
                 )
             }
         } catch (p: PSQLException) {
@@ -55,12 +55,9 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
     override fun getInntektId(inntektparametre: Inntektparametre): InntektId? {
         try {
             return if (inntektparametre.migrateCandidate()) {
-
-                val v = fetchInntektIdFromArenaMappingTable(inntektparametre)
-                val v2 = fetchInntektIdFromPersonMappingTable(
+                fetchInntektIdFromArenaMappingTable(inntektparametre) ?: fetchInntektIdFromPersonMappingTable(
                     inntektparametre
                 )
-                v ?: v2
             } else {
                 fetchInntektIdFromPersonMappingTable(inntektparametre)
             }
@@ -146,6 +143,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                                 FROM inntekt_V1_person_mapping
                                 WHERE inntektId = ?
                         """.trimMargin(), inntektId.id
+
                 ).map { row ->
                     row.localDate("beregningsdato")
                 }.asSingle
