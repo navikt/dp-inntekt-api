@@ -19,10 +19,11 @@ import io.ktor.util.pipeline.PipelineContext
 import io.prometheus.client.Counter
 import java.time.LocalDate
 import mu.KotlinLogging
-import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
+import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
@@ -64,7 +65,7 @@ fun Route.uklassifisertInntekt(
         route("/uklassifisert/{aktørId}/{vedtakId}/{beregningsDato}") {
             get {
                 parseUrlPathParameters().run {
-                    inntektStore.getInntektId(BehandlingsKey(this.aktørId, this.vedtakId, this.beregningsDato))
+                    inntektStore.getInntektId(Inntektparametre(aktørId = this.aktørId, vedtakId = this.vedtakId.toString(), beregningsdato = this.beregningsDato))
                         ?.let {
                             inntektStore.getInntekt(it)
                         }?.let {
@@ -82,10 +83,21 @@ fun Route.uklassifisertInntekt(
                     val guiInntekt = call.receive<GUIInntekt>()
                     mapToStoredInntekt(guiInntekt)
                         .let {
-                            inntektStore.insertInntekt(
-                                BehandlingsKey(this.aktørId, this.vedtakId, this.beregningsDato),
-                                it.inntekt,
-                                ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject())
+
+                            inntektStore.storeInntekt(
+                                StoreInntektCommand(
+                                    inntektparametre = Inntektparametre(
+                                        aktørId = this.aktørId,
+                                        vedtakId = this.vedtakId.toString(),
+                                        beregningsdato = this.beregningsDato
+                                    ),
+                                    inntekt = it.inntekt,
+                                    manueltRedigert = ManueltRedigert.from(
+                                        guiInntekt.redigertAvSaksbehandler,
+                                        getSubject()
+                                    )
+                                )
+
                             )
                         }
                         .let {
@@ -131,10 +143,19 @@ fun Route.uklassifisertInntekt(
                     val guiInntekt = call.receive<GUIInntekt>()
                     mapToDetachedInntekt(guiInntekt)
                         .let {
-                            inntektStore.insertInntekt(
-                                BehandlingsKey(this.aktørId, this.vedtakId, this.beregningsDato),
-                                it.inntekt,
-                                ManueltRedigert.from(guiInntekt.redigertAvSaksbehandler, getSubject())
+                            inntektStore.storeInntekt(
+                                StoreInntektCommand(
+                                    inntektparametre = Inntektparametre(
+                                        aktørId = this.aktørId,
+                                        vedtakId = this.vedtakId.toString(),
+                                        beregningsdato = this.beregningsDato
+                                    ),
+                                    inntekt = it.inntekt,
+                                    manueltRedigert = ManueltRedigert.from(
+                                        guiInntekt.redigertAvSaksbehandler,
+                                        getSubject()
+                                    )
+                                )
                             )
                         }
                         .let {

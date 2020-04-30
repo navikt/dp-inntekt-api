@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test
 
 class SpesifisertInntektApiSpec {
 
-    val validJson = """
+    private val validJson = """
         {
         	"aktørId": "1234",
             "vedtakId": 1,
@@ -33,14 +33,15 @@ class SpesifisertInntektApiSpec {
         }
         """.trimIndent()
 
-    val validJsonWithoutVedtak = """
+    private val validJsonWithVedtakIdAsUlid = """
         {
             "aktørId": "1234",
+             "vedtakId": "${ULID().nextULID()}",
             "beregningsDato": "2019-01-08"
         }
         """.trimIndent()
 
-    val jsonMissingFields = """
+    private val jsonMissingFields = """
         {
         	"aktørId": "1234",
         }
@@ -86,7 +87,7 @@ class SpesifisertInntektApiSpec {
         handleRequest(HttpMethod.Post, spesifisertInntektPath) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader("X-API-KEY", apiKey)
-            setBody(validJsonWithoutVedtak)
+            setBody(validJsonWithVedtakIdAsUlid)
         }.apply {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())

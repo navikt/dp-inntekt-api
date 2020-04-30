@@ -129,7 +129,7 @@ javax.validation:validation-api:2.0.0.Final
 javax.xml.bind:jaxb-api:2.3.1
 jline:jline:0.9.94
 joda-time:joda-time:2.10.1
-junit:junit:4.13
+junit:junit:4.12
 net.bytebuddy:byte-buddy-agent:1.9.10
 net.bytebuddy:byte-buddy:1.9.10
 net.java.dev.jna:jna-platform:5.5.0
@@ -204,7 +204,6 @@ org.junit.platform:junit-platform-commons:1.6.1
 org.junit.platform:junit-platform-engine:1.6.1
 org.junit.platform:junit-platform-launcher:1.6.1
 org.junit.platform:junit-platform-suite-api:1.6.1
-org.junit.vintage:junit-vintage-engine:5.6.1
 org.junit:junit-bom:5.6.1
 org.latencyutils:LatencyUtils:2.0.3
 org.lz4:lz4-java:1.6.0

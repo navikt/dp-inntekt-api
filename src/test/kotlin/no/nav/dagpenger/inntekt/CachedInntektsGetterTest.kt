@@ -8,6 +8,8 @@ import java.time.YearMonth
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.db.Inntektparametre
+import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
@@ -17,7 +19,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class CachedInntektsGetterTest {
+internal class CachedInntektsGetterTest {
 
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val inntektStoreMock: InntektStore = mockk()
@@ -29,10 +31,10 @@ class CachedInntektsGetterTest {
 
     @Test
     fun `Get cached inntekt for known behandlingsKey`() {
-        val knownBehandlingsKey = BehandlingsKey(
-            "1234",
-            112233,
-            LocalDate.of(2019, 5, 6)
+        val parameters = Inntektparametre(
+            aktørId = "1234",
+            vedtakId = "112233",
+            beregningsdato = LocalDate.of(2019, 5, 6)
         )
 
         val knownStoredInntekt = StoredInntekt(
@@ -42,7 +44,7 @@ class CachedInntektsGetterTest {
         )
 
         every {
-            inntektStoreMock.getInntektId(knownBehandlingsKey)
+            inntektStoreMock.getInntektId(parameters)
         } returns knownStoredInntekt.inntektId
 
         every {
@@ -50,7 +52,7 @@ class CachedInntektsGetterTest {
         } returns knownStoredInntekt
 
         val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentClientMock, inntektStoreMock)
-        val storedInntektResult = runBlocking { cachedInntektsGetter.getBehandlingsInntekt(knownBehandlingsKey) }
+        val storedInntektResult = runBlocking { cachedInntektsGetter.getBehandlingsInntekt(parameters) }
 
         verify(exactly = 0) { runBlocking { inntektskomponentClientMock.getInntekt(any()) } }
         assertEquals(emptyInntektsKomponentResponse.ident, storedInntektResult.inntekt.ident)
@@ -58,10 +60,10 @@ class CachedInntektsGetterTest {
 
     @Test
     fun `Get new inntekt for uknown behandlingsKey`() {
-        val unknownBehandlingsKey = BehandlingsKey(
-            "5678",
-            546787,
-            LocalDate.of(2019, 4, 26)
+        val parameters = Inntektparametre(
+            aktørId = "5678",
+            vedtakId = "546787",
+            beregningsdato = LocalDate.of(2019, 4, 26)
         )
 
         every {
@@ -77,18 +79,25 @@ class CachedInntektsGetterTest {
         } returns emptyInntektsKomponentResponse
 
         every {
-            inntektStoreMock.getInntektId(unknownBehandlingsKey)
+            inntektStoreMock.getInntektId(parameters)
         } returns null
 
         every {
-            inntektStoreMock.insertInntekt(unknownBehandlingsKey, emptyInntektsKomponentResponse, any(), any())
+            inntektStoreMock.storeInntekt(
+                command = StoreInntektCommand(
+                    inntektparametre = parameters,
+                    inntekt = emptyInntektsKomponentResponse,
+                    manueltRedigert = null
+                ),
+                created = any()
+            )
         } returns StoredInntekt(InntektId("01DH179R2HW0FYEP1FABAXV150"), emptyInntektsKomponentResponse, false)
 
         val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentClientMock, inntektStoreMock)
-        val storedInntektResult = runBlocking { cachedInntektsGetter.getBehandlingsInntekt(unknownBehandlingsKey) }
+        val storedInntektResult = runBlocking { cachedInntektsGetter.getBehandlingsInntekt(parameters) }
 
         verify(exactly = 1) { runBlocking { inntektskomponentClientMock.getInntekt(any()) } }
-        verify(exactly = 1) { runBlocking { inntektStoreMock.insertInntekt(any(), any(), any(), any()) } }
+        verify(exactly = 1) { runBlocking { inntektStoreMock.storeInntekt(any(), any()) } }
         assertEquals(emptyInntektsKomponentResponse.ident, storedInntektResult.inntekt.ident)
     }
 }
