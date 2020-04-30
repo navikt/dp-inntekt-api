@@ -138,12 +138,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                     row.localDate("beregningsdato")
                 }.asSingle
             ) ?: session.run(
-                queryOf(
-                    """SELECT beregningsdato
-                                FROM inntekt_V1_person_mapping
-                                WHERE inntektId = ?
-                        """.trimMargin(), inntektId.id
-
+                queryOf(personMappingQuery, inntektId.id
                 ).map { row ->
                     row.localDate("beregningsdato")
                 }.asSingle
