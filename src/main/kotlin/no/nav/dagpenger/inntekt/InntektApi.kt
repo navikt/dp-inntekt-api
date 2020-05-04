@@ -34,8 +34,10 @@ import java.net.URI
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.fixedRateTimer
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import no.nav.dagpenger.inntekt.db.ArenaMappingMigrator
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -94,6 +96,14 @@ fun main() = runBlocking {
             vaktmester.rydd()
             LOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
         })
+
+    val arenaMappingMigrator = ArenaMappingMigrator(dataSource)
+
+    launch {
+        LOGGER.info { "Starting ArenaMappingMigrator" }
+        arenaMappingMigrator.migrate()
+        LOGGER.info { "Done running ArenaMappingMigrator" }
+    }
 
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
         config.application.hentinntektListeUrl,

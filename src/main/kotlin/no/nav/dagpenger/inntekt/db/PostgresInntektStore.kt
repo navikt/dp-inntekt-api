@@ -21,7 +21,7 @@ import org.postgresql.util.PSQLException
 internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore, HealthCheck {
 
     companion object {
-        private val adapter: JsonAdapter<InntektkomponentResponse> =
+        internal val adapter: JsonAdapter<InntektkomponentResponse> =
             moshiInstance.adapter(InntektkomponentResponse::class.java)
         private val ulidGenerator = ULID()
         private val LOGGER = KotlinLogging.logger {}
