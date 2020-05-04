@@ -10,12 +10,18 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.Date
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
+import no.bekk.bekkopen.person.FodselsnummerCalculator.getFodselsnummerForDate
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.db.InntektId
+import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
@@ -25,15 +31,56 @@ import org.junit.jupiter.api.Test
 
 class SpesifisertInntektApiSpec {
 
-    val validJson = """
+    private val fnr = getFodselsnummerForDate(Date.from(LocalDate.now().minusYears(20).atStartOfDay(ZoneId.systemDefault()).toInstant())).personnummer
+    private val ulid = ULID().nextULID()
+    private val aktørId = "1234"
+    private val beregningsdato = LocalDate.of(2019, 1, 8)
+    private val validJson = """
         {
-        	"aktørId": "1234",
+        	"aktørId": "$aktørId",
             "vedtakId": 1,
+            "beregningsDato": "$beregningsdato"
+        }
+        """.trimIndent()
+
+    private val validJsonWithVedtakIdAsUlid = """
+        {
+            "aktørId": "$aktørId",
+             "vedtakId": "$ulid",
             "beregningsDato": "2019-01-08"
         }
         """.trimIndent()
 
-    val jsonMissingFields = """
+    private val validJsonWithFnr = """
+        {
+            "aktørId": "$aktørId",
+             "vedtakId": "$ulid",
+             "fødselsnummer": "$fnr",
+            "beregningsDato": "$beregningsdato"
+        }
+        """.trimIndent()
+
+    private val inntektParametre = Inntektparametre(
+        aktørId = "$aktørId",
+        vedtakId = "1",
+        beregningsdato = beregningsdato
+
+    )
+
+    private val vedtakIdUlidParametre = Inntektparametre(
+        aktørId = aktørId,
+        vedtakId = ulid,
+        beregningsdato = beregningsdato
+    )
+
+    private val fnrParametre = Inntektparametre(
+        aktørId = aktørId,
+        vedtakId = ulid,
+        fødselnummer = fnr,
+        beregningsdato = beregningsdato
+    )
+
+    private val jsonMissingFields = """
         {
         	"aktørId": "1234",
         }
@@ -71,6 +118,33 @@ class SpesifisertInntektApiSpec {
         }.apply {
             assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
+            verify(exactly = 1) { runBlocking { behandlingsInntektsGetterMock.getBehandlingsInntekt(inntektParametre) } }
+        }
+    }
+
+    @Test
+    fun `Requests with vedtakId as string works and does store data`() = testApp {
+        handleRequest(HttpMethod.Post, spesifisertInntektPath) {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
+            setBody(validJsonWithVedtakIdAsUlid)
+        }.apply {
+            assertTrue(requestHandled)
+            assertEquals(HttpStatusCode.OK, response.status())
+            verify(exactly = 1) { runBlocking { behandlingsInntektsGetterMock.getBehandlingsInntekt(vedtakIdUlidParametre) } }
+        }
+    }
+
+    @Test
+    fun `Requests with fødselsnummer works and does store data`() = testApp {
+        handleRequest(HttpMethod.Post, spesifisertInntektPath) {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
+            setBody(validJsonWithFnr)
+        }.apply {
+            assertTrue(requestHandled)
+            assertEquals(HttpStatusCode.OK, response.status())
+            verify(exactly = 1) { runBlocking { behandlingsInntektsGetterMock.getBehandlingsInntekt(fnrParametre) } }
         }
     }
 
@@ -87,9 +161,11 @@ class SpesifisertInntektApiSpec {
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        withTestApplication(mockInntektApi(
-            behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-            apiAuthApiKeyVerifier = authApiKeyVerifier
-        )) { callback() }
+        withTestApplication(
+            mockInntektApi(
+                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+                apiAuthApiKeyVerifier = authApiKeyVerifier
+            )
+        ) { callback() }
     }
 }

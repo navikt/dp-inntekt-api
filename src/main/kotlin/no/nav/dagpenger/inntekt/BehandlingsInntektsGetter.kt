@@ -1,29 +1,43 @@
 package no.nav.dagpenger.inntekt
 
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.db.Inntektparametre
+import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 
-class BehandlingsInntektsGetter(private val inntektskomponentClient: InntektskomponentClient, private val inntektStore: InntektStore) {
+class BehandlingsInntektsGetter(
+    private val inntektskomponentClient: InntektskomponentClient,
+    private val inntektStore: InntektStore
+) {
 
-    suspend fun getBehandlingsInntekt(behandlingsKey: BehandlingsKey): StoredInntekt {
-
-        val opptjeningsperiode = Opptjeningsperiode(behandlingsKey.beregningsDato)
+    suspend fun getBehandlingsInntekt(inntektparametre: Inntektparametre): StoredInntekt {
+        val opptjeningsperiode = Opptjeningsperiode(inntektparametre.beregningsdato)
 
         val inntektkomponentRequest = InntektkomponentRequest(
-            behandlingsKey.aktørId,
+            inntektparametre.aktørId,
             opptjeningsperiode.førsteMåned,
             opptjeningsperiode.sisteAvsluttendeKalenderMåned
         )
 
-        val storedInntekt = inntektStore.getInntektId(behandlingsKey)?.let { inntektStore.getInntekt(it) }
-            ?: inntektStore.insertInntekt(
-                behandlingsKey,
-                inntektskomponentClient.getInntekt(inntektkomponentRequest)
+        return isInntektStored(inntektparametre)?.let { inntektStore.getInntekt(it) }
+            ?: fetchAndStoreInntekt(inntektparametre, inntektkomponentRequest)
+    }
+
+    private suspend fun fetchAndStoreInntekt(
+        inntektparametre: Inntektparametre,
+        inntektkomponentRequest: InntektkomponentRequest
+    ): StoredInntekt {
+        return inntektStore.storeInntekt(
+            StoreInntektCommand(
+                inntektparametre = inntektparametre,
+                inntekt = inntektskomponentClient.getInntekt(inntektkomponentRequest)
             )
 
-        return storedInntekt
+        )
     }
+
+    private fun isInntektStored(inntektparametre: Inntektparametre) = inntektStore.getInntektId(inntektparametre)
 }

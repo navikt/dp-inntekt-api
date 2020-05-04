@@ -10,35 +10,41 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
-import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.moshiInstance
+import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
 
 internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore, HealthCheck {
-    private val LOGGER = KotlinLogging.logger {}
 
     companion object {
+        private val adapter: JsonAdapter<InntektkomponentResponse> =
+            moshiInstance.adapter(InntektkomponentResponse::class.java)
+        private val ulidGenerator = ULID()
+        private val LOGGER = KotlinLogging.logger {}
         private val markerInntektTimer = Summary.build()
             .name("marker_inntekt_brukt")
             .help("Hvor lang tid det tar å markere en inntekt brukt (i sekunder")
             .register()
     }
+
     override fun getManueltRedigert(inntektId: InntektId): ManueltRedigert? {
+        @Language("sql")
+        val statement = """
+            SELECT redigert_av
+                FROM inntekt_V1_manuelt_redigert
+            WHERE inntekt_id = ?
+                            """.trimMargin()
         try {
             return using(sessionOf(dataSource)) { session ->
                 session.run(
-                    queryOf(
-                        """SELECT redigert_av
-                                    FROM inntekt_V1_manuelt_redigert
-                                    WHERE inntekt_id = ?
-                            """.trimMargin(), inntektId.id
-                    ).map { row ->
-                        ManueltRedigert(row.string(1))
-                    }.asSingle
+                    queryOf(statement, inntektId.id)
+                        .map { row ->
+                            ManueltRedigert(row.string(1))
+                        }.asSingle
                 )
             }
         } catch (p: PSQLException) {
@@ -46,38 +52,93 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
         }
     }
 
-    private val adapter: JsonAdapter<InntektkomponentResponse> =
-        moshiInstance.adapter(InntektkomponentResponse::class.java)
-    private val ulidGenerator = ULID()
-
-    override fun getInntektId(request: BehandlingsKey): InntektId? {
+    override fun getInntektId(inntektparametre: Inntektparametre): InntektId? {
         try {
-            return using(sessionOf(dataSource)) { session ->
-                session.run(
-                    queryOf(
-                        """SELECT inntektId
-                                    FROM inntekt_V1_arena_mapping
-                                    WHERE aktørId = ? AND vedtakid = ? AND beregningsdato = ?
-                                    ORDER BY timestamp DESC LIMIT 1
-                            """.trimMargin(), request.aktørId, request.vedtakId, request.beregningsDato
-                    ).map { row ->
-                        InntektId(row.string("inntektId"))
-                    }.asSingle
+            return if (inntektparametre.migrateCandidate()) {
+                fetchInntektIdFromArenaMappingTable(inntektparametre) ?: fetchInntektIdFromPersonMappingTable(
+                    inntektparametre
                 )
+            } else {
+                fetchInntektIdFromPersonMappingTable(inntektparametre)
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
+        }
+    }
+
+    private fun fetchInntektIdFromArenaMappingTable(inntektparametre: Inntektparametre): InntektId? {
+        @Language("sql")
+        val statement = """
+            SELECT inntektId
+                FROM inntekt_V1_arena_mapping
+            WHERE aktørId = ? AND vedtakid = ? AND beregningsdato = ?
+            ORDER BY timestamp DESC LIMIT 1
+        """.trimMargin()
+
+        return using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    statement,
+                    inntektparametre.aktørId,
+                    inntektparametre.vedtakId.toLong(),
+                    inntektparametre.beregningsdato
+                ).map { row ->
+                    InntektId(row.string("inntektId"))
+                }.asSingle
+            )
+        }
+    }
+
+    private fun fetchInntektIdFromPersonMappingTable(inntektparametre: Inntektparametre): InntektId? {
+        @Language("sql")
+        val statement: String = """
+                SELECT inntektId
+                    FROM inntekt_V1_person_mapping
+                WHERE aktørId = ? 
+                AND fnr = ? OR fnr IS NULL 
+                AND vedtakId = ? 
+                AND beregningsdato = ? 
+                ORDER BY timestamp DESC LIMIT 1
+        """.trimMargin()
+
+        return using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    statement,
+                    inntektparametre.aktørId,
+                    inntektparametre.fødselnummer,
+                    inntektparametre.vedtakId,
+                    inntektparametre.beregningsdato
+                ).map { row ->
+                    InntektId(row.string("inntektId"))
+                }.asSingle
+            )
         }
     }
 
     override fun getBeregningsdato(inntektId: InntektId): LocalDate {
+        @Language("sql")
+        val arenaMappingQuery = """
+            SELECT beregningsdato
+                                FROM inntekt_V1_arena_mapping
+                                WHERE inntektId = ?
+                        """.trimMargin()
+
+        @Language("sql")
+        val personMappingQuery = """SELECT beregningsdato
+                                FROM inntekt_V1_person_mapping
+                                WHERE inntektId = ?
+                        """.trimMargin()
+
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    """SELECT beregningsdato
-                                FROM inntekt_V1_arena_mapping
-                                WHERE inntektId = ?
-                        """.trimMargin(), inntektId.id
+                    arenaMappingQuery, inntektId.id
+                ).map { row ->
+                    row.localDate("beregningsdato")
+                }.asSingle
+            ) ?: session.run(
+                queryOf(personMappingQuery, inntektId.id
                 ).map { row ->
                     row.localDate("beregningsdato")
                 }.asSingle
@@ -104,10 +165,8 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
         }
     }
 
-    override fun insertInntekt(
-        request: BehandlingsKey,
-        inntekt: InntektkomponentResponse,
-        manueltRedigert: ManueltRedigert?,
+    override fun storeInntekt(
+        command: StoreInntektCommand,
         created: ZonedDateTime
     ): StoredInntekt {
         try {
@@ -117,14 +176,15 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                 session.transaction { tx ->
                     tx.run(
                         queryOf(
-                            "INSERT INTO inntekt_V1 (id, inntekt, manuelt_redigert, timestamp) VALUES (:id, :data, :manuelt, :created)", mapOf(
+                            "INSERT INTO inntekt_V1 (id, inntekt, manuelt_redigert, timestamp) VALUES (:id, :data, :manuelt, :created)",
+                            mapOf(
                                 "id" to inntektId.id,
                                 "created" to created,
                                 "data" to PGobject().apply {
                                     type = "jsonb"
-                                    value = adapter.toJson(inntekt)
+                                    value = adapter.toJson(command.inntekt)
                                 },
-                                when (manueltRedigert) {
+                                when (command.manueltRedigert) {
                                     null -> "manuelt" to false
                                     else -> "manuelt" to true
                                 }
@@ -134,16 +194,18 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                     )
                     tx.run(
                         queryOf(
-                            "INSERT INTO inntekt_V1_arena_mapping VALUES (:id, :aktor, :vedtak, :beregningsdato)", mapOf(
-                                "id" to inntektId.id,
-                                "aktor" to request.aktørId,
-                                "vedtak" to request.vedtakId,
-                                "beregningsdato" to request.beregningsDato
+                            "INSERT INTO inntekt_V1_person_mapping VALUES (:inntektId, :aktorId, :fnr, :vedtakId, :beregningsdato)",
+                            mapOf(
+                                "inntektId" to inntektId.id,
+                                "aktorId" to command.inntektparametre.aktørId,
+                                "fnr" to command.inntektparametre.fødselnummer,
+                                "vedtakId" to command.inntektparametre.vedtakId,
+                                "beregningsdato" to command.inntektparametre.beregningsdato
                             )
                         ).asUpdate
                     )
 
-                    manueltRedigert?.let {
+                    command.manueltRedigert?.let {
                         tx.run(
                             queryOf(
                                 "INSERT INTO inntekt_V1_manuelt_redigert VALUES(:id,:redigert)", mapOf(

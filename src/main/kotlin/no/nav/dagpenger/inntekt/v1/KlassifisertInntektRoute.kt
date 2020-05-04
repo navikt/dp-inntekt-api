@@ -8,9 +8,10 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
-import no.nav.dagpenger.inntekt.BehandlingsKey
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.db.Inntektparametre
+import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
@@ -26,17 +27,15 @@ fun Route.klassifisertInntekt(inntektskomponentClient: InntektskomponentClient, 
 
                 val opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)
 
-                val behandlingsKey = BehandlingsKey(
-                    request.aktørId,
-                    request.vedtakId,
-                    request.beregningsDato
+                val parameters = Inntektparametre(
+                    aktørId = request.aktørId,
+                    vedtakId = request.vedtakId.toString(),
+                    beregningsdato = request.beregningsDato
                 )
 
-                val storedInntekt = inntektStore.getInntektId(behandlingsKey)?.let { inntektStore.getInntekt(it) }
-                    ?: inntektStore.insertInntekt(
-                        behandlingsKey,
-                        inntektskomponentClient.getInntekt(toInntektskomponentRequest(request, opptjeningsperiode))
-                    )
+                val storedInntekt = inntektStore.getInntektId(parameters)?.let { inntektStore.getInntekt(it) }
+                    ?: inntektStore.storeInntekt(StoreInntektCommand(inntektparametre = parameters,
+                        inntekt = inntektskomponentClient.getInntekt(toInntektskomponentRequest(request, opptjeningsperiode))))
 
                 val klassifisertInntekt = storedInntekt.let {
                     Inntekt(

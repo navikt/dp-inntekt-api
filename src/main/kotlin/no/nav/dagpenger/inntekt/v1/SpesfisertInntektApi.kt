@@ -13,7 +13,7 @@ import java.util.concurrent.Executors
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
-import no.nav.dagpenger.inntekt.BehandlingsKey
+import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.mapping.mapToSpesifisertInntekt
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 
@@ -27,7 +27,7 @@ fun Route.spesifisertInntekt(behandlingsInntektsGetter: BehandlingsInntektsGette
 
                 val storedInntekt = withContext(api) {
                     behandlingsInntektsGetter.getBehandlingsInntekt(
-                        BehandlingsKey(request.aktørId, request.vedtakId, request.beregningsDato)
+                        Inntektparametre(aktørId = request.aktørId, vedtakId = request.vedtakId, beregningsdato = request.beregningsDato, fødselnummer = request.fødselsnummer)
                     )
                 }
 
@@ -44,6 +44,7 @@ fun Route.spesifisertInntekt(behandlingsInntektsGetter: BehandlingsInntektsGette
 
 data class SpesifisertInntektRequest(
     val aktørId: String,
-    val vedtakId: Long,
+    val vedtakId: String,
+    val fødselsnummer: String? = null,
     val beregningsDato: LocalDate
 )

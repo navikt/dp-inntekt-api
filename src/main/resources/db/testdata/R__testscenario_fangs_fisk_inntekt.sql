@@ -142,6 +142,6 @@ VALUES ('01E4643JPV09M99R5ARZET9580', TRUE, '
 }')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO inntekt_v1_arena_mapping (inntektid, aktørid, vedtakid, beregningsdato)
-VALUES ('01E4643JPV09M99R5ARZET9580', 'FF_INNTEKT', 12345, '2019-07-01')
-ON CONFLICT DO NOTHING;;
+INSERT INTO inntekt_v1_person_mapping (inntektid, aktørid, vedtakid, fnr, beregningsdato)
+VALUES ('01E4643JPV09M99R5ARZET9580', 'FF_INNTEKT', 12345, null, '2019-07-01')
+ON CONFLICT DO NOTHING;
