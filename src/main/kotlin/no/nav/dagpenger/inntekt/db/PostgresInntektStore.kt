@@ -95,7 +95,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                 SELECT inntektId
                     FROM inntekt_V1_person_mapping
                 WHERE aktørId = ? 
-                AND fnr = ? OR fnr IS NULL 
+                AND (fnr = ? OR fnr IS NULL)
                 AND vedtakId = ? 
                 AND beregningsdato = ? 
                 ORDER BY timestamp DESC LIMIT 1
