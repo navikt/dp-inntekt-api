@@ -1,6 +1,8 @@
 package no.nav.dagpenger.inntekt.db
 
+import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -80,6 +82,46 @@ internal class PostgresInntektStoreTest {
                 assertTrue("Inntekstliste should be in the same state") { storedInntekt == storedInntektByRequest }
 
                 assertNull(getManueltRedigert(storedInntektByRequest.inntektId))
+            }
+        }
+    }
+
+    @Test
+    fun ` Should insert different inntekt based on different aktørid and same vedtak id `() {
+
+        val aktørId1 = "1234"
+        val aktørId2 = "5678"
+
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+
+                storeInntekt(
+                    StoreInntektCommand(
+                        inntektparametre = Inntektparametre(aktørId = aktørId1, vedtakId = "1234", beregningsdato = LocalDate.now()),
+                        inntekt = InntektkomponentResponse(
+                            emptyList(),
+                            Aktoer(AktoerType.AKTOER_ID, aktørId1)
+                        )
+                    )
+                )
+
+                storeInntekt(
+                    StoreInntektCommand(
+                        inntektparametre = Inntektparametre(aktørId = aktørId2, vedtakId = "1234", beregningsdato = LocalDate.now()),
+                        inntekt = InntektkomponentResponse(
+                            emptyList(),
+                            Aktoer(AktoerType.AKTOER_ID, aktørId2)
+                        )
+                    )
+                )
+
+                assertSoftly {
+                    getInntektId(Inntektparametre(aktørId = aktørId1, vedtakId = "1234", beregningsdato = LocalDate.now())) shouldNotBe null
+                    getInntektId(Inntektparametre(aktørId = aktørId2, vedtakId = "1234", beregningsdato = LocalDate.now())) shouldNotBe null
+                    getInntektId(Inntektparametre(aktørId = aktørId2, vedtakId = "1234", beregningsdato = LocalDate.now())) shouldNotBe getInntektId(Inntektparametre(aktørId = aktørId1, vedtakId = "1234", beregningsdato = LocalDate.now()))
+                    getInntektId(Inntektparametre(aktørId = aktørId2, vedtakId = "464664", beregningsdato = LocalDate.now())) shouldBe null
+                    getInntektId(Inntektparametre(aktørId = "3535535335", vedtakId = "1234", beregningsdato = LocalDate.now())) shouldBe null
+                }
             }
         }
     }
