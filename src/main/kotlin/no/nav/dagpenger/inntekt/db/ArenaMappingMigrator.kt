@@ -11,6 +11,7 @@ internal class ArenaMappingMigrator(private val datasource: DataSource) {
 
     companion object {
         private val logger = KotlinLogging.logger {}
+        private val lockKey = 1337
     }
 
     @Language("sql")
@@ -22,15 +23,45 @@ internal class ArenaMappingMigrator(private val datasource: DataSource) {
                 """.trimIndent()
 
     fun migrate(): Int {
+        try {
+            val locked = lock()
+            return if (locked) {
+                logger.info { "Obtained lock for migrator" }
+                val rowsMigrated = using(sessionOf(datasource)) { session ->
+                    session.transaction {
+                        it.run(queryOf(statement).asUpdate)
+                    }
+                }
 
-        val rowsMigrated = using(sessionOf(datasource)) { session ->
-            session.transaction {
-                it.run(queryOf(statement).asUpdate)
+                logger.info { "Migrated $rowsMigrated rows from inntekt_v1_arena_mapping to inntekt_v1_person_mapping" }
+                rowsMigrated
+            } else {
+                logger.info { "Could not obtain lock for migrator" }
+                0
             }
+        } finally {
+            val unlocked = unlock()
+            logger.info { "Unlocked = $unlocked for migrator" }
         }
+    }
 
-        logger.info { "Migrated $rowsMigrated rows from inntekt_v1_arena_mapping to inntekt_v1_person_mapping" }
+    private fun unlock(): Boolean {
+        return using(sessionOf(datasource)) { session ->
+            session.run(
+                queryOf("select pg_advisory_unlock($lockKey)").map {
+                    it.string(1) == "t"
+                }.asSingle
+            ) ?: false
+        }
+    }
 
-        return rowsMigrated
+    private fun lock(): Boolean {
+        return using(sessionOf(datasource)) { session ->
+            session.run(
+                queryOf("select pg_try_advisory_lock($lockKey)").map {
+                    it.string(1) == "t"
+                }.asSingle
+            ) ?: false
+        }
     }
 }

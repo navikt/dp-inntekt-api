@@ -99,10 +99,12 @@ fun main() = runBlocking {
 
     val arenaMappingMigrator = ArenaMappingMigrator(dataSource)
 
-    launch {
-        LOGGER.info { "Starting ArenaMappingMigrator" }
-        arenaMappingMigrator.migrate()
-        LOGGER.info { "Done running ArenaMappingMigrator" }
+    if (config.application.profile != Profile.PROD) {
+        launch {
+            LOGGER.info { "Starting ArenaMappingMigrator" }
+            arenaMappingMigrator.migrate()
+            LOGGER.info { "Done running ArenaMappingMigrator" }
+        }
     }
 
     val inntektskomponentHttpClient = InntektskomponentHttpClient(
