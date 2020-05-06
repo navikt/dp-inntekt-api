@@ -72,6 +72,7 @@ io.kotest:kotest-fp-jvm:4.0.3
 io.kotest:kotest-fp:4.0.3
 io.kotest:kotest-mpp-jvm:4.0.3
 io.kotest:kotest-mpp:4.0.3
+io.kotest:kotest-property-jvm:4.0.3
 io.kotest:kotest-runner-junit5-jvm:4.0.3
 io.ktor:ktor-auth-jwt:1.2.6
 io.ktor:ktor-auth:1.2.6

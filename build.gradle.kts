@@ -107,6 +107,7 @@ dependencies {
     testImplementation(Wiremock.standalone)
     testImplementation(KoTest.assertions)
     testImplementation(KoTest.runner)
+    testImplementation(KoTest.property)
     testImplementation(TestContainers.postgresql)
     testImplementation(TestContainers.kafka)
     testImplementation(Mockk.mockk)

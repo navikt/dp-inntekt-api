@@ -41,6 +41,10 @@ de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0
 io.github.microutils:kotlin-logging:1.7.9
 io.kotest:kotest-assertions-core-jvm:4.0.3
 io.kotest:kotest-assertions-core-metadata:4.0.3
+io.kotest:kotest-assertions-metadata:4.0.3
+io.kotest:kotest-assertions:4.0.3
+io.kotest:kotest-property-jvm:4.0.3
+io.kotest:kotest-property-metadata:4.0.3
 io.kotest:kotest-runner-junit5-jvm:4.0.3
 io.kotest:kotest-runner-junit5-metadata:4.0.3
 io.ktor:ktor-auth-jwt:1.2.6

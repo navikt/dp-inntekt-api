@@ -1,8 +1,15 @@
 package no.nav.dagpenger.inntekt.db
 
 import io.kotest.assertions.assertSoftly
+import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.arb
+import io.kotest.property.arbitrary.localDate
+import io.kotest.property.arbitrary.next
+import io.kotest.property.arbitrary.string
+import io.kotest.property.checkAll
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -93,11 +100,16 @@ internal class PostgresInntektStoreTest {
         val aktørId2 = "5678"
 
         withMigratedDb {
+
             with(PostgresInntektStore(DataSource.instance)) {
 
+                val aktør1 =
+                    Inntektparametre(aktørId = aktørId1, vedtakId = "1234", beregningsdato = LocalDate.now())
+                val aktør2 =
+                    Inntektparametre(aktørId = aktørId2, vedtakId = "1234", beregningsdato = LocalDate.now())
                 storeInntekt(
                     StoreInntektCommand(
-                        inntektparametre = Inntektparametre(aktørId = aktørId1, vedtakId = "1234", beregningsdato = LocalDate.now()),
+                        inntektparametre = aktør1,
                         inntekt = InntektkomponentResponse(
                             emptyList(),
                             Aktoer(AktoerType.AKTOER_ID, aktørId1)
@@ -107,7 +119,7 @@ internal class PostgresInntektStoreTest {
 
                 storeInntekt(
                     StoreInntektCommand(
-                        inntektparametre = Inntektparametre(aktørId = aktørId2, vedtakId = "1234", beregningsdato = LocalDate.now()),
+                        inntektparametre = aktør2,
                         inntekt = InntektkomponentResponse(
                             emptyList(),
                             Aktoer(AktoerType.AKTOER_ID, aktørId2)
@@ -116,9 +128,9 @@ internal class PostgresInntektStoreTest {
                 )
 
                 assertSoftly {
-                    getInntektId(Inntektparametre(aktørId = aktørId1, vedtakId = "1234", beregningsdato = LocalDate.now())) shouldNotBe null
-                    getInntektId(Inntektparametre(aktørId = aktørId2, vedtakId = "1234", beregningsdato = LocalDate.now())) shouldNotBe null
-                    getInntektId(Inntektparametre(aktørId = aktørId2, vedtakId = "1234", beregningsdato = LocalDate.now())) shouldNotBe getInntektId(Inntektparametre(aktørId = aktørId1, vedtakId = "1234", beregningsdato = LocalDate.now()))
+                    getInntektId(aktør1) shouldNotBe null
+                    getInntektId(aktør2) shouldNotBe null
+                    getInntektId(aktør2) shouldNotBe getInntektId(aktør1)
                     getInntektId(Inntektparametre(aktørId = aktørId2, vedtakId = "464664", beregningsdato = LocalDate.now())) shouldBe null
                     getInntektId(Inntektparametre(aktørId = "3535535335", vedtakId = "1234", beregningsdato = LocalDate.now())) shouldBe null
                 }
@@ -274,6 +286,65 @@ internal class PostgresInntektStoreTest {
                 val updated = markerInntektBrukt(storedInntekt.inntektId)
                 updated shouldBe 1
             }
+        }
+    }
+}
+
+internal class InntektsStorePropertyTest : StringSpec() {
+
+    init {
+        withMigratedDb {
+            val store = PostgresInntektStore(DataSource.instance)
+
+            "Alle inntekter skal kunne hentes når de lagres" {
+                checkAll(storeInntekCommandGenerator) { command: StoreInntektCommand ->
+                    val stored = store.storeInntekt(command)
+                    store.getInntektId(command.inntektparametre) shouldBe stored.inntektId
+                }
+            }
+
+            "Alle inntekter skal kunne hentes når de lagres med samme vedtak id men forskjellig person uten fødselsnummer" {
+                checkAll(storeInntektCommandGeneratorWithSameVedtakidAndBeregningsDato) { command: StoreInntektCommand ->
+                    val stored = store.storeInntekt(command)
+                    store.getInntektId(command.inntektparametre) shouldBe stored.inntektId
+                }
+            }
+        }
+    }
+
+    private val storeInntekCommandGenerator = arb {
+        val stringArb = Arb.string(10, 11)
+        generateSequence {
+            StoreInntektCommand(
+                inntektparametre = Inntektparametre(
+                    aktørId = stringArb.next(it),
+                    vedtakId = stringArb.next(it),
+                    fødselnummer = stringArb.next(it),
+                    beregningsdato = Arb.localDate(minYear = 2010, maxYear = LocalDate.now().year).next(it)
+                ),
+                inntekt = InntektkomponentResponse(
+                    arbeidsInntektMaaned = emptyList(),
+                    ident = Aktoer(AktoerType.AKTOER_ID, "1234")
+                )
+            )
+        }
+    }
+
+    private val storeInntektCommandGeneratorWithSameVedtakidAndBeregningsDato = arb {
+        val stringArb = Arb.string(10, 11)
+        generateSequence {
+            StoreInntektCommand(
+                inntektparametre = Inntektparametre(
+                    aktørId = stringArb.next(it),
+                    vedtakId = "12345",
+                    fødselnummer = null,
+                    beregningsdato = LocalDate.now()
+                ),
+                inntekt = InntektkomponentResponse(
+                    arbeidsInntektMaaned = emptyList(),
+                    ident = Aktoer(AktoerType.AKTOER_ID, "1234")
+                )
+            )
         }
     }
 }
