@@ -74,6 +74,36 @@ class KafkaSubsumsjonBruktDataConsumerTest {
     }
 
     @Test
+    fun `Cannot mark inntekt id as used if not present in faktum`() {
+        runBlocking {
+            val storeMock = mockk<InntektStore>(relaxed = false).apply {
+                every { this@apply.markerInntektBrukt(any()) } returns 1
+            }
+            val config = Configuration().run {
+                copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers, user = null, password = null))
+            }
+
+            val consumer = KafkaSubsumsjonBruktDataConsumer(config, storeMock).apply {
+                listen()
+            }
+
+            val bruktSubsumsjonData = mapOf("faktum" to mapOf("manueltGrunnlag" to "122212"))
+
+            val metaData = producer.send(ProducerRecord(config.subsumsjonBruktDataTopic, "test", adapter.toJson(bruktSubsumsjonData)))
+                .get(5, TimeUnit.SECONDS)
+            LOGGER.info("Producer produced $bruktSubsumsjonData with meta $metaData")
+
+            TimeUnit.MILLISECONDS.sleep(500)
+
+            verify(exactly = 0) {
+                storeMock.markerInntektBrukt(any())
+            }
+
+            consumer.status() shouldBe HealthStatus.UP
+        }
+    }
+
+    @Test
     fun `Should have grace period on health status when job is no longer active`() {
         runBlocking {
             val storeMock = mockk<InntektStore>(relaxed = false).apply {

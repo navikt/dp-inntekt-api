@@ -76,7 +76,11 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                         val records = consumer.poll(Duration.ofMillis(100))
                         val ids = records.asSequence()
                             .map { record -> record.value() }
-                            .map { packet -> InntektId(packet.getMapValue("faktum")["inntektsId"] as String) }
+                            .filter { packet -> packet.hasField("faktum") }
+                            .map { packet -> packet.getMapValue("faktum") }
+                            .onEach { faktum -> if (faktum["inntektsId"] == null) { logger.info { "Subsumsjon do not contain inntekts id. Is it manuelt grunnlag? ${faktum["manueltGrunnlag"] != null}" } } }
+                            .filter { faktum -> faktum["inntektsId"] != null }
+                            .map { faktum -> InntektId(faktum["inntektsId"] as String) }
                             .toList()
 
                         try {
