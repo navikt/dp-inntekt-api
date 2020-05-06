@@ -16,9 +16,9 @@ internal class ArenaMappingMigrator(private val datasource: DataSource) {
     @Language("sql")
     private val statement: String = """
                   INSERT INTO inntekt_v1_person_mapping (inntektid, aktørid, vedtakid, beregningsdato)
-                  SELECT inntektid, aktørid, vedtakid::text, beregningsdato
+                  SELECT inntektid, aktørid, vedtakid, beregningsdato
                   FROM inntekt_v1_arena_mapping 
-                  WHERE inntektid NOT IN (SELECT inntektid from inntekt_v1_person_mapping) ON CONFLICT DO NOTHING 
+                  WHERE inntektid NOT IN (SELECT inntektid from inntekt_v1_person_mapping)
                 """.trimIndent()
 
     fun migrate(): Int {

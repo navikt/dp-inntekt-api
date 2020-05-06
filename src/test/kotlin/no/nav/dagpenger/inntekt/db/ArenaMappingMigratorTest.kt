@@ -21,45 +21,101 @@ internal class ArenaMappingMigratorTest {
 
     companion object {
 
-        private val numberOfInserts = 100
         private val hentInntektListeResponse = InntektkomponentResponse(
             emptyList(),
             Aktoer(AktoerType.AKTOER_ID, "1234")
         )
-
-        private val inntektIds = (1..numberOfInserts).toList().map { InntektId(ULID().nextULID()) to StoreInntektCommand(
-            inntektparametre = Inntektparametre(Random.nextInt().toString(), Random.nextLong().toString(), LocalDate.now()),
-            inntekt = hentInntektListeResponse
-        ) }
     }
 
     @Test
     fun `Skal migrere data fra arena mapping til person tabell `() {
         withMigratedDb {
-            fillArenaMappingTable(TestDataSource.instance)
+            val numberOfInserts = 100
+            val commands = (1..numberOfInserts).toList().map { InntektId(ULID().nextULID()) to StoreInntektCommand(
+                inntektparametre = Inntektparametre(aktørId = Random.nextInt().toString(), vedtakId = Random.nextLong().toString(), beregningsdato = LocalDate.now()),
+                inntekt = hentInntektListeResponse
+            ) }
+            fillArenaMappingTable(TestDataSource.instance, commands)
             val arenaMappingMigrator = ArenaMappingMigrator(TestDataSource.instance)
             val rowsMigrated = arenaMappingMigrator.migrate()
 
             val inntektStore = PostgresInntektStore(TestDataSource.instance)
 
-            rowsMigrated shouldBeExactly numberOfInserts
-
-            val ids = inntektIds.mapNotNull { (_, command) ->
+            val ids = commands.mapNotNull { (_, command) ->
                 inntektStore.getInntektId(
-                    Inntektparametre(
-                        aktørId = command.inntektparametre.aktørId,
-                        vedtakId = command.inntektparametre.vedtakId,
-                        beregningsdato = command.inntektparametre.beregningsdato
-                    )
+                    inntektparametre = command.inntektparametre
                 )
             }
 
-            ids shouldContainAll inntektIds.map { it.first }
+            rowsMigrated shouldBeExactly numberOfInserts
+            ids.size shouldBeExactly numberOfInserts
+            ids shouldContainAll commands.map { it.first }
         }
     }
 
-    private fun fillArenaMappingTable(dataSource: javax.sql.DataSource) {
-        inntektIds.forEach { (id, command) ->
+    @Test
+    fun `Skal migrere data fra arena mapping til person tabell med samme vedtak id og aktør id men forskjellig beregningsdato`() {
+        withMigratedDb {
+            val numberOfInserts = 4
+            val commandsWithSameVedtakId: List<Pair<InntektId, StoreInntektCommand>> = (1..4).toList().map { InntektId(ULID().nextULID()) to StoreInntektCommand(
+                inntektparametre = Inntektparametre(aktørId = "1234", vedtakId = "5678", beregningsdato = LocalDate.now().minusDays(Random.nextInt(365).toLong())),
+                inntekt = hentInntektListeResponse
+            ) }
+            fillArenaMappingTable(TestDataSource.instance, commandsWithSameVedtakId)
+            val arenaMappingMigrator = ArenaMappingMigrator(TestDataSource.instance)
+            val rowsMigrated = arenaMappingMigrator.migrate()
+
+            val inntektStore = PostgresInntektStore(TestDataSource.instance)
+
+            val ids = commandsWithSameVedtakId.mapNotNull { (_, command) ->
+                inntektStore.getInntektId(
+                    inntektparametre = command.inntektparametre
+                )
+            }
+
+            rowsMigrated shouldBeExactly numberOfInserts
+            ids.size shouldBeExactly numberOfInserts
+            ids shouldContainAll commandsWithSameVedtakId.map { it.first }
+        }
+    }
+
+    @Test
+    fun ` Migrere kan skje flere ganger `() {
+
+        withMigratedDb {
+            val numberOfInserts = 100
+            val commands = (1..numberOfInserts).toList().map {
+                InntektId(ULID().nextULID()) to StoreInntektCommand(
+                    inntektparametre = Inntektparametre(
+                        aktørId = Random.nextInt().toString(),
+                        vedtakId = Random.nextLong().toString(),
+                        beregningsdato = LocalDate.now()
+                    ),
+                    inntekt = hentInntektListeResponse
+                )
+            }
+            fillArenaMappingTable(TestDataSource.instance, commands)
+            val arenaMappingMigrator = ArenaMappingMigrator(TestDataSource.instance)
+            val rowsMigrated = arenaMappingMigrator.migrate()
+            val rowsMigratedSecondTime = arenaMappingMigrator.migrate()
+
+            val inntektStore = PostgresInntektStore(TestDataSource.instance)
+
+            val ids = commands.mapNotNull { (_, command) ->
+                inntektStore.getInntektId(
+                    inntektparametre = command.inntektparametre
+                )
+            }
+
+            rowsMigrated shouldBeExactly numberOfInserts
+            rowsMigratedSecondTime shouldBeExactly 0
+            ids.size shouldBeExactly numberOfInserts
+            ids shouldContainAll commands.map { it.first }
+        }
+    }
+
+    private fun fillArenaMappingTable(dataSource: javax.sql.DataSource, commands: List<Pair<InntektId, StoreInntektCommand>>) {
+        commands.forEach { (id, command) ->
             using(sessionOf(dataSource)) { session ->
                 session.transaction { tx ->
                     tx.run(
