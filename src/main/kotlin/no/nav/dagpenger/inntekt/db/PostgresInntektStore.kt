@@ -54,44 +54,8 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
 
     override fun getInntektId(inntektparametre: Inntektparametre): InntektId? {
         try {
-            return if (inntektparametre.migrateCandidate()) {
-                fetchInntektIdFromArenaMappingTable(inntektparametre) ?: fetchInntektIdFromPersonMappingTable(
-                    inntektparametre
-                )
-            } else {
-                fetchInntektIdFromPersonMappingTable(inntektparametre)
-            }
-        } catch (p: PSQLException) {
-            throw StoreException(p.message!!)
-        }
-    }
-
-    private fun fetchInntektIdFromArenaMappingTable(inntektparametre: Inntektparametre): InntektId? {
-        @Language("sql")
-        val statement = """
-            SELECT inntektId
-                FROM inntekt_V1_arena_mapping
-            WHERE aktørId = ? AND vedtakid = ? AND beregningsdato = ?
-            ORDER BY timestamp DESC LIMIT 1
-        """.trimMargin()
-
-        return using(sessionOf(dataSource)) { session ->
-            session.run(
-                queryOf(
-                    statement,
-                    inntektparametre.aktørId,
-                    inntektparametre.vedtakId.toLong(),
-                    inntektparametre.beregningsdato
-                ).map { row ->
-                    InntektId(row.string("inntektId"))
-                }.asSingle
-            )
-        }
-    }
-
-    internal fun fetchInntektIdFromPersonMappingTable(inntektparametre: Inntektparametre): InntektId? {
-        @Language("sql")
-        val statement: String = """
+            @Language("sql")
+            val statement: String = """
                 SELECT inntektId
                     FROM inntekt_V1_person_mapping
                 WHERE aktørId = ? 
@@ -101,44 +65,34 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                 ORDER BY timestamp DESC LIMIT 1
         """.trimMargin()
 
-        return using(sessionOf(dataSource)) { session ->
-            session.run(
-                queryOf(
-                    statement,
-                    inntektparametre.aktørId,
-                    inntektparametre.fødselnummer,
-                    inntektparametre.vedtakId,
-                    inntektparametre.beregningsdato
-                ).map { row ->
-                    InntektId(row.string("inntektId"))
-                }.asSingle
-            )
+            return using(sessionOf(dataSource)) { session ->
+                session.run(
+                    queryOf(
+                        statement,
+                        inntektparametre.aktørId,
+                        inntektparametre.fødselnummer,
+                        inntektparametre.vedtakId,
+                        inntektparametre.beregningsdato
+                    ).map { row ->
+                        InntektId(row.string("inntektId"))
+                    }.asSingle
+                )
+            }
+        } catch (p: PSQLException) {
+            throw StoreException(p.message!!)
         }
     }
 
     override fun getBeregningsdato(inntektId: InntektId): LocalDate {
         @Language("sql")
-        val arenaMappingQuery = """
-            SELECT beregningsdato
-                                FROM inntekt_V1_arena_mapping
-                                WHERE inntektId = ?
-                        """.trimMargin()
-
-        @Language("sql")
-        val personMappingQuery = """SELECT beregningsdato
+        val statement = """SELECT beregningsdato
                                 FROM inntekt_V1_person_mapping
                                 WHERE inntektId = ?
                         """.trimMargin()
 
         return using(sessionOf(dataSource)) { session ->
             session.run(
-                queryOf(
-                    arenaMappingQuery, inntektId.id
-                ).map { row ->
-                    row.localDate("beregningsdato")
-                }.asSingle
-            ) ?: session.run(
-                queryOf(personMappingQuery, inntektId.id
+                queryOf(statement, inntektId.id
                 ).map { row ->
                     row.localDate("beregningsdato")
                 }.asSingle
