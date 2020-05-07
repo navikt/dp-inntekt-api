@@ -16,8 +16,9 @@
                             stackTraceEnabled="true"/>
             <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>
-                <SizeBasedTriggeringPolicy size="50MB" />
+                <SizeBasedTriggeringPolicy size="25MB" />
             </Policies>
+            <DefaultRolloverStrategy max="5"/>
         </RollingFile>
     </Appenders>
     <Loggers>
