@@ -8,7 +8,7 @@ repositories {
 }
 
 application {
-    // applicationName = "dp-inntekt-api"
+    applicationName = "dp-inntekt-api"
     mainClassName = "no.nav.dagpenger.inntekt.InntektApiKt"
 }
 
