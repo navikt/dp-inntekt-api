@@ -17,7 +17,7 @@ import no.nav.dagpenger.inntekt.withMigratedDb
 import org.junit.jupiter.api.Test
 import org.postgresql.util.PGobject
 
-internal class ArenaMappingMigratorTest {
+internal class ArenaMappingMigratorTest() {
 
     companion object {
 
