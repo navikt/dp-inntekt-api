@@ -42,10 +42,18 @@ internal class ArenaMappingMigratorTest() {
             val inntektStore = PostgresInntektStore(TestDataSource.instance)
 
             val ids = commands.mapNotNull { (_, command) ->
+                inntektStore.fetchInntektIdFromPersonMappingTable(
+                    inntektparametre = command.inntektparametre
+                )
+            }
+
+            val fromOld = commands.mapNotNull { (_, command) ->
                 inntektStore.getInntektId(
                     inntektparametre = command.inntektparametre
                 )
             }
+
+            fromOld shouldContainAll ids
 
             rowsMigrated shouldBeExactly numberOfInserts
             ids.size shouldBeExactly numberOfInserts
@@ -68,7 +76,7 @@ internal class ArenaMappingMigratorTest() {
             val inntektStore = PostgresInntektStore(TestDataSource.instance)
 
             val ids = commandsWithSameVedtakId.mapNotNull { (_, command) ->
-                inntektStore.getInntektId(
+                inntektStore.fetchInntektIdFromPersonMappingTable(
                     inntektparametre = command.inntektparametre
                 )
             }
@@ -102,7 +110,7 @@ internal class ArenaMappingMigratorTest() {
             val inntektStore = PostgresInntektStore(TestDataSource.instance)
 
             val ids = commands.mapNotNull { (_, command) ->
-                inntektStore.getInntektId(
+                inntektStore.fetchInntektIdFromPersonMappingTable(
                     inntektparametre = command.inntektparametre
                 )
             }

@@ -89,7 +89,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
         }
     }
 
-    private fun fetchInntektIdFromPersonMappingTable(inntektparametre: Inntektparametre): InntektId? {
+    internal fun fetchInntektIdFromPersonMappingTable(inntektparametre: Inntektparametre): InntektId? {
         @Language("sql")
         val statement: String = """
                 SELECT inntektId

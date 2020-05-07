@@ -24,6 +24,7 @@ internal class ArenaMappingMigrator(private val datasource: DataSource) {
                 """.trimIndent()
 
     fun migrate(): Int {
+        val empty = 0
         try {
             val rowsMigrated = using(sessionOf(datasource)) { session ->
                 session.transaction { transaction ->
@@ -32,13 +33,16 @@ internal class ArenaMappingMigrator(private val datasource: DataSource) {
                         transaction.run(queryOf(statement).asUpdate)
                     } else {
                         logger.info { "Could not obtain lock for migrator" }
-                        0
+                        empty
                     }
                 }
             }
 
             logger.info { "Migrated $rowsMigrated rows from inntekt_v1_arena_mapping to inntekt_v1_person_mapping" }
             return rowsMigrated
+        } catch (err: Throwable) {
+            logger.error(err) { "Failed to migrate from inntekt_v1_arena_mapping to inntekt_v1_person_mapping" }
+            return empty
         } finally {
             val unlocked = unlock()
             logger.info { "Unlocked = $unlocked for migrator" }
