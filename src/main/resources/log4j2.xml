@@ -8,8 +8,23 @@
                             stackTraceEnabled="true"/>
         </Console>
         <Prometheus name="metrics"/>
+
+        <RollingFile name="securelog" filename="/Users/l153963/secure-logs/secure.log" filePattern="/Users/l153963/secure-logs/secure.log.%i" append="true">
+            <LogstashLayout dateTimeFormatPattern="yyyy-MM-dd'T'HH:mm:ss.SSSZZZ"
+                            eventTemplateUri="classpath:LogstashJsonEventLayoutV1.json"
+                            prettyPrintEnabled="false"
+                            stackTraceEnabled="true"/>
+            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="25MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
     </Appenders>
     <Loggers>
+        <Logger name="tjenestekall" level="debug" includeLocation="true">
+            <AppenderRef ref="securelog"/>
+        </Logger>
         <Root level="info">
             <AppenderRef ref="ConsoleAppender"/>
             <AppenderRef ref="metrics"/>

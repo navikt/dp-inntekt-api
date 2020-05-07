@@ -61,6 +61,7 @@ import no.nav.dagpenger.oidc.StsOidcClient
 import org.slf4j.event.Level
 
 private val LOGGER = KotlinLogging.logger {}
+private val sikkerLogg = KotlinLogging.logger("tjenestekall")
 val config = Configuration()
 
 fun main() = runBlocking {
@@ -210,7 +211,8 @@ fun Application.inntektApi(
                 if (HttpStatusCode.fromValue(cause.status).isSuccess()) HttpStatusCode.InternalServerError else HttpStatusCode.fromValue(
                     cause.status
                 )
-            LOGGER.error("Request failed against inntektskomponenten", cause)
+            sikkerLogg.error(cause) { "Request failed against inntektskomponenten" }
+            LOGGER.error("Request failed against inntektskomponenten")
             val error = Problem(
                 type = URI("urn:dp:error:inntektskomponenten"),
                 title = "Innhenting av inntekt mot a-inntekt feilet. Prøv igjen senere",
