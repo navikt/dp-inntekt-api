@@ -34,6 +34,7 @@ import java.net.URI
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.fixedRateTimer
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
@@ -86,8 +87,11 @@ fun main() = runBlocking {
     }
 
     val gRpcServer = InntektGrpcServer(port = 50051, inntektStore = postgresInntektStore)
-    gRpcServer.start()
-    gRpcServer.blockUntilShutdown()
+
+    launch {
+        gRpcServer.start()
+        gRpcServer.blockUntilShutdown()
+    }
 
     val vaktmester = Vaktmester(dataSource)
 
