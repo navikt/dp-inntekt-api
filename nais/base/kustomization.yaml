@@ -17,4 +17,4 @@ commonAnnotations:
 resources:
   - nais.yaml
   - alerts.yaml
-  - svc.yaml
+#  - svc.yaml - NOT allowed. 
