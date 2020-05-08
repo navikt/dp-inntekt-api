@@ -5,7 +5,7 @@ message InntektId {
     string id = 1;
 }
 
-message InntektV1 {
+message SpesifisertInntektAsJson {
     InntektId inntektId = 1;
     string json = 2;
 }

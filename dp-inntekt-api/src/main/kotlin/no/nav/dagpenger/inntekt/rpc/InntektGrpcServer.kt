@@ -1,13 +1,20 @@
 package no.nav.dagpenger.inntekt.rpc
 
+import io.grpc.ManagedChannelBuilder
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.grpc.Status
 import io.grpc.StatusException
+import java.util.concurrent.Executors
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.moshiInstance
 
 internal class InntektGrpcServer(private val port: Int, inntektStore: InntektStore) {
 
@@ -41,18 +48,38 @@ internal class InntektGrpcServer(private val port: Int, inntektStore: InntektSto
     }
 }
 
-internal class InntektGrpcApi(private val inntektStore: InntektStore) : InntektHenterGrpcKt.InntektHenterCoroutineImplBase() {
-    override suspend fun hentInntekt(request: InntektId): InntektV1 {
+internal class InntektGrpcApi(private val inntektStore: InntektStore) : SpesifisertInntektHenterGrpcKt.SpesifisertInntektHenterCoroutineImplBase() {
+    companion object {
+        val spesifisertInntektAdapter = moshiInstance.adapter(SpesifisertInntekt::class.java)
+    }
+
+    override suspend fun hentSpesifisertInntektAsJson(request: InntektId): SpesifisertInntektAsJson {
         try {
-            val inntekt = inntektStore.getInntekt(request.id.let { no.nav.dagpenger.inntekt.db.InntektId(it) })
-            // @todo: Need to fetch beregningsdato also, the json need to representated as SpesifisertInntekt
-            return InntektV1.newBuilder()
+            val inntekt = inntektStore.getSpesifisertInntekt(request.id.let { no.nav.dagpenger.inntekt.db.InntektId(it) })
+            return SpesifisertInntektAsJson.newBuilder()
                 .setInntektId(inntekt.inntektId.let { InntektId.newBuilder().setId(it.id).build() })
-                .setJson("{}").build()
+                .setJson(spesifisertInntektAdapter.toJson(inntekt)).build()
         } catch (e: InntektNotFoundException) {
             throw StatusException(Status.NOT_FOUND.withDescription("Inntekt with id ${request.id} not found"))
         } catch (e: IllegalInntektIdException) {
             throw StatusException(Status.INVALID_ARGUMENT.withDescription("Id  ${request.id} not a legal inntekt id"))
         }
+    }
+}
+
+fun main() {
+
+    Executors.newFixedThreadPool(10).asCoroutineDispatcher().use { dispatcher ->
+        val builder =
+            ManagedChannelBuilder.forTarget("localhost:50051").usePlaintext()
+
+        val client = SpesifisertInntektHenterGrpcKt.SpesifisertInntektHenterCoroutineStub(
+            builder.executor(dispatcher.asExecutor()).build()
+        )
+
+            val request = InntektId.newBuilder().setId("01D8G4TGH7Q9NKT7BPAG5XGXRT").build()
+            val now = System.currentTimeMillis()
+            val response = runBlocking { client.hentSpesifisertInntektAsJson(request) }
+            println(response)
     }
 }
