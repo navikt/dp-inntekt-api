@@ -46,6 +46,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
+import no.nav.dagpenger.inntekt.rpc.InntektGrpcServer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
 import no.nav.dagpenger.inntekt.v1.InntektNotAuthorizedException
@@ -83,6 +84,10 @@ fun main() = runBlocking {
     val subsumsjonBruktDataConsumer = KafkaSubsumsjonBruktDataConsumer(config, postgresInntektStore).apply {
         listen()
     }
+
+    val gRpcServer = InntektGrpcServer(port = 50051, inntektStore = postgresInntektStore)
+    gRpcServer.start()
+    gRpcServer.blockUntilShutdown()
 
     val vaktmester = Vaktmester(dataSource)
 
