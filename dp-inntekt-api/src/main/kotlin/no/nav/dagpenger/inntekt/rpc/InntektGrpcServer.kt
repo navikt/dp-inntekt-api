@@ -1,14 +1,9 @@
 package no.nav.dagpenger.inntekt.rpc
 
-import io.grpc.ManagedChannelBuilder
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.grpc.Status
 import io.grpc.StatusException
-import java.util.concurrent.Executors
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.asExecutor
-import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
@@ -64,22 +59,5 @@ internal class InntektGrpcApi(private val inntektStore: InntektStore) : Spesifis
         } catch (e: IllegalInntektIdException) {
             throw StatusException(Status.INVALID_ARGUMENT.withDescription("Id  ${request.id} not a legal inntekt id"))
         }
-    }
-}
-
-fun main() {
-
-    Executors.newFixedThreadPool(10).asCoroutineDispatcher().use { dispatcher ->
-        val builder =
-            ManagedChannelBuilder.forTarget("localhost:50051").usePlaintext()
-
-        val client = SpesifisertInntektHenterGrpcKt.SpesifisertInntektHenterCoroutineStub(
-            builder.executor(dispatcher.asExecutor()).build()
-        )
-
-            val request = InntektId.newBuilder().setId("01D8G4TGH7Q9NKT7BPAG5XGXRT").build()
-            val now = System.currentTimeMillis()
-            val response = runBlocking { client.hentSpesifisertInntektAsJson(request) }
-            println(response)
     }
 }
