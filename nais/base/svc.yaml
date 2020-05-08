@@ -16,4 +16,5 @@ spec:
     protocol: TCP
     targetPort: 50051
   selector:
+    team: teamdagpenger
     app: dp-inntekt-api
