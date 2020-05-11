@@ -1,25 +1,40 @@
 package no.nav.dagpenger.inntekt.rpc
 
+import com.squareup.moshi.JsonAdapter
+import io.grpc.ManagedChannelBuilder
+import io.grpc.Metadata
 import io.grpc.Server
 import io.grpc.ServerBuilder
+import io.grpc.ServerCall
+import io.grpc.ServerCallHandler
+import io.grpc.ServerInterceptor
 import io.grpc.Status
 import io.grpc.StatusException
+import io.grpc.StatusRuntimeException
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
+import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.moshiInstance
+import java.util.concurrent.Executors
 
-internal class InntektGrpcServer(private val port: Int, inntektStore: InntektStore) {
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
-    }
+private val logger = KotlinLogging.logger {}
+internal class InntektGrpcServer(
+    private val port: Int,
+    private val apiKeyVerifier: AuthApiKeyVerifier,
+    private val inntektStore: InntektStore
+) {
+    private val inntektGrpcApi = InntektGrpcApi(inntektStore).bindService()
 
     private val server: Server = ServerBuilder
         .forPort(port)
-        .addService(InntektGrpcApi(inntektStore))
+        .addService(inntektGrpcApi)
+        .intercept(ApiKeyServerInterceptor(apiKeyVerifier))
         .build()
 
     fun start() {
@@ -43,9 +58,30 @@ internal class InntektGrpcServer(private val port: Int, inntektStore: InntektSto
     }
 }
 
+internal class ApiKeyServerInterceptor(private val apiKeyVerifier: AuthApiKeyVerifier) : ServerInterceptor {
+
+    companion object {
+        private val API_KEY_HEADER: Metadata.Key<String> =
+            Metadata.Key.of("x-api-key", Metadata.ASCII_STRING_MARSHALLER)
+    }
+
+    override fun <ReqT : Any?, RespT : Any?> interceptCall(
+        call: ServerCall<ReqT, RespT>,
+        headers: Metadata,
+        next: ServerCallHandler<ReqT, RespT>
+    ): ServerCall.Listener<ReqT> {
+        val authenticated = headers.get(API_KEY_HEADER)?.let { apiKeyVerifier.verify(it) } ?: false
+        if (!authenticated) {
+            logger.warn { "gRpc call not authenticated" }
+            throw StatusRuntimeException(Status.UNAUTHENTICATED)
+        }
+        return next.startCall(call, headers)
+    }
+}
+
 internal class InntektGrpcApi(private val inntektStore: InntektStore) : SpesifisertInntektHenterGrpcKt.SpesifisertInntektHenterCoroutineImplBase() {
     companion object {
-        val spesifisertInntektAdapter = moshiInstance.adapter(SpesifisertInntekt::class.java)
+        val spesifisertInntektAdapter: JsonAdapter<SpesifisertInntekt> = moshiInstance.adapter(SpesifisertInntekt::class.java)
     }
 
     override suspend fun hentSpesifisertInntektAsJson(request: InntektId): SpesifisertInntektAsJson {

@@ -64,7 +64,7 @@ import org.slf4j.event.Level
 
 private val LOGGER = KotlinLogging.logger {}
 private val sikkerLogg = KotlinLogging.logger("tjenestekall")
-val config = Configuration()
+private val config = Configuration()
 
 fun main() = runBlocking {
 
@@ -74,8 +74,7 @@ fun main() = runBlocking {
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
 
-    val apiKeyVerifier = ApiKeyVerifier(config.application.apiSecret)
-    val allowedApiKeys = config.application.allowedApiKeys
+    val authApiKeyVerifier = AuthApiKeyVerifier(ApiKeyVerifier(config.application.apiSecret), config.application.allowedApiKeys)
 
     val dataSource = dataSourceFrom(config)
     val postgresInntektStore = PostgresInntektStore(dataSource)
@@ -86,7 +85,7 @@ fun main() = runBlocking {
         listen()
     }
 
-    val gRpcServer = InntektGrpcServer(port = 50051, inntektStore = postgresInntektStore)
+    val gRpcServer = InntektGrpcServer(port = 50051, inntektStore = postgresInntektStore, apiKeyVerifier = authApiKeyVerifier)
 
     launch {
         gRpcServer.start()
@@ -120,7 +119,7 @@ fun main() = runBlocking {
             postgresInntektStore,
             cachedInntektsGetter,
             oppslagClient,
-            AuthApiKeyVerifier(apiKeyVerifier, allowedApiKeys),
+            authApiKeyVerifier,
             jwkProvider,
             listOf(
                 postgresInntektStore as HealthCheck,
