@@ -5,10 +5,12 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 
 interface InntektStore {
     fun getInntekt(inntektId: InntektId): StoredInntekt
+    fun getSpesifisertInntekt(inntektId: InntektId): SpesifisertInntekt
     fun getInntektId(inntektparametre: Inntektparametre): InntektId?
     fun getBeregningsdato(inntektId: InntektId): LocalDate
     fun storeInntekt(command: StoreInntektCommand, created: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)): StoredInntekt

@@ -232,6 +232,30 @@ internal class PostgresInntektStoreTest {
     }
 
     @Test
+    fun `Should get spesifisert inntekt`() {
+        withMigratedDb {
+            with(PostgresInntektStore(DataSource.instance)) {
+                val hentInntektListeResponse = InntektkomponentResponse(
+                    emptyList(),
+                    Aktoer(AktoerType.AKTOER_ID, "1234")
+                )
+
+                val parameters = Inntektparametre("1234", "12345", LocalDate.now())
+
+                val lastStoredInntekt = storeInntekt(
+                    StoreInntektCommand(
+                        inntektparametre = parameters,
+                        inntekt = hentInntektListeResponse
+                    )
+                )
+
+                val spesifisertInntekt = getSpesifisertInntekt(lastStoredInntekt.inntektId)
+                spesifisertInntekt.inntektId.id shouldBe lastStoredInntekt.inntektId.id
+            }
+        }
+    }
+
+    @Test
     fun ` Sucessfully get beregningsdato`() {
 
         withMigratedDb {

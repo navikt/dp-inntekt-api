@@ -1,3 +1,5 @@
-FROM navikt/java:11
+FROM navikt/java:13
 
-COPY build/libs/*-all.jar app.jar
+EXPOSE 50051
+
+COPY dp-inntekt-api/build/libs/dp-inntekt-api-all.jar /app/app.jar

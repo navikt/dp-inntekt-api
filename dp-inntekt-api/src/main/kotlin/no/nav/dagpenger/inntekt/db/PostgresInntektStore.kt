@@ -10,10 +10,13 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
+import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
+import no.nav.dagpenger.inntekt.mapping.mapToSpesifisertInntekt
 import no.nav.dagpenger.inntekt.moshiInstance
+import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
@@ -117,6 +120,34 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                     .asSingle)
                 ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
         }
+    }
+
+    override fun getSpesifisertInntekt(inntektId: InntektId): SpesifisertInntekt {
+        @Language("sql")
+        val statement = """ 
+            SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.beregningsdato 
+            from inntekt_V1 inntekt 
+            inner join inntekt_V1_person_mapping mapping on inntekt.id = mapping.inntektid 
+            where inntekt.id = ?"""
+            .trimIndent()
+
+        val stored = using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    statement,
+                    inntektId.id
+                ).map { row ->
+                    StoredInntekt(
+                        inntektId = InntektId(row.string("id")),
+                        inntekt = adapter.fromJson(row.string("inntekt"))!!,
+                        manueltRedigert = row.boolean("manuelt_redigert"),
+                        timestamp = row.zonedDateTime("timestamp").toLocalDateTime()
+                    ) to row.localDate("beregningsdato")
+                }
+                    .asSingle)
+                ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
+        }
+        return mapToSpesifisertInntekt(stored.first, Opptjeningsperiode(stored.second).sisteAvsluttendeKalenderMåned)
     }
 
     override fun storeInntekt(

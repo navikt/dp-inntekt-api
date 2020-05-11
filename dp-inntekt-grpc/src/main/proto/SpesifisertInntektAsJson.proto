@@ -1,0 +1,12 @@
+syntax = "proto3";
+option java_package = "no.nav.dagpenger.inntekt.rpc";
+option java_multiple_files = true;
+message InntektId {
+    string id = 1;
+}
+
+message SpesifisertInntektAsJson {
+    InntektId inntektId = 1;
+    string json = 2;
+}
+

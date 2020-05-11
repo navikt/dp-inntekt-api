@@ -56,7 +56,7 @@ pipeline {
             reportName: 'Test coverage'
           ]
 
-          junit 'build/test-results/test/*.xml'
+          junit '**/build/test-results/test/*.xml'
         }
       }
     }
