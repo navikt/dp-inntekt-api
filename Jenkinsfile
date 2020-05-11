@@ -64,7 +64,7 @@ pipeline {
     stage('Acceptance testing') {
       stages {
         stage('Deploy to pre-production') {
-          when { branch 'feature/grpc' }
+          when { branch 'master' }
           steps {
 
 
