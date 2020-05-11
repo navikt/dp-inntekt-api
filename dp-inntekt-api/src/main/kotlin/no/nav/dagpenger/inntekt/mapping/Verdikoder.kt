@@ -4,7 +4,6 @@ import com.uchuhimo.collections.biMapOf
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
-import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
 
 fun verdiKode(datagrunnlagKlassifisering: DatagrunnlagKlassifisering): String {
     if (shouldTryGenericMappingWithoutForhold(datagrunnlagKlassifisering)) {
@@ -117,4 +116,13 @@ val dataGrunnlagKlassifiseringToVerdikode = biMapOf(
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_OG_ANNEN_GODTGJOERELSE_SOM_IKKE_ER_SKATTEPLIKTIG) to "Annen arbeidsinntekt - Ikke skattepliktig",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_UTBETALT_FRA_DEN_NORSKE_STAT_OPPTJENT_I_UTLANDET) to "Annen arbeidsinntekt - Utlandet",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_VED_KONKURS_ELLER_STATSGARANTI_OSV) to "Annen arbeidsinntekt - Konkurs"
+)
+
+@Deprecated(
+    "Used  by verdikoder, need to be replaced by new dp-inntekt-klassifiserer logic"
+)
+data class DatagrunnlagKlassifisering(
+    val type: InntektType,
+    val beskrivelse: InntektBeskrivelse,
+    val forhold: SpesielleInntjeningsforhold? = null
 )
