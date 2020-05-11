@@ -8,9 +8,6 @@ plugins {
 
 val grpcVersion = "1.27.2"
 
-
-
-
 allprojects {
     group = "no.nav.dagpenger"
 

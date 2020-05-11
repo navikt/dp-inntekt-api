@@ -1,7 +1,6 @@
 package no.nav.dagpenger.inntekt.rpc
 
 import com.squareup.moshi.JsonAdapter
-import io.grpc.ManagedChannelBuilder
 import io.grpc.Metadata
 import io.grpc.Server
 import io.grpc.ServerBuilder
@@ -11,9 +10,6 @@ import io.grpc.ServerInterceptor
 import io.grpc.Status
 import io.grpc.StatusException
 import io.grpc.StatusRuntimeException
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.asExecutor
-import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
@@ -21,7 +17,6 @@ import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.moshiInstance
-import java.util.concurrent.Executors
 
 private val logger = KotlinLogging.logger {}
 internal class InntektGrpcServer(
