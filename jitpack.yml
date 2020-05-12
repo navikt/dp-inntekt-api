@@ -1,5 +1,2 @@
 jdk:
   - openjdk13
-install:
-  - echo "Running a custom install command"
-  - ./gradlew :dp-inntekt-grpc:clean :dp-inntekt-grpc:build
