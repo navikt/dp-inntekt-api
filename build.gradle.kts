@@ -8,11 +8,6 @@ plugins {
 
 val grpcVersion = "1.27.2"
 
-repositories {
-    jcenter()
-    maven("https://jitpack.io")
-}
-
 allprojects {
     group = "no.nav.dagpenger"
 
@@ -72,6 +67,11 @@ allprojects {
 
     tasks.named("jar") {
         dependsOn("test")
+    }
+
+    repositories {
+        jcenter()
+        maven("https://jitpack.io")
     }
 }
 

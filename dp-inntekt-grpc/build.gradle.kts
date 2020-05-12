@@ -8,9 +8,14 @@ val protobufGradleVersion = "0.8.12"
 plugins {
     kotlin("jvm")
     id("com.google.protobuf") version "0.8.12"
+    `java-library`
+    `maven-publish`
 }
 
 apply(plugin = "com.google.protobuf")
+
+group = "com.github.navikt"
+version = "1.0-SNAPSHOT"
 
 // To get intellij to make sense of generated sources
 java {
@@ -21,6 +26,7 @@ java {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+
     // Grpc and Protobuf
     protobuf(files("src/proto/"))
     implementation("com.google.protobuf:protobuf-gradle-plugin:$protobufGradleVersion")
@@ -28,12 +34,30 @@ dependencies {
     api("io.grpc:grpc-protobuf:$grpcVersion")
     api("io.grpc:grpc-stub:$grpcVersion")
     api("io.grpc:grpc-kotlin-stub:$grpcKotlinVersion")
+    implementation("io.grpc:grpc-okhttp:$grpcVersion")
 
     if (JavaVersion.current().isJava9Compatible) {
         // Workaround for @javax.annotation.Generated
         // see: https://github.com/grpc/grpc-java/issues/3633
         compileOnly("javax.annotation:javax.annotation-api:1.3.2")
     }
+
+    //
+    implementation(Kotlin.Coroutines.module("core"))
+
+    // events
+    implementation(Dagpenger.Events)
+    implementation(Moshi.moshi)
+
+    // api key verifier
+    implementation(Dagpenger.Biblioteker.ktorUtils)
+
+    // test
+    testImplementation("io.grpc:grpc-testing:$grpcVersion")
+    testImplementation(Junit5.api)
+    testRuntimeOnly(Junit5.engine)
+    testRuntimeOnly(Junit5.vintageEngine)
+    testImplementation(KoTest.assertions)
 }
 
 // Could not resolve all files for configuration ':protomodule:compileProtoPath' bug

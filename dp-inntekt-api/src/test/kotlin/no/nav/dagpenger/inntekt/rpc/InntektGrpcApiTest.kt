@@ -1,21 +1,30 @@
 package no.nav.dagpenger.inntekt.rpc
 
 import de.huxhorn.sulky.ulid.ULID
+import io.grpc.Metadata
+import io.grpc.Metadata.ASCII_STRING_MARSHALLER
+import io.grpc.ServerCall
+import io.grpc.ServerCallHandler
 import io.grpc.Status
+import io.grpc.Status.UNAUTHENTICATED
 import io.grpc.StatusException
+import io.grpc.StatusRuntimeException
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import java.time.LocalDateTime
 import java.time.YearMonth
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.events.inntekt.v1.Aktør
 import no.nav.dagpenger.events.inntekt.v1.AktørType
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
+import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.moshiInstance
+import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -72,5 +81,39 @@ internal class InntektGrpcApiTest : GrpcTest() {
         inntekt.json shouldNotBe null
         val spesifisertInntektResponse = moshiInstance.adapter(SpesifisertInntekt::class.java).fromJson(inntekt.json)!!
         spesifisertInntekt shouldBe spesifisertInntektResponse
+    }
+}
+
+internal class ApiKeyServerInterceptorTest {
+
+    @Test
+    fun ` Should throw authenticated exception if no api key present `() {
+        val verifier = AuthApiKeyVerifier(ApiKeyVerifier("secret"), listOf("client"))
+        val apiKeyServerInterceptor = ApiKeyServerInterceptor(verifier)
+
+        val mockedServerCall = mockk<ServerCall<Any, Any>>(relaxed = true)
+        val headers = Metadata()
+        val mockedServerCallHandler = mockk<ServerCallHandler<Any, Any>>(relaxed = true)
+
+        val exc = assertThrows<StatusRuntimeException> { apiKeyServerInterceptor.interceptCall(mockedServerCall, headers, mockedServerCallHandler) }
+        exc.status.code shouldBe UNAUTHENTICATED.code
+
+        verify(exactly = 0) { mockedServerCallHandler.startCall(mockedServerCall, headers) }
+    }
+
+    @Test
+    fun ` Should forward authenticated calls `() {
+        val keyVerifier = ApiKeyVerifier("secret")
+        val apiVerifier = AuthApiKeyVerifier(keyVerifier, listOf("client"))
+        val apiKeyServerInterceptor = ApiKeyServerInterceptor(apiVerifier)
+
+        val mockedServerCall = mockk<ServerCall<Any, Any>>(relaxed = true)
+        val headers = Metadata()
+        headers.put(Metadata.Key.of("x-api-key", ASCII_STRING_MARSHALLER), keyVerifier.generate("client"))
+        val mockedServerCallHandler = mockk<ServerCallHandler<Any, Any>>(relaxed = true)
+
+        apiKeyServerInterceptor.interceptCall(mockedServerCall, headers, mockedServerCallHandler)
+
+        verify(exactly = 1) { mockedServerCallHandler.startCall(mockedServerCall, headers) }
     }
 }
