@@ -10,10 +10,8 @@ import io.grpc.ManagedChannelBuilder
 import io.grpc.Metadata
 import io.grpc.MethodDescriptor
 import java.io.Closeable
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.withContext
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
@@ -28,19 +26,15 @@ class SpesifisertInntektHenterWrapper private constructor(
     private val client: SpesifisertInntektHenter = SpesifisertInntektHenterClient(channel)
 ) : SpesifisertInntektHenter by client {
 
-    companion object {
-        private val dispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
-    }
-
     constructor(
-        port: Int,
+        port: Int = 50051,
         serveraddress: String,
         apiKey: String
     ) : this (
         ManagedChannelBuilder
             .forTarget("$serveraddress:$port")
             .intercept(ApiKeyInterceptor(apiKey))
-            .executor(dispatcher.asExecutor())
+            .executor(Dispatchers.IO.asExecutor())
             .usePlaintext().build()
     )
 }
