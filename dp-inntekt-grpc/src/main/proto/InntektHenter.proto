@@ -2,8 +2,9 @@ syntax = "proto3";
 option java_package = "no.nav.dagpenger.inntekt.rpc";
 option java_multiple_files = true;
 
-import "SpesifisertInntektAsJson.proto";
+import "InntektAsJson.proto";
 
-service SpesifisertInntektHenter {
+service InntektHenter {
     rpc hentSpesifisertInntektAsJson(InntektId) returns (SpesifisertInntektAsJson) {}
+    rpc hentKlassifisertInntektAsJson(InntektId) returns (KlassifisertInntektAsJson) {}
 }

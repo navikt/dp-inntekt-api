@@ -10,3 +10,7 @@ message SpesifisertInntektAsJson {
     string json = 2;
 }
 
+message KlassifisertInntektAsJson {
+    InntektId inntektId = 1;
+    string json = 2;
+}

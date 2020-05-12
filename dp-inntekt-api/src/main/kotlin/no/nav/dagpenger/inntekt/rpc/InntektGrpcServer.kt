@@ -11,14 +11,17 @@ import io.grpc.Status
 import io.grpc.StatusException
 import io.grpc.StatusRuntimeException
 import mu.KotlinLogging
+import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.klassifiserer.klassifiserOgMapInntekt
 import no.nav.dagpenger.inntekt.moshiInstance
 
 private val logger = KotlinLogging.logger {}
+
 internal class InntektGrpcServer(
     private val port: Int,
     private val apiKeyVerifier: AuthApiKeyVerifier,
@@ -74,17 +77,34 @@ internal class ApiKeyServerInterceptor(private val apiKeyVerifier: AuthApiKeyVer
     }
 }
 
-internal class InntektGrpcApi(private val inntektStore: InntektStore) : SpesifisertInntektHenterGrpcKt.SpesifisertInntektHenterCoroutineImplBase() {
+internal class InntektGrpcApi(private val inntektStore: InntektStore) :
+    InntektHenterGrpcKt.InntektHenterCoroutineImplBase() {
     companion object {
-        val spesifisertInntektAdapter: JsonAdapter<SpesifisertInntekt> = moshiInstance.adapter(SpesifisertInntekt::class.java)
+        val spesifisertInntektAdapter: JsonAdapter<SpesifisertInntekt> =
+            moshiInstance.adapter(SpesifisertInntekt::class.java)
+        val klassifsertInntektAdapter: JsonAdapter<Inntekt> = moshiInstance.adapter(Inntekt::class.java)
     }
 
     override suspend fun hentSpesifisertInntektAsJson(request: InntektId): SpesifisertInntektAsJson {
+
+        val inntekt = getSpesifisertInntekt(request)
+        return SpesifisertInntektAsJson.newBuilder()
+            .setInntektId(inntekt.inntektId.let { InntektId.newBuilder().setId(it.id).build() })
+            .setJson(spesifisertInntektAdapter.toJson(inntekt)).build()
+    }
+
+    override suspend fun hentKlassifisertInntektAsJson(request: InntektId): KlassifisertInntektAsJson {
+
+        val inntekt = getSpesifisertInntekt(request)
+        val klassifisert = klassifiserOgMapInntekt(inntekt)
+        return KlassifisertInntektAsJson.newBuilder()
+            .setInntektId(inntekt.inntektId.let { InntektId.newBuilder().setId(it.id).build() })
+            .setJson(klassifsertInntektAdapter.toJson(klassifisert)).build()
+    }
+
+    private fun getSpesifisertInntekt(request: InntektId): SpesifisertInntekt {
         try {
-            val inntekt = inntektStore.getSpesifisertInntekt(request.id.let { no.nav.dagpenger.inntekt.db.InntektId(it) })
-            return SpesifisertInntektAsJson.newBuilder()
-                .setInntektId(inntekt.inntektId.let { InntektId.newBuilder().setId(it.id).build() })
-                .setJson(spesifisertInntektAdapter.toJson(inntekt)).build()
+            return inntektStore.getSpesifisertInntekt(request.id.let { no.nav.dagpenger.inntekt.db.InntektId(it) })
         } catch (e: InntektNotFoundException) {
             throw StatusException(Status.NOT_FOUND.withDescription("Inntekt with id ${request.id} not found"))
         } catch (e: IllegalInntektIdException) {

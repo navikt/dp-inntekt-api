@@ -19,10 +19,12 @@ import java.time.YearMonth
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.events.inntekt.v1.Aktør
 import no.nav.dagpenger.events.inntekt.v1.AktørType
+import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.klassifiserer.klassifiserOgMapInntekt
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.Test
@@ -36,7 +38,7 @@ internal class InntektGrpcApiTest : GrpcTest() {
             every { it.getSpesifisertInntekt(any()) } throws InntektNotFoundException("Not found")
         }
         val client =
-            SpesifisertInntektHenterGrpcKt.SpesifisertInntektHenterCoroutineStub(makeChannel(InntektGrpcApi(inntektStore)))
+            InntektHenterGrpcKt.InntektHenterCoroutineStub(makeChannel(InntektGrpcApi(inntektStore)))
         val request = InntektId.newBuilder().setId("1233").build()
 
         val exception = assertThrows<StatusException> { runBlocking { client.hentSpesifisertInntektAsJson(request) } }
@@ -49,7 +51,7 @@ internal class InntektGrpcApiTest : GrpcTest() {
             every { it.getSpesifisertInntekt(any()) } throws InntektNotFoundException("Not found")
         }
         val client =
-            SpesifisertInntektHenterGrpcKt.SpesifisertInntektHenterCoroutineStub(makeChannel(InntektGrpcApi(inntektStore)))
+            InntektHenterGrpcKt.InntektHenterCoroutineStub(makeChannel(InntektGrpcApi(inntektStore)))
         val request = InntektId.newBuilder().setId(ULID().nextULID()).build()
 
         val exception = assertThrows<StatusException> { runBlocking { client.hentSpesifisertInntektAsJson(request) } }
@@ -57,7 +59,7 @@ internal class InntektGrpcApiTest : GrpcTest() {
     }
 
     @Test
-    fun `Should fetch inntekt `() {
+    fun `Should fetch spesifisert inntekt `() {
         val inntektId = ULID().nextULID()
         val spesifisertInntekt = SpesifisertInntekt(
             inntektId = no.nav.dagpenger.events.inntekt.v1.InntektId(inntektId),
@@ -73,7 +75,7 @@ internal class InntektGrpcApiTest : GrpcTest() {
             every { it.getSpesifisertInntekt(any()) } returns spesifisertInntekt
         }
         val client =
-            SpesifisertInntektHenterGrpcKt.SpesifisertInntektHenterCoroutineStub(makeChannel(InntektGrpcApi(inntektStore)))
+            InntektHenterGrpcKt.InntektHenterCoroutineStub(makeChannel(InntektGrpcApi(inntektStore)))
         val request = InntektId.newBuilder().setId(inntektId).build()
 
         val inntekt = runBlocking { client.hentSpesifisertInntektAsJson(request) }
@@ -81,6 +83,37 @@ internal class InntektGrpcApiTest : GrpcTest() {
         inntekt.json shouldNotBe null
         val spesifisertInntektResponse = moshiInstance.adapter(SpesifisertInntekt::class.java).fromJson(inntekt.json)!!
         spesifisertInntekt shouldBe spesifisertInntektResponse
+    }
+
+    @Test
+    fun `Should fetch klassifisert inntekt `() {
+        val inntektId = ULID().nextULID()
+        val spesifisert = SpesifisertInntekt(
+            inntektId = no.nav.dagpenger.events.inntekt.v1.InntektId(inntektId),
+            avvik = emptyList(),
+            posteringer = emptyList(),
+            sisteAvsluttendeKalenderMåned = YearMonth.now(),
+            ident = Aktør(AktørType.AKTOER_ID, "1234"),
+            manueltRedigert = false,
+            timestamp = LocalDateTime.now()
+        )
+        val klassifisert = klassifiserOgMapInntekt(spesifisert)
+
+        val inntektStore = mockk<InntektStore>(relaxed = true).also {
+            every { it.getSpesifisertInntekt(any()) } returns spesifisert
+        }
+        val client =
+            InntektHenterGrpcKt.InntektHenterCoroutineStub(makeChannel(InntektGrpcApi(inntektStore)))
+        val request = InntektId.newBuilder().setId(inntektId).build()
+
+        val inntekt = runBlocking { client.hentKlassifisertInntektAsJson(request) }
+        inntekt.inntektId.id shouldBe inntektId
+        inntekt.json shouldNotBe null
+        val klassifisertInntektResponse = moshiInstance.adapter(Inntekt::class.java).fromJson(inntekt.json)!!
+        klassifisert.sisteAvsluttendeKalenderMåned shouldBe klassifisertInntektResponse.sisteAvsluttendeKalenderMåned
+        klassifisert.inntektsListe shouldBe klassifisertInntektResponse.inntektsListe
+        klassifisert.inntektsId shouldBe klassifisertInntektResponse.inntektsId
+        klassifisert.manueltRedigert shouldBe klassifisertInntektResponse.manueltRedigert
     }
 }
 

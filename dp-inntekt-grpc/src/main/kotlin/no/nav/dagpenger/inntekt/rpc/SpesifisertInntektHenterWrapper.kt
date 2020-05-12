@@ -14,16 +14,18 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.withContext
+import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.events.moshiInstance
 
 interface SpesifisertInntektHenter {
     suspend fun hentSpesifisertInntekt(inntektId: String): SpesifisertInntekt
+    suspend fun hentKlassifisertInntekt(inntektId: String): Inntekt
 }
 
 class SpesifisertInntektHenterWrapper private constructor(
     private val channel: ManagedChannel,
-    private val client: SpesifisertInntektHenter = SpesifisertInntektHenterClient(channel)
+    private val client: SpesifisertInntektHenter = InntektHenterClient(channel)
 ) : SpesifisertInntektHenter by client {
 
     constructor(
@@ -39,20 +41,29 @@ class SpesifisertInntektHenterWrapper private constructor(
     )
 }
 
-internal class SpesifisertInntektHenterClient constructor(
+internal class InntektHenterClient constructor(
     private val channel: ManagedChannel
 ) : Closeable, SpesifisertInntektHenter {
 
     companion object {
         private val spesifisertInntektAdapter = moshiInstance.adapter(SpesifisertInntekt::class.java)!!
+        private val klassifisertInntektAdapter = moshiInstance.adapter(Inntekt::class.java)!!
     }
 
-    private val client = SpesifisertInntektHenterGrpcKt.SpesifisertInntektHenterCoroutineStub(channel)
+    private val client = InntektHenterGrpcKt.InntektHenterCoroutineStub(channel)
 
     override suspend fun hentSpesifisertInntekt(inntektId: String): SpesifisertInntekt {
         val request = InntektId.newBuilder().setId(inntektId).build()
         return withContext(Dispatchers.IO) {
             client.hentSpesifisertInntektAsJson(request).let { spesifisertInntektAdapter.fromJson(it.json) }
+                ?: throw RuntimeException("Could not get inntekt with id $inntektId")
+        }
+    }
+
+    override suspend fun hentKlassifisertInntekt(inntektId: String): Inntekt {
+        val request = InntektId.newBuilder().setId(inntektId).build()
+        return withContext(Dispatchers.IO) {
+            client.hentSpesifisertInntektAsJson(request).let { klassifisertInntektAdapter.fromJson(it.json) }
                 ?: throw RuntimeException("Could not get inntekt with id $inntektId")
         }
     }

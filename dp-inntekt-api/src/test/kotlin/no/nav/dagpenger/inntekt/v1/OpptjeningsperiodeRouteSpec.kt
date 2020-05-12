@@ -14,7 +14,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.db.InntektStore
 import org.junit.jupiter.api.Test
 
-class OpptjeningsperiodeApiSpec {
+class OpptjeningsperiodeRouteSpec {
     @Test
     fun `Inntjeningsperiode API specification test - Should match json field names and formats`() {
 

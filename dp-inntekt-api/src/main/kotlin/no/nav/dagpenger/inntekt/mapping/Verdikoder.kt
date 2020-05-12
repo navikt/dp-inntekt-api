@@ -119,7 +119,7 @@ val dataGrunnlagKlassifiseringToVerdikode = biMapOf(
 )
 
 @Deprecated(
-    "Used  by verdikoder, need to be replaced by new dp-inntekt-klassifiserer logic"
+    message = "Used  by verdikoder, need to be replaced by klassifiserer  logic"
 )
 data class DatagrunnlagKlassifisering(
     val type: InntektType,

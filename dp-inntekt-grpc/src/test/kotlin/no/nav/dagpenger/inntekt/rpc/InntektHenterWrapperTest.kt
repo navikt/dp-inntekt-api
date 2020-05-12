@@ -14,30 +14,30 @@ import no.nav.dagpenger.events.inntekt.v1.Aktør
 import no.nav.dagpenger.events.inntekt.v1.AktørType
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.events.moshiInstance
-import no.nav.dagpenger.inntekt.rpc.SpesifisertInntektHenterGrpcKt.SpesifisertInntektHenterCoroutineImplBase
+import no.nav.dagpenger.inntekt.rpc.InntektHenterGrpcKt.InntektHenterCoroutineImplBase
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class SpesifisertInntektHenterWrapperTest : GrpcTest() {
+internal class InntektHenterWrapperTest : GrpcTest() {
 
     companion object {
         val spesifisertInntektAdapter: JsonAdapter<SpesifisertInntekt> =
             moshiInstance.adapter(SpesifisertInntekt::class.java)
     }
-    private val serverMock = spyk<SpesifisertInntektHenterCoroutineImplBase>()
+    private val serverMock = spyk<InntektHenterCoroutineImplBase>()
 
     @Test
     fun ` Should expose StatusException errors `() {
 
         val inntektId = "1233"
         every { runBlocking { serverMock.hentSpesifisertInntektAsJson(InntektId.newBuilder().setId(inntektId).build()) } } throws StatusException(Status.INVALID_ARGUMENT)
-        val client = SpesifisertInntektHenterClient(makeChannel(serverMock))
+        val client = InntektHenterClient(makeChannel(serverMock))
         val exc = assertThrows<StatusException> { runBlocking { client.hentSpesifisertInntekt(inntektId) } }
         exc.status.code shouldBe Status.INVALID_ARGUMENT.code
     }
 
     @Test
-    fun ` Should get inntekt `() {
+    fun ` Should get spesifisert inntekt `() {
 
         val inntektId = ULID().nextULID()
         val spesifisertInntekt = SpesifisertInntekt(
@@ -60,7 +60,7 @@ internal class SpesifisertInntektHenterWrapperTest : GrpcTest() {
             .setInntektId(InntektId.newBuilder().setId(inntektId).build())
             .setJson(spesifisertInntektAdapter.toJson(spesifisertInntekt)).build()
 
-        val client = SpesifisertInntektHenterClient(makeChannel(serverMock))
+        val client = InntektHenterClient(makeChannel(serverMock))
 
         val response = runBlocking { client.hentSpesifisertInntekt(inntektId) }
         response shouldBe spesifisertInntekt
