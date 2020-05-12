@@ -50,8 +50,6 @@ import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.rpc.InntektGrpcServer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
-import no.nav.dagpenger.inntekt.v1.InntektNotAuthorizedException
-import no.nav.dagpenger.inntekt.v1.klassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
 import no.nav.dagpenger.inntekt.v1.spesifisertInntekt
 import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
@@ -194,16 +192,6 @@ fun Application.inntektApi(
             )
             call.respond(HttpStatusCode.NotFound, problem)
         }
-        exception<InntektNotAuthorizedException> { cause ->
-            LOGGER.warn("Request failed!", cause)
-            val problem = Problem(
-                type = URI("urn:dp:error:inntekt"),
-                title = "AktørId i request stemmer ikke med aktørId på inntekten du spør etter.",
-                detail = cause.message,
-                status = HttpStatusCode.Unauthorized.value
-            )
-            call.respond(HttpStatusCode.Unauthorized, problem)
-        }
         exception<IllegalInntektIdException> { cause ->
             LOGGER.warn("Request failed!", cause)
             val problem = Problem(
@@ -285,7 +273,6 @@ fun Application.inntektApi(
         route("/v1") {
             route("/inntekt") {
                 spesifisertInntekt(behandlingsInntektsGetter)
-                klassifisertInntekt(inntektskomponentHttpClient, inntektStore)
                 uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, oppslagClient)
             }
             opptjeningsperiodeApi(inntektStore)
