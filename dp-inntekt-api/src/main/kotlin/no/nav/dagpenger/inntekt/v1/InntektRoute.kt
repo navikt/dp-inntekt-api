@@ -14,35 +14,41 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.db.Inntektparametre
-import no.nav.dagpenger.inntekt.mapping.mapToSpesifisertInntekt
-import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 
 val api = Executors.newFixedThreadPool(4).asCoroutineDispatcher()
 
-fun Route.spesifisertInntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
+fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
     authenticate {
         route("spesifisert") {
             post {
-                val request = call.receive<SpesifisertInntektRequest>()
+                val request = call.receive<InntektRequestMedFnr>()
 
-                val storedInntekt = withContext(api) {
-                    behandlingsInntektsGetter.getBehandlingsInntekt(
+                val spesifisertInntekt = withContext(api) {
+                    behandlingsInntektsGetter.getSpesifisertInntekt(
                         Inntektparametre(aktørId = request.aktørId, vedtakId = request.vedtakId, beregningsdato = request.beregningsDato, fødselnummer = request.fødselsnummer)
                     )
                 }
 
-                val sisteAvsluttendeKalenderMåned =
-                    Opptjeningsperiode(request.beregningsDato).sisteAvsluttendeKalenderMåned
+                call.respond(HttpStatusCode.OK, spesifisertInntekt)
+            }
+        }
+        route("klassifisert") {
+            post {
+                val request = call.receive<InntektRequestMedFnr>()
 
-                val specifiedInntekt = mapToSpesifisertInntekt(storedInntekt, sisteAvsluttendeKalenderMåned)
+                val klassifisertInntekt = withContext(api) {
+                    behandlingsInntektsGetter.getKlassifisertInntekt(
+                        Inntektparametre(aktørId = request.aktørId, vedtakId = request.vedtakId, beregningsdato = request.beregningsDato, fødselnummer = request.fødselsnummer)
+                    )
+                }
 
-                call.respond(HttpStatusCode.OK, specifiedInntekt)
+                call.respond(HttpStatusCode.OK, klassifisertInntekt)
             }
         }
     }
 }
 
-data class SpesifisertInntektRequest(
+data class InntektRequestMedFnr(
     val aktørId: String,
     val vedtakId: String,
     val fødselsnummer: String? = null,

@@ -50,8 +50,8 @@ import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.rpc.InntektGrpcServer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
+import no.nav.dagpenger.inntekt.v1.inntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
-import no.nav.dagpenger.inntekt.v1.spesifisertInntekt
 import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
 import no.nav.dagpenger.ktor.auth.ApiKeyCredential
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
@@ -272,7 +272,7 @@ fun Application.inntektApi(
     routing {
         route("/v1") {
             route("/inntekt") {
-                spesifisertInntekt(behandlingsInntektsGetter)
+                inntekt(behandlingsInntektsGetter)
                 uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, oppslagClient)
             }
             opptjeningsperiodeApi(inntektStore)
