@@ -3,7 +3,6 @@ package no.nav.dagpenger.inntekt.mapping
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
-import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

@@ -9,7 +9,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
-import no.nav.dagpenger.inntekt.klassifisering.DatagrunnlagKlassifisering
 
 fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt = guiInntekt.inntektId?.let {
     StoredInntekt(guiInntekt.inntektId, InntektkomponentResponse(mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)

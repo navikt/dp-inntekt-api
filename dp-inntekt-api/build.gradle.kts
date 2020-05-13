@@ -44,6 +44,7 @@ dependencies {
     implementation(Log4j2.api)
     implementation(Log4j2.core)
     implementation(Log4j2.slf4j)
+    implementation(Log4j2.library("jul")) // The Apache Log4j implementation of java.util.logging. java.util.logging used by gprc
     implementation(Log4j2.Logstash.logstashLayout)
 
     implementation(Ulid.ulid)
