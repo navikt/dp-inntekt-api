@@ -12,17 +12,23 @@ import java.time.YearMonth
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.events.inntekt.v1.Aktør
 import no.nav.dagpenger.events.inntekt.v1.AktørType
+import no.nav.dagpenger.events.inntekt.v1.Inntekt
+import no.nav.dagpenger.events.inntekt.v1.InntektKlasse
+import no.nav.dagpenger.events.inntekt.v1.KlassifisertInntekt
+import no.nav.dagpenger.events.inntekt.v1.KlassifisertInntektMåned
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.events.moshiInstance
 import no.nav.dagpenger.inntekt.rpc.InntektHenterGrpcKt.InntektHenterCoroutineImplBase
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class InntektHenterWrapperTest : GrpcTest() {
+internal class InntektHenterClientTest : GrpcTest() {
 
     companion object {
         val spesifisertInntektAdapter: JsonAdapter<SpesifisertInntekt> =
             moshiInstance.adapter(SpesifisertInntekt::class.java)
+        val klassifisertInntektAdapter: JsonAdapter<Inntekt> =
+            moshiInstance.adapter(Inntekt::class.java)
     }
     private val serverMock = spyk<InntektHenterCoroutineImplBase>()
 
@@ -64,5 +70,46 @@ internal class InntektHenterWrapperTest : GrpcTest() {
 
         val response = runBlocking { client.hentSpesifisertInntekt(inntektId) }
         response shouldBe spesifisertInntekt
+    }
+
+    @Test
+    fun ` Should get klassifisert inntekt `() {
+
+        val inntektId = ULID().nextULID()
+        val inntekt = Inntekt(
+            inntektsId = inntektId,
+            inntektsListe = listOf(
+                KlassifisertInntektMåned(
+                    årMåned = YearMonth.now(),
+                    klassifiserteInntekter = listOf(
+                        KlassifisertInntekt(
+                            beløp = 1000.toBigDecimal(),
+                            inntektKlasse = InntektKlasse.ARBEIDSINNTEKT
+                        )
+                    ),
+                    harAvvik = true
+                )
+            ),
+            manueltRedigert = false,
+            sisteAvsluttendeKalenderMåned = YearMonth.now()
+        )
+
+        every {
+            runBlocking {
+                serverMock.hentKlassifisertInntektAsJson(
+                    InntektId.newBuilder().setId(inntektId).build()
+                )
+            }
+        } returns KlassifisertInntektAsJson.newBuilder()
+            .setInntektId(InntektId.newBuilder().setId(inntektId).build())
+            .setJson(klassifisertInntektAdapter.toJson(inntekt)).build()
+
+        val client = InntektHenterClient(makeChannel(serverMock))
+
+        val response = runBlocking { client.hentKlassifisertInntekt(inntektId) }
+        response.inntektsId shouldBe inntekt.inntektsId
+        response.inntektsListe shouldBe inntekt.inntektsListe
+        response.manueltRedigert shouldBe inntekt.manueltRedigert
+        response.sisteAvsluttendeKalenderMåned shouldBe inntekt.sisteAvsluttendeKalenderMåned
     }
 }

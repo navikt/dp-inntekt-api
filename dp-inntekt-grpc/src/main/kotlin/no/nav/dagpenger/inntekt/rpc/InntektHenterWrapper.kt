@@ -18,15 +18,15 @@ import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.events.moshiInstance
 
-interface SpesifisertInntektHenter {
+interface InntektHenter {
     suspend fun hentSpesifisertInntekt(inntektId: String): SpesifisertInntekt
     suspend fun hentKlassifisertInntekt(inntektId: String): Inntekt
 }
 
-class SpesifisertInntektHenterWrapper private constructor(
+class InntektHenterWrapper private constructor(
     private val channel: ManagedChannel,
-    private val client: SpesifisertInntektHenter = InntektHenterClient(channel)
-) : SpesifisertInntektHenter by client {
+    private val client: InntektHenter = InntektHenterClient(channel)
+) : InntektHenter by client {
 
     constructor(
         port: Int = 50051,
@@ -43,7 +43,7 @@ class SpesifisertInntektHenterWrapper private constructor(
 
 internal class InntektHenterClient constructor(
     private val channel: ManagedChannel
-) : Closeable, SpesifisertInntektHenter {
+) : Closeable, InntektHenter {
 
     companion object {
         private val spesifisertInntektAdapter = moshiInstance.adapter(SpesifisertInntekt::class.java)!!
@@ -63,7 +63,7 @@ internal class InntektHenterClient constructor(
     override suspend fun hentKlassifisertInntekt(inntektId: String): Inntekt {
         val request = InntektId.newBuilder().setId(inntektId).build()
         return withContext(Dispatchers.IO) {
-            client.hentSpesifisertInntektAsJson(request).let { klassifisertInntektAdapter.fromJson(it.json) }
+            client.hentKlassifisertInntektAsJson(request).let { klassifisertInntektAdapter.fromJson(it.json) }
                 ?: throw RuntimeException("Could not get inntekt with id $inntektId")
         }
     }
