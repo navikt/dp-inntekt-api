@@ -33,9 +33,9 @@ class BehandlingsInntektsGetter(
         inntektparametre: Inntektparametre
     ): StoredInntekt {
         val inntektkomponentRequest = InntektkomponentRequest(
-            inntektparametre.aktørId,
-            inntektparametre.opptjeningsperiode.førsteMåned,
-            inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned
+            aktørId = inntektparametre.aktørId,
+            månedFom = inntektparametre.opptjeningsperiode.førsteMåned,
+            månedTom = inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned
         )
         return inntektStore.storeInntekt(
             StoreInntektCommand(
