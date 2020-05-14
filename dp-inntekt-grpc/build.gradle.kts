@@ -8,8 +8,6 @@ val protobufGradleVersion = "0.8.12"
 plugins {
     kotlin("jvm")
     id("com.google.protobuf") version "0.8.12"
-    `java-library`
-    `maven-publish`
 }
 
 apply(plugin = "com.google.protobuf")
@@ -101,51 +99,6 @@ sourceSets {
     create("proto") {
         proto {
             srcDir("src/main/proto")
-        }
-    }
-}
-
-val artifactDescription = "dp-inntekt-grpc - gRPC client for fetching inntekt in Dagpenger context"
-val repoUrl = "https://github.com/navikt/dp-inntekt.git"
-val scmUrl = "scm:git:https://github.com/navikt/dp-inntekt.git"
-
-val sourcesJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("sources")
-    from(sourceSets["main"].allSource)
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            artifact(sourcesJar.get())
-
-            pom {
-                description.set(artifactDescription)
-                name.set(project.name)
-                url.set(repoUrl)
-                withXml {
-                    asNode().appendNode("packaging", "jar")
-                }
-                licenses {
-                    license {
-                        name.set("MIT License")
-                        name.set("https://opensource.org/licenses/MIT")
-                    }
-                }
-                developers {
-                    developer {
-                        organization.set("NAV (Arbeids- og velferdsdirektoratet) - The Norwegian Labour and Welfare Administration")
-                        organizationUrl.set("https://www.nav.no")
-                    }
-                }
-
-                scm {
-                    connection.set(scmUrl)
-                    developerConnection.set(scmUrl)
-                    url.set(repoUrl)
-                }
-            }
         }
     }
 }

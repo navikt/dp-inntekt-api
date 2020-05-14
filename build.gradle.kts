@@ -4,6 +4,8 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 plugins {
     kotlin("jvm") version Kotlin.version
     id(Spotless.spotless) version Spotless.version
+    `java-library`
+    `maven-publish`
 }
 
 val grpcVersion = "1.27.2"
@@ -77,6 +79,7 @@ allprojects {
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "maven-publish")
 
     repositories {
         jcenter()
@@ -90,5 +93,54 @@ subprojects {
         testImplementation(Junit5.api)
         testRuntimeOnly(Junit5.engine)
         testImplementation(Mockk.mockk)
+    }
+
+    val artifactDescription = "dp-inntekt-grpc - gRPC client for fetching inntekt in Dagpenger context"
+    val repoUrl = "https://github.com/navikt/dp-inntekt.git"
+    val scmUrl = "scm:git:https://github.com/navikt/dp-inntekt.git"
+
+    val sourcesJar by tasks.registering(Jar::class) {
+        archiveClassifier.set("sources")
+        from(sourceSets["main"].allSource)
+    }
+
+    artifacts {
+        add("archives", sourcesJar)
+    }
+
+    publishing {
+        publications {
+            create<MavenPublication>("maven") {
+                from(components["java"])
+                artifact(sourcesJar.get())
+
+                pom {
+                    description.set(artifactDescription)
+                    name.set(project.name)
+                    url.set(repoUrl)
+                    withXml {
+                        asNode().appendNode("packaging", "jar")
+                    }
+                    licenses {
+                        license {
+                            name.set("MIT License")
+                            name.set("https://opensource.org/licenses/MIT")
+                        }
+                    }
+                    developers {
+                        developer {
+                            organization.set("NAV (Arbeids- og velferdsdirektoratet) - The Norwegian Labour and Welfare Administration")
+                            organizationUrl.set("https://www.nav.no")
+                        }
+                    }
+
+                    scm {
+                        connection.set(scmUrl)
+                        developerConnection.set(scmUrl)
+                        url.set(repoUrl)
+                    }
+                }
+            }
+        }
     }
 }
