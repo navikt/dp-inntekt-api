@@ -3,11 +3,11 @@ package no.nav.dagpenger.inntekt.oppslag
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
-import com.github.kittinunf.fuel.moshi.responseObject
 import java.lang.RuntimeException
 import mu.KotlinLogging
 import no.bekk.bekkopen.org.OrganisasjonsnummerValidator
 import no.nav.dagpenger.inntekt.moshiInstance
+import no.nav.dagpenger.inntekt.responseObject
 import no.nav.dagpenger.oidc.OidcClient
 import no.nav.dagpenger.oidc.OidcToken
 

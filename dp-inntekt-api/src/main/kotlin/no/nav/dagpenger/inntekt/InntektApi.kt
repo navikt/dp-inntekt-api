@@ -127,7 +127,7 @@ fun main() = runBlocking {
     }.start()
     Runtime.getRuntime().addShutdownHook(Thread {
         subsumsjonBruktDataConsumer.stop()
-        application.stop(5, 60, TimeUnit.SECONDS)
+        application.stop(5000, 60000)
     })
 }
 

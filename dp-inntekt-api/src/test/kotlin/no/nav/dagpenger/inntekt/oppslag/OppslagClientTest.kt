@@ -99,7 +99,7 @@ class OppslagClientTest {
     @Test
     fun `fetch person name on 200 ok`() {
 
-        val validJsonBody = """{"sammensattNavn" : "sammensattnavntest"}"""
+        val validJsonBody = """{"fornavn": "Ola", "mellomnavn": "S", "etternavn":"Nordman", "sammensattNavn" : "sammensattnavntest"}"""
         val testFnr = "12345678912"
 
         WireMock.stubFor(
