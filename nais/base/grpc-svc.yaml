@@ -5,6 +5,7 @@ metadata:
     app: dp-inntekt-api-grpc
     team: teamdagpenger
   name: dp-inntekt-api-grpc
+  namespace: default
 spec:
   ports:
     - name: http
@@ -16,4 +17,5 @@ spec:
       protocol: TCP
       targetPort: 50051
   selector:
+    team: teamdagpenger
     app: dp-inntekt-api
