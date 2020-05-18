@@ -72,7 +72,6 @@ pipeline {
               kubectl config use-context dev-${env.ZONE}
               kubectl apply -f ./nais/nais-dev-deploy.yaml --wait
               kubectl rollout status -w deployment/${APPLICATION_NAME}
-              kubectl apply -f ./nais/base/grpc-service.yaml
             """
 
             archiveArtifacts artifacts: 'nais/nais-dev-deploy.yaml', fingerprint: true
