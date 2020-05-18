@@ -18,7 +18,7 @@ import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.events.moshiInstance
 
-interface InntektHenter {
+interface InntektHenter : Closeable {
     suspend fun hentSpesifisertInntekt(inntektId: String): SpesifisertInntekt
     suspend fun hentKlassifisertInntekt(inntektId: String): Inntekt
 }
@@ -39,11 +39,15 @@ class InntektHenterWrapper private constructor(
             .executor(Dispatchers.IO.asExecutor())
             .usePlaintext().build()
     )
+
+    override fun close() {
+        client.close()
+    }
 }
 
 internal class InntektHenterClient constructor(
     private val channel: ManagedChannel
-) : Closeable, InntektHenter {
+) : InntektHenter {
 
     companion object {
         private val spesifisertInntektAdapter = moshiInstance.adapter(SpesifisertInntekt::class.java)!!
