@@ -33,7 +33,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(9, migrations, "Wrong number of migrations")
+            assertEquals(10, migrations, "Wrong number of migrations")
         }
     }
 
@@ -51,7 +51,7 @@ internal class PostgresTest {
     fun `Migration of testdata `() {
         withCleanDb {
             val migrations = migrate(DataSource.instance, locations = listOf("db/migration", "db/testdata"))
-            assertEquals(14, migrations, "Wrong number of migrations")
+            assertEquals(15, migrations, "Wrong number of migrations")
         }
     }
 
