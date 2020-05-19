@@ -1,23 +1,23 @@
-name: Build and deploy dp-inntekt-grpc
+name: Build and publish gRPC client
 
 on:
   push:
     paths:
       - 'dp-inntekt-grpc/**'
 
-
 jobs:
-
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v1
-      - name: Set up Java 12
+
+      - name: Set up Java
         uses: actions/setup-java@v1
         with:
           java-version: '13.x'
+
       - name: Cache gradle dependencies
         uses: actions/cache@v1
         with:
@@ -25,9 +25,9 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('dp-inntekt-grpc/build.gradle.kts') }}-${{ hashFiles('buildSrc/src/main/kotlin/Constants.kt') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+
       - name: Build with Gradle
         run: ./gradlew :dp-inntekt-grpc:build
-
 
   release:
     name: Create Release
@@ -37,10 +37,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v1
+
       - name: Set release tag
         run: |
           export TAG_NAME="$(TZ="Europe/Oslo" date +%Y.%m.%d-%H.%M).$(echo $GITHUB_SHA | cut -c 1-12)"
           echo "::set-env name=RELEASE_TAG::$TAG_NAME"
+
       - name: Set changelog
         # (Escape newlines see https://github.com/actions/create-release/issues/25)
         run: |
@@ -49,6 +51,7 @@ jobs:
           text="${text//$'\n'/%0A}"
           text="${text//$'\r'/%0D}"
           echo "::set-env name=CHANGELOG::$text"
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@latest
