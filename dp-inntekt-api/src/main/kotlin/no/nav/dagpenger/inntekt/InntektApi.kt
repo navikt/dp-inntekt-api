@@ -11,10 +11,13 @@ import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
+import io.ktor.features.CallId
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
+import io.ktor.features.callIdMdc
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.http.isSuccess
@@ -33,6 +36,7 @@ import io.prometheus.client.hotspot.DefaultExports
 import java.net.URI
 import java.net.URL
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.concurrent.fixedRateTimer
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -72,7 +76,8 @@ fun main() = runBlocking {
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
 
-    val authApiKeyVerifier = AuthApiKeyVerifier(ApiKeyVerifier(config.application.apiSecret), config.application.allowedApiKeys)
+    val authApiKeyVerifier =
+        AuthApiKeyVerifier(ApiKeyVerifier(config.application.apiSecret), config.application.allowedApiKeys)
 
     val dataSource = dataSourceFrom(config)
     val postgresInntektStore = PostgresInntektStore(dataSource)
@@ -83,7 +88,8 @@ fun main() = runBlocking {
         listen()
     }
 
-    val gRpcServer = InntektGrpcServer(port = 50051, inntektStore = postgresInntektStore, apiKeyVerifier = authApiKeyVerifier)
+    val gRpcServer =
+        InntektGrpcServer(port = 50051, inntektStore = postgresInntektStore, apiKeyVerifier = authApiKeyVerifier)
 
     launch {
         gRpcServer.start()
@@ -204,7 +210,9 @@ fun Application.inntektApi(
         }
         exception<InntektskomponentenHttpClientException> { cause ->
             val statusCode =
-                if (HttpStatusCode.fromValue(cause.status).isSuccess()) HttpStatusCode.InternalServerError else HttpStatusCode.fromValue(
+                if (HttpStatusCode.fromValue(cause.status)
+                        .isSuccess()
+                ) HttpStatusCode.InternalServerError else HttpStatusCode.fromValue(
                     cause.status
                 )
             sikkerLogg.error(cause) { "Request failed against inntektskomponenten" }
@@ -256,8 +264,17 @@ fun Application.inntektApi(
             call.respond(statusCode, error)
         }
     }
+
+    install(CallId) {
+        retrieveFromHeader(HttpHeaders.XRequestId)
+        generate { newRequestId() }
+        verify { it.isNotEmpty() }
+    }
+
     install(CallLogging) {
         level = Level.INFO
+
+        callIdMdc("x-call-id")
 
         filter { call ->
             !call.request.path().startsWith("/isAlive") &&
@@ -265,6 +282,7 @@ fun Application.inntektApi(
                 !call.request.path().startsWith("/metrics")
         }
     }
+
     install(ContentNegotiation) {
         moshi(moshiInstance)
     }
@@ -286,3 +304,6 @@ data class AuthApiKeyVerifier(private val apiKeyVerifier: ApiKeyVerifier, privat
         return clients.map { apiKeyVerifier.verify(payload, it) }.firstOrNull { it } ?: false
     }
 }
+
+private val lastIncrement = AtomicLong()
+private fun newRequestId(): String = "dp-inntekt-api-${lastIncrement.incrementAndGet()}"

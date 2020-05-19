@@ -25,7 +25,12 @@ fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
 
                 val spesifisertInntekt = withContext(api) {
                     behandlingsInntektsGetter.getSpesifisertInntekt(
-                        Inntektparametre(aktørId = request.aktørId, vedtakId = request.vedtakId, beregningsdato = request.beregningsDato, fødselnummer = request.fødselsnummer)
+                        Inntektparametre(
+                            aktørId = request.aktørId,
+                            vedtakId = request.vedtakId,
+                            beregningsdato = request.beregningsDato,
+                            fødselnummer = request.fødselsnummer
+                        )
                     )
                 }
 
@@ -38,7 +43,12 @@ fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
 
                 val klassifisertInntekt = withContext(api) {
                     behandlingsInntektsGetter.getKlassifisertInntekt(
-                        Inntektparametre(aktørId = request.aktørId, vedtakId = request.vedtakId, beregningsdato = request.beregningsDato, fødselnummer = request.fødselsnummer)
+                        Inntektparametre(
+                            aktørId = request.aktørId,
+                            vedtakId = request.vedtakId,
+                            beregningsdato = request.beregningsDato,
+                            fødselnummer = request.fødselsnummer
+                        )
                     )
                 }
 
