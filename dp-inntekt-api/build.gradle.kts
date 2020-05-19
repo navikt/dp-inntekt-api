@@ -9,7 +9,7 @@ repositories {
 
 application {
     applicationName = "dp-inntekt-api"
-    mainClassName = "no.nav.dagpenger.inntekt.InntektApiKt"
+    mainClassName = "no.nav.dagpenger.inntekt.ApplicationKt"
 }
 
 val grpcVersion = "1.29.0"
