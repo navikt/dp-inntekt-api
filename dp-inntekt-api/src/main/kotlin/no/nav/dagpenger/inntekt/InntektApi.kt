@@ -1,7 +1,6 @@
 package no.nav.dagpenger.inntekt
 
 import com.auth0.jwk.JwkProvider
-import com.auth0.jwk.JwkProviderBuilder
 import com.ryanharter.ktor.moshi.moshi
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonEncodingException
@@ -26,34 +25,19 @@ import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.routing.route
 import io.ktor.routing.routing
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
 import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
-import io.prometheus.client.hotspot.DefaultExports
 import java.net.URI
-import java.net.URL
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
-import kotlin.concurrent.fixedRateTimer
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
-import no.nav.dagpenger.inntekt.db.PostgresInntektStore
-import no.nav.dagpenger.inntekt.db.dataSourceFrom
-import no.nav.dagpenger.inntekt.db.migrate
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
-import no.nav.dagpenger.inntekt.rpc.InntektGrpcServer
-import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
-import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
 import no.nav.dagpenger.inntekt.v1.inntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
 import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
@@ -61,81 +45,11 @@ import no.nav.dagpenger.ktor.auth.ApiKeyCredential
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import no.nav.dagpenger.ktor.auth.ApiPrincipal
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
-import no.nav.dagpenger.oidc.StsOidcClient
 import org.slf4j.event.Level
 
 private val LOGGER = KotlinLogging.logger {}
 private val sikkerLogg = KotlinLogging.logger("tjenestekall")
 private val config = Configuration()
-
-fun main() = runBlocking {
-
-    migrate(config)
-    val jwkProvider = JwkProviderBuilder(URL(config.application.jwksUrl))
-        .cached(10, 24, TimeUnit.HOURS)
-        .rateLimited(10, 1, TimeUnit.MINUTES)
-        .build()
-
-    val authApiKeyVerifier =
-        AuthApiKeyVerifier(ApiKeyVerifier(config.application.apiSecret), config.application.allowedApiKeys)
-
-    val dataSource = dataSourceFrom(config)
-    val postgresInntektStore = PostgresInntektStore(dataSource)
-    val stsOidcClient =
-        StsOidcClient(config.application.oicdStsUrl, config.application.username, config.application.password)
-
-    val subsumsjonBruktDataConsumer = KafkaSubsumsjonBruktDataConsumer(config, postgresInntektStore).apply {
-        listen()
-    }
-
-    val gRpcServer =
-        InntektGrpcServer(port = 50051, inntektStore = postgresInntektStore, apiKeyVerifier = authApiKeyVerifier)
-
-    launch {
-        gRpcServer.start()
-        gRpcServer.blockUntilShutdown()
-    }
-
-    val vaktmester = Vaktmester(dataSource)
-
-    fixedRateTimer(
-        name = "vaktmester",
-        initialDelay = TimeUnit.MINUTES.toMillis(10),
-        period = TimeUnit.HOURS.toMillis(12),
-        action = {
-            LOGGER.info { "Vaktmesteren rydder" }
-            vaktmester.rydd()
-            LOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
-        })
-
-    val inntektskomponentHttpClient = InntektskomponentHttpClient(
-        config.application.hentinntektListeUrl,
-        stsOidcClient
-    )
-    val oppslagClient = OppslagClient(config.application.oppslagUrl, stsOidcClient)
-
-    val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentHttpClient, postgresInntektStore)
-
-    DefaultExports.initialize()
-    val application = embeddedServer(Netty, port = config.application.httpPort) {
-        inntektApi(
-            inntektskomponentHttpClient,
-            postgresInntektStore,
-            cachedInntektsGetter,
-            oppslagClient,
-            authApiKeyVerifier,
-            jwkProvider,
-            listOf(
-                postgresInntektStore as HealthCheck,
-                subsumsjonBruktDataConsumer as HealthCheck
-            )
-        )
-    }.start()
-    Runtime.getRuntime().addShutdownHook(Thread {
-        subsumsjonBruktDataConsumer.stop()
-        application.stop(5000, 60000)
-    })
-}
 
 fun Application.inntektApi(
     inntektskomponentHttpClient: InntektskomponentClient,
@@ -146,11 +60,12 @@ fun Application.inntektApi(
     jwkProvider: JwkProvider,
     healthChecks: List<HealthCheck>
 ) {
-
     install(DefaultHeaders)
+
     install(MicrometerMetrics) {
         registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, CollectorRegistry.defaultRegistry, Clock.SYSTEM)
     }
+
     install(Authentication) {
         apiKeyAuth {
             apiKeyName = "X-API-KEY"
