@@ -103,7 +103,7 @@ fun main() {
                 action = {
                     LOGGER.info { "Vaktmesteren rydder" }
                     it.rydd()
-                    LOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
+                    LOGGER.info { "Vaktmesteren er ferdig.. for denne gang" }
                 })
         }
     }
