@@ -50,8 +50,6 @@ class InntektskomponentHttpClient(
         request: InntektkomponentRequest,
         timeouts: InntektskomponentClient.ConnectionTimeout
     ): InntektkomponentResponse {
-        LOGGER.info("Fetching new inntekt for $request")
-
         val requestBody = HentInntektListeRequest(
             "DagpengerGrunnlagA-Inntekt",
             "Dagpenger",
@@ -67,6 +65,8 @@ class InntektskomponentHttpClient(
         withLoggingContext(
             "callId" to callId
         ) {
+            LOGGER.info("Fetching new inntekt for $request")
+
             try {
                 val (_, response, result) = with(hentInntektlisteUrl.httpPost()) {
                     timeout(timeouts.connectionTimeout.toMillis().toInt())
