@@ -9,6 +9,7 @@ import io.prometheus.client.Counter
 import io.prometheus.client.Summary
 import java.time.YearMonth
 import mu.KotlinLogging
+import mu.withLoggingContext
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.oidc.OidcClient
 
@@ -61,41 +62,47 @@ class InntektskomponentHttpClient(
 
         val jsonBody = jsonRequestRequestAdapter.toJson(requestBody)
         val timer = clientLatencyStats.startTimer()
-        try {
-            val (_, response, result) = with(hentInntektlisteUrl.httpPost()) {
-                timeout(timeouts.connectionTimeout.toMillis().toInt())
-                timeoutRead(timeouts.readTimeout.toMillis().toInt())
 
-                authentication().bearer(oidcClient.oidcToken().access_token)
-                header("Nav-Consumer-Id" to "dp-inntekt-api")
-                header("Nav-Call-Id" to ulid.nextULID())
-                body(jsonBody)
-                awaitResponseResult(moshiDeserializerOf(jsonResponseAdapter))
-            }
+        val callId = ulid.nextULID()
+        withLoggingContext(
+            "callId" to callId
+        ) {
+            try {
+                val (_, response, result) = with(hentInntektlisteUrl.httpPost()) {
+                    timeout(timeouts.connectionTimeout.toMillis().toInt())
+                    timeoutRead(timeouts.readTimeout.toMillis().toInt())
 
-            inntektskomponentStatusCodesCounter.labels(response.statusCode.toString()).inc()
-
-            return result.fold({
-                it
-            }, { error ->
-                val resp = error.response.body().asString("application/json")
-                val detail = runCatching {
-
-                    jsonMapAdapter.fromJson(resp)
-                }.let {
-                    it.getOrNull()?.get("message")?.toString() ?: error.message
+                    authentication().bearer(oidcClient.oidcToken().access_token)
+                    header("Nav-Consumer-Id" to "dp-inntekt-api")
+                    header("Nav-Call-Id" to callId)
+                    body(jsonBody)
+                    awaitResponseResult(moshiDeserializerOf(jsonResponseAdapter))
                 }
 
-                clientFetchErrors.inc()
+                inntektskomponentStatusCodesCounter.labels(response.statusCode.toString()).inc()
 
-                throw InntektskomponentenHttpClientException(
-                    if (response.statusCode == -1) 500 else response.statusCode, // we did not get a response status code, ie timeout/network issues
-                    "Failed to fetch inntekt. Status code ${response.statusCode}. Response message: ${response.responseMessage}. Problem message: $detail",
-                    detail
-                )
-            })
-        } finally {
-            timer.observeDuration()
+                return result.fold({
+                    it
+                }, { error ->
+                    val resp = error.response.body().asString("application/json")
+                    val detail = runCatching {
+
+                        jsonMapAdapter.fromJson(resp)
+                    }.let {
+                        it.getOrNull()?.get("message")?.toString() ?: error.message
+                    }
+
+                    clientFetchErrors.inc()
+
+                    throw InntektskomponentenHttpClientException(
+                        if (response.statusCode == -1) 500 else response.statusCode, // we did not get a response status code, ie timeout/network issues
+                        "Failed to fetch inntekt. Status code ${response.statusCode}. Response message: ${response.responseMessage}. Problem message: $detail",
+                        detail
+                    )
+                })
+            } finally {
+                timer.observeDuration()
+            }
         }
     }
 }
