@@ -98,7 +98,9 @@ class InntektskomponentHttpClient(
                         if (response.statusCode == -1) 500 else response.statusCode, // we did not get a response status code, ie timeout/network issues
                         "Failed to fetch inntekt. Status code ${response.statusCode}. Response message: ${response.responseMessage}. Problem message: $detail",
                         detail
-                    )
+                    ).also {
+                        LOGGER.error { it }
+                    }
                 })
             } finally {
                 timer.observeDuration()
