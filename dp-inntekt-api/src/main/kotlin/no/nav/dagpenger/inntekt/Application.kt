@@ -101,8 +101,8 @@ fun main() {
                 initialDelay = TimeUnit.MINUTES.toMillis(10),
                 period = TimeUnit.HOURS.toMillis(12),
                 action = {
-                    LOGGER.info { "Vaktmesteren rydder" }
-                    it.rydd()
+                    LOGGER.info { "Vaktmesteren rydder.. SLÅTT AVV" }
+                    // it.rydd()
                     LOGGER.info { "Vaktmesteren er ferdig.. for denne gang" }
                 })
         }
