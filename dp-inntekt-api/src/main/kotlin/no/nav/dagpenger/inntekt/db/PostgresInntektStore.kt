@@ -88,16 +88,17 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
 
     override fun getBeregningsdato(inntektId: InntektId): LocalDate {
         @Language("sql")
-        val statement = """SELECT beregningsdato
-                                FROM inntekt_V1_person_mapping
-                                WHERE inntektId = ?
+        val statement = """SELECT coalesce(
+               (SELECT beregningsdato FROM inntekt_V1_person_mapping WHERE inntektId = :inntektId),
+               (SELECT beregningsdato FROM temp_inntekt_V1_person_mapping WHERE inntektId = :inntektId)
+           ) as beregningsdato
                         """.trimMargin()
 
         return using(sessionOf(dataSource)) { session ->
             session.run(
-                queryOf(statement, inntektId.id
+                queryOf(statement, mapOf("inntektId" to inntektId.id)
                 ).map { row ->
-                    row.localDate("beregningsdato")
+                    row.localDateOrNull("beregningsdato")
                 }.asSingle
             ) ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
         }
@@ -194,9 +195,9 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                         tx.run(
                             queryOf(
                                 "INSERT INTO inntekt_V1_manuelt_redigert VALUES(:id,:redigert)", mapOf(
-                                    "id" to inntektId.id,
-                                    "redigert" to it.redigertAv
-                                )
+                                "id" to inntektId.id,
+                                "redigert" to it.redigertAv
+                            )
                             ).asUpdate
                         )
                     }
