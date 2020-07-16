@@ -281,6 +281,23 @@ internal class PostgresInntektStoreTest {
     }
 
     @Test
+    fun `Sucessfully get beregningsdato from backup table`() {
+        withCleanDb {
+            migrate(DataSource.instance, locations = listOf("db/migration", "unit-testdata"))
+
+            with(PostgresInntektStore(DataSource.instance)) {
+                val beregningsDatoFromMain = getBeregningsdato(InntektId("01E46501PMY105AFXE4XF088MV"))
+                assertNotNull(beregningsDatoFromMain)
+                assertEquals(LocalDate.of(2019, 1, 1), beregningsDatoFromMain)
+
+                val beregningsDatoFromBackup = getBeregningsdato(InntektId("01EDBSHDENAHCVBYT02W160E6X"))
+                assertNotNull(beregningsDatoFromBackup)
+                assertEquals(LocalDate.of(2019, 3, 3), beregningsDatoFromBackup)
+            }
+        }
+    }
+
+    @Test
     fun ` Getting beregningsdato for unknown inntektId should throw error`() {
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
@@ -292,6 +309,7 @@ internal class PostgresInntektStoreTest {
             }
         }
     }
+
     @Test
     fun ` Should mark an inntekt as used `() {
         withMigratedDb {
