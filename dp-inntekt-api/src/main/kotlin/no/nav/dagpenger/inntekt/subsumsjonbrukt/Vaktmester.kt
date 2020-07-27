@@ -12,7 +12,7 @@ private val deleteCounter = Counter.build()
     .help("Antall inntektsett slettet fra databasen")
     .register()
 
-class Vaktmester(private val dataSource: DataSource, private val lifeSpanInDays: Int = 90) {
+class Vaktmester(private val dataSource: DataSource, private val lifeSpanInDays: Int = 180) {
 
     fun rydd() {
         val rowCount =
