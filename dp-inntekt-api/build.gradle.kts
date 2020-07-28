@@ -1,6 +1,13 @@
 plugins {
     application
-    id(Shadow.shadow).version("5.2.0")
+    id(Shadow.shadow) version Shadow.version
+    id(Graphql.graphql) version Graphql.version
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
 }
 
 repositories {
@@ -26,6 +33,8 @@ dependencies {
     implementation(Ktor.micrometerMetrics)
     implementation(Dagpenger.Biblioteker.ktorUtils)
     implementation(Micrometer.prometheusRegistry)
+
+    implementation(Graphql.client)
 
     implementation(Moshi.moshi)
     implementation(Moshi.moshiAdapters)
@@ -87,6 +96,39 @@ dependencies {
     testImplementation(TestContainers.kafka)
     testImplementation(Mockk.mockk)
     testImplementation(JsonAssert.jsonassert)
+}
+
+graphql {
+    client {
+        sdlEndpoint = "https://navikt.github.io/pdl/pdl-api-sdl.graphqls"
+        packageName = "no.nav.pdl"
+    }
+}
+
+tasks.named("shadowJar") {
+    dependsOn("test")
+}
+
+tasks.named("jar") {
+    dependsOn("test")
+}
+
+tasks.named("compileKotlin") {
+    dependsOn("spotlessCheck")
+    dependsOn("graphqlGenerateClient")
+}
+
+tasks.named("test") {
+    dependsOn("copySchemaToResources")
+}
+
+tasks.register<Copy>("copySchemaToResources") {
+    dependsOn("graphqlDownloadSDL")
+
+    from(buildDir) {
+        include("schema.graphql")
+    }
+    into("src/main/resources")
 }
 
 dependencyLocking {
