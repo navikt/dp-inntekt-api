@@ -3,6 +3,7 @@ package no.nav.dagpenger.inntekt.subsumsjonbrukt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
@@ -26,27 +27,20 @@ import kotlin.coroutines.CoroutineContext
 
 internal class KafkaSubsumsjonBruktDataConsumer(
     private val config: Configuration,
-    private val inntektStore: InntektStore
+    private val inntektStore: InntektStore,
+    private val graceDuration: Duration = Duration.ofHours(3)
 ) : CoroutineScope, HealthCheck {
 
     private val logger = KotlinLogging.logger { }
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
 
-    val grace by lazy {
-        Grace()
-    }
-
-    data class Grace(
-        val duration: Duration = Duration.ofHours(3),
-        val from: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
-    ) {
-        private val expires = from.plus(duration)
-        fun expired() = ZonedDateTime.now(ZoneOffset.UTC).isAfter(expires)
+    private val grace by lazy {
+        Grace(duration = graceDuration)
     }
 
     private val job: Job by lazy {
-        Job()
+        SupervisorJob()
     }
 
     fun listen() {
@@ -97,16 +91,8 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                         }
                     }
                 } catch (e: Exception) {
-                    when (e) {
-                        is RetriableException,
-                        is SQLTransientConnectionException -> {
-                            logger.warn("Retriable exception, looping back", e)
-                        }
-                        else -> {
-                            logger.error("Unexpected exception while consuming messages. Stopping", e)
-                            stop()
-                        }
-                    }
+                    logger.error("Unexpected exception while consuming messages. Stopping consumer, grace period ${grace.duration.seconds / 60} minutes", e)
+                    stop()
                 }
             }
         }
@@ -125,5 +111,13 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     fun stop() {
         logger.info { "Stopping ${config.application.id} consumer" }
         job.cancel()
+    }
+
+    data class Grace(
+        val duration: Duration = Duration.ofHours(3),
+        val from: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
+    ) {
+        private val expires = from.plus(duration)
+        fun expired() = ZonedDateTime.now(ZoneOffset.UTC).isAfter(expires)
     }
 }
