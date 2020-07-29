@@ -48,7 +48,7 @@ fun main() {
 
         val pdl = PdlGraphQLRepository(
             client = PdlGraphQLClientFactory(
-                url = "config.pdl.url", // @todo
+                url = config.pdl.url,
                 oidcProvider = { stsOidcClient.oidcToken().access_token }
             )
         )

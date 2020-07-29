@@ -35,7 +35,8 @@ private val localProperties = ConfigurationMap(
         "api.keys" to "dp-datalaster-inntekt",
         "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
         "kafka.bootstrap.servers" to "localhost:9092",
-        "unleash.url" to "http://localhost/api/"
+        "unleash.url" to "http://localhost/api/",
+        "pdl.url" to "localhost:4321"
     )
 )
 private val devProperties = ConfigurationMap(
@@ -55,7 +56,8 @@ private val devProperties = ConfigurationMap(
         "application.httpPort" to "8099",
         "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
-        "unleash.url" to "https://unleash.nais.preprod.local/api/"
+        "unleash.url" to "https://unleash.nais.preprod.local/api/",
+        "pdl.url" to "http://pdl-api.default.svc.nais.local/graphql"
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -75,7 +77,8 @@ private val prodProperties = ConfigurationMap(
         "application.httpPort" to "8099",
         "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
-        "unleash.url" to "https://unleash.nais.adeo.no/api/"
+        "unleash.url" to "https://unleash.nais.adeo.no/api/",
+        "pdl.url" to "http://pdl-api.default.svc.nais.local/graphql"
     )
 )
 
@@ -84,6 +87,7 @@ data class Configuration(
     val vault: Vault = Vault(),
     val application: Application = Application(),
     val kafka: Kafka = Kafka(),
+    val pdl: Pdl = Pdl(),
     val subsumsjonBruktDataTopic: String = config()[Key("kafka.subsumsjon.brukt.data.topic", stringType)]
 ) {
 
@@ -134,6 +138,10 @@ data class Configuration(
             .instanceId(getHostname())
             .unleashAPI(config()[Key("unleash.url", stringType)])
             .build()
+    )
+
+    data class Pdl(
+        val url: String = config()[Key("pdl.url", stringType)]
     )
 }
 
