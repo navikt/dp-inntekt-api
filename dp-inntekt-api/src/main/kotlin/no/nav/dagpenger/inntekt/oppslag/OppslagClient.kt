@@ -13,7 +13,25 @@ import no.nav.dagpenger.oidc.OidcToken
 
 private val logger = KotlinLogging.logger {}
 
-class OppslagClient(val apiUrl: String, val oidcClient: OidcClient) {
+class OppslagClient(val apiUrl: String, val oidcClient: OidcClient) : PersonOppslag {
+
+    override suspend fun hentPerson(aktørId: String): Person? {
+
+        val personNummer = finnNaturligIdent(aktørId)
+        val navn = personNummer?.let { pnr -> personNavn(pnr) }
+
+        return personNummer?.let { fnr ->
+            navn?.let { navn ->
+                Person(
+                    fødselsnummer = fnr,
+                    fornavn = navn.fornavn,
+                    mellomnavn = navn.mellomnavn,
+                    etternavn = navn.etternavn
+
+                )
+            }
+        }
+    }
 
     private val jsonAdapter = moshiInstance.adapter(PersonNameRequest::class.java)
 
@@ -43,7 +61,7 @@ class OppslagClient(val apiUrl: String, val oidcClient: OidcClient) {
         }
     }
 
-    fun personNavn(fødselsnummer: String): String? {
+    fun personNavn(fødselsnummer: String): PersonNameResponse? {
         val url = "$apiUrl/person/name"
 
         val json = jsonAdapter.toJson(PersonNameRequest(fødselsnummer))
@@ -58,7 +76,7 @@ class OppslagClient(val apiUrl: String, val oidcClient: OidcClient) {
                 responseObject<PersonNameResponse>()
             }
             result.fold({ success ->
-                success.sammensattNavn
+                success
             }, { error ->
                 logger.warn(
                     "Feil ved oppslag av personnavn",

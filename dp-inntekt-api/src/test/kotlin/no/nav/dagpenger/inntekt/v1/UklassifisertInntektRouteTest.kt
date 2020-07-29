@@ -44,7 +44,8 @@ import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.GUIInntektsKomponentResponse
 import no.nav.dagpenger.inntekt.mapping.InntektMedVerdikode
 import no.nav.dagpenger.inntekt.moshiInstance
-import no.nav.dagpenger.inntekt.oppslag.OppslagClient
+import no.nav.dagpenger.inntekt.oppslag.Person
+import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -67,7 +68,7 @@ internal class UklassifisertInntektApiTest {
         YearMonth.of(2016, 1),
         YearMonth.of(2018, 12)
     )
-    private val oppslagClientMock: OppslagClient = mockk()
+    private val personOppslagMock: PersonOppslag = mockk()
     private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234"))
 
     private val storedInntekt = StoredInntekt(
@@ -124,12 +125,8 @@ internal class UklassifisertInntektApiTest {
         } returns emptyInntekt
 
         every {
-            oppslagClientMock.finnNaturligIdent(any())
-        } returns "12345678912"
-
-        every {
-            oppslagClientMock.personNavn(any())
-        } returns "Navn Navnesen"
+            runBlocking { personOppslagMock.hentPerson(any()) }
+        } returns Person(fødselsnummer = "12345678912", fornavn = "Navn", etternavn = "Navnesen")
     }
 
     @Test
@@ -408,7 +405,7 @@ internal class UklassifisertInntektApiTest {
             mockInntektApi(
                 inntektskomponentClient = inntektskomponentClientMock,
                 inntektStore = inntektStoreMock,
-                oppslagClient = oppslagClientMock,
+                personOppslag = personOppslagMock,
                 jwkProvider = jwtStub.stubbedJwkProvider()
             ),
         callback: TestApplicationEngine.() -> Unit

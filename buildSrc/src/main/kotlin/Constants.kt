@@ -120,11 +120,11 @@ object Konfig {
 }
 
 object Kotlin {
-    const val version = "1.3.71"
+    const val version = "1.3.72"
     const val stdlib = "org.jetbrains.kotlin:kotlin-stdlib:$version"
 
     object Coroutines {
-        const val version = "1.3.5"
+        const val version = "1.3.7"
         fun module(name: String) = "org.jetbrains.kotlinx:kotlinx-coroutines-$name:$version"
     }
 

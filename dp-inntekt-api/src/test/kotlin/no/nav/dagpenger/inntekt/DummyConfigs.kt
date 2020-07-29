@@ -2,7 +2,6 @@ package no.nav.dagpenger.inntekt
 
 private val mockedConfigs = listOf(
     "srvdp.inntekt.api.username",
-    "unleash.url",
     "srvdp.inntekt.api.password",
     "hentinntektliste.url",
     "enhetsregisteret.url",

@@ -37,7 +37,7 @@ import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
-import no.nav.dagpenger.inntekt.oppslag.OppslagClient
+import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.v1.inntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
 import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
@@ -55,7 +55,7 @@ fun Application.inntektApi(
     inntektskomponentHttpClient: InntektskomponentClient,
     inntektStore: InntektStore,
     behandlingsInntektsGetter: BehandlingsInntektsGetter,
-    oppslagClient: OppslagClient,
+    personOppslag: PersonOppslag,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     jwkProvider: JwkProvider,
     healthChecks: List<HealthCheck>
@@ -206,7 +206,7 @@ fun Application.inntektApi(
         route("/v1") {
             route("/inntekt") {
                 inntekt(behandlingsInntektsGetter)
-                uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, oppslagClient)
+                uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, personOppslag)
             }
             opptjeningsperiodeApi(inntektStore)
         }

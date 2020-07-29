@@ -119,7 +119,7 @@ class OppslagClientTest {
 
         val responseName = oppslagClient.personNavn(testFnr)
 
-        assertEquals("sammensattnavntest", responseName)
+        assertEquals("sammensattnavntest", responseName?.sammensattNavn)
     }
 
     @Test
