@@ -8,7 +8,10 @@ class UnleashedPersonOppslag(
     private val legacyPersonOppslag: PersonOppslag
 ) : PersonOppslag {
     override suspend fun hentPerson(aktørId: String): Person? {
-
-        TODO("not implemented")
+        return if (unleash.isEnabled("dp-inntekt-api.Pdl")) {
+            pdlPersonOppslag.hentPerson(aktørId)
+        } else {
+            legacyPersonOppslag.hentPerson(aktørId)
+        }
     }
 }
