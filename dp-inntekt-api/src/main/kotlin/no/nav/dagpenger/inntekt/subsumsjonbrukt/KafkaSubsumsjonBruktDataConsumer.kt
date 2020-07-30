@@ -44,7 +44,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     }
 
     fun listen() {
-        launch {
+        launch(coroutineContext) {
             val creds = config.kafka.user?.let { u ->
                 config.kafka.password?.let { p ->
                     KafkaCredential(username = u, password = p)
