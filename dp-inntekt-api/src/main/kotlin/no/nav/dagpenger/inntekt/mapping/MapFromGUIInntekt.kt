@@ -1,6 +1,5 @@
 package no.nav.dagpenger.inntekt.mapping
 
-import java.lang.IllegalArgumentException
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
@@ -9,15 +8,29 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
+import java.lang.IllegalArgumentException
 
 fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt = guiInntekt.inntektId?.let {
-    StoredInntekt(guiInntekt.inntektId, InntektkomponentResponse(mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)
-        ?: emptyList(), guiInntekt.inntekt.ident), guiInntekt.manueltRedigert)
+    StoredInntekt(
+        guiInntekt.inntektId,
+        InntektkomponentResponse(
+            mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)
+                ?: emptyList(),
+            guiInntekt.inntekt.ident
+        ),
+        guiInntekt.manueltRedigert
+    )
 } ?: throw IllegalArgumentException("missing innktektId")
 
 fun mapToDetachedInntekt(guiInntekt: GUIInntekt): DetachedInntekt =
-    DetachedInntekt(InntektkomponentResponse(mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)
-        ?: emptyList(), guiInntekt.inntekt.ident), guiInntekt.manueltRedigert)
+    DetachedInntekt(
+        InntektkomponentResponse(
+            mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)
+                ?: emptyList(),
+            guiInntekt.inntekt.ident
+        ),
+        guiInntekt.manueltRedigert
+    )
 
 private fun mapToArbeidsInntektMaaneder(arbeidsMaaneder: List<GUIArbeidsInntektMaaned>?): List<ArbeidsInntektMaaned>? {
     return arbeidsMaaneder?.map { GUIarbeidsInntektMaaned ->
@@ -49,6 +62,8 @@ private fun mapToArbeidsInntektMaaneder(arbeidsMaaneder: List<GUIArbeidsInntektM
                         datagrunnlagForVerdikode.type,
                         datagrunnlagForVerdikode.forhold?.let { TilleggInformasjon(inntekt.tilleggsinformasjon?.kategori, TilleggInformasjonsDetaljer(inntekt.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.detaljerType, it)) }
                     )
-                } ?: emptyList()))
+                } ?: emptyList()
+            )
+        )
     }
 }

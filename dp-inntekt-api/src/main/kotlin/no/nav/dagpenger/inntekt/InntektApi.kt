@@ -29,8 +29,6 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
-import java.net.URI
-import java.util.concurrent.atomic.AtomicLong
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
@@ -46,6 +44,8 @@ import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import no.nav.dagpenger.ktor.auth.ApiPrincipal
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import org.slf4j.event.Level
+import java.net.URI
+import java.util.concurrent.atomic.AtomicLong
 
 private val LOGGER = KotlinLogging.logger {}
 private val sikkerLogg = KotlinLogging.logger("tjenestekall")
@@ -126,7 +126,7 @@ fun Application.inntektApi(
         exception<InntektskomponentenHttpClientException> { cause ->
             val statusCode =
                 if (HttpStatusCode.fromValue(cause.status)
-                        .isSuccess()
+                    .isSuccess()
                 ) HttpStatusCode.InternalServerError else HttpStatusCode.fromValue(
                     cause.status
                 )

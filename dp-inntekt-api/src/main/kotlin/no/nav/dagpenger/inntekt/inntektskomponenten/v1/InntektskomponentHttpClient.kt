@@ -7,11 +7,11 @@ import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import de.huxhorn.sulky.ulid.ULID
 import io.prometheus.client.Counter
 import io.prometheus.client.Summary
-import java.time.YearMonth
 import mu.KotlinLogging
 import mu.withLoggingContext
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.oidc.OidcClient
+import java.time.YearMonth
 
 private val LOGGER = KotlinLogging.logger {}
 private val jsonResponseAdapter = moshiInstance.adapter(InntektkomponentResponse::class.java)
@@ -81,27 +81,30 @@ class InntektskomponentHttpClient(
 
                 inntektskomponentStatusCodesCounter.labels(response.statusCode.toString()).inc()
 
-                return result.fold({
-                    it
-                }, { error ->
-                    val resp = error.response.body().asString("application/json")
-                    val detail = runCatching {
+                return result.fold(
+                    {
+                        it
+                    },
+                    { error ->
+                        val resp = error.response.body().asString("application/json")
+                        val detail = runCatching {
 
-                        jsonMapAdapter.fromJson(resp)
-                    }.let {
-                        it.getOrNull()?.get("message")?.toString() ?: error.message
+                            jsonMapAdapter.fromJson(resp)
+                        }.let {
+                            it.getOrNull()?.get("message")?.toString() ?: error.message
+                        }
+
+                        clientFetchErrors.inc()
+
+                        throw InntektskomponentenHttpClientException(
+                            if (response.statusCode == -1) 500 else response.statusCode, // we did not get a response status code, ie timeout/network issues
+                            "Failed to fetch inntekt. Status code ${response.statusCode}. Response message: ${response.responseMessage}. Problem message: $detail",
+                            detail
+                        ).also {
+                            LOGGER.error { it }
+                        }
                     }
-
-                    clientFetchErrors.inc()
-
-                    throw InntektskomponentenHttpClientException(
-                        if (response.statusCode == -1) 500 else response.statusCode, // we did not get a response status code, ie timeout/network issues
-                        "Failed to fetch inntekt. Status code ${response.statusCode}. Response message: ${response.responseMessage}. Problem message: $detail",
-                        detail
-                    ).also {
-                        LOGGER.error { it }
-                    }
-                })
+                )
             } finally {
                 timer.observeDuration()
             }

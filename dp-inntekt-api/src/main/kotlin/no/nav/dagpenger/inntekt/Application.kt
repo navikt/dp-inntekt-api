@@ -5,9 +5,6 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
 import io.prometheus.client.hotspot.DefaultExports
-import java.net.URL
-import java.util.concurrent.TimeUnit
-import kotlin.concurrent.fixedRateTimer
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -21,6 +18,9 @@ import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import no.nav.dagpenger.oidc.StsOidcClient
+import java.net.URL
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.fixedRateTimer
 
 private val LOGGER = KotlinLogging.logger {}
 private val config = Configuration()
@@ -57,9 +57,11 @@ fun main() {
             KafkaSubsumsjonBruktDataConsumer(config, postgresInntektStore).apply {
                 listen()
             }.also {
-                Runtime.getRuntime().addShutdownHook(Thread {
-                    it.stop()
-                })
+                Runtime.getRuntime().addShutdownHook(
+                    Thread {
+                        it.stop()
+                    }
+                )
             }
 
         // Provides a gRPC server for getting inntekt
@@ -89,9 +91,11 @@ fun main() {
                 )
             )
         }.start().also {
-            Runtime.getRuntime().addShutdownHook(Thread {
-                it.stop(5, 60, TimeUnit.SECONDS)
-            })
+            Runtime.getRuntime().addShutdownHook(
+                Thread {
+                    it.stop(5, 60, TimeUnit.SECONDS)
+                }
+            )
         }
 
         // Cleans up unused inntekt on a regular interbal
@@ -104,7 +108,8 @@ fun main() {
                     LOGGER.info { "Vaktmesteren rydder.. SLÅTT AVV" }
                     // it.rydd()
                     LOGGER.info { "Vaktmesteren er ferdig.. for denne gang" }
-                })
+                }
+            )
         }
     }
 }

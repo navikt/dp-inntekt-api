@@ -1,13 +1,13 @@
 package no.nav.dagpenger.inntekt.db
 
 import de.huxhorn.sulky.ulid.ULID
+import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
+import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
-import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 
 interface InntektStore {
     fun getInntekt(inntektId: InntektId): StoredInntekt

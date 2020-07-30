@@ -1,10 +1,10 @@
 package no.nav.dagpenger.inntekt.mapping
 
-import kotlin.test.assertEquals
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 internal class VerdikodeTest {
     @Test
