@@ -26,11 +26,11 @@ fun migrate(config: Configuration): Int {
 }
 
 private fun hikariDataSourceWithVaultIntegration(config: Configuration, role: Role = Role.USER) =
-        HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(
-                hikariConfigFrom(config),
-                config.vault.mountPath,
-                "${config.database.name}-$role"
-        )
+    HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(
+        hikariConfigFrom(config),
+        config.vault.mountPath,
+        "${config.database.name}-$role"
+    )
 
 fun dataSourceFrom(config: Configuration): HikariDataSource = when (config.application.profile) {
     Profile.LOCAL -> HikariDataSource(hikariConfigFrom(config))
@@ -38,16 +38,16 @@ fun dataSourceFrom(config: Configuration): HikariDataSource = when (config.appli
 }
 
 fun hikariConfigFrom(config: Configuration) =
-        HikariConfig().apply {
-            jdbcUrl = "jdbc:postgresql://${config.database.host}:${config.database.port}/${config.database.name}"
-            maximumPoolSize = 2
-            minimumIdle = 0
-            idleTimeout = 10001
-            connectionTimeout = 1000
-            maxLifetime = 30001
-            config.database.user?.let { username = it }
-            config.database.password?.let { password = it }
-        }
+    HikariConfig().apply {
+        jdbcUrl = "jdbc:postgresql://${config.database.host}:${config.database.port}/${config.database.name}"
+        maximumPoolSize = 2
+        minimumIdle = 0
+        idleTimeout = 10001
+        connectionTimeout = 1000
+        maxLifetime = 30001
+        config.database.user?.let { username = it }
+        config.database.password?.let { password = it }
+    }
 
 fun migrate(dataSource: HikariDataSource, initSql: String = "", locations: List<String> = listOf("db/migration")): Int =
     Flyway.configure().locations(*locations.toTypedArray()).dataSource(dataSource).initSql(initSql).load().migrate()

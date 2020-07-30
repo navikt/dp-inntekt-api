@@ -1,12 +1,6 @@
 package no.nav.dagpenger.inntekt.klassifiser
 
 import io.kotest.matchers.shouldBe
-import java.math.BigDecimal
-import java.time.LocalDateTime
-import java.time.YearMonth
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 import no.nav.dagpenger.events.inntekt.v1.Aktør
 import no.nav.dagpenger.events.inntekt.v1.AktørType
 import no.nav.dagpenger.events.inntekt.v1.Avvik
@@ -18,6 +12,12 @@ import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.klassifiserer.klassifiserOgMapInntekt
 import no.nav.dagpenger.inntekt.moshiInstance
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
+import java.time.LocalDateTime
+import java.time.YearMonth
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 internal class klassifiserOgMapInntektTest {
 

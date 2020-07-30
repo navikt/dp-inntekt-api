@@ -1,10 +1,5 @@
 package no.nav.dagpenger.inntekt.subsumsjonbrukt
 
-import java.sql.SQLTransientConnectionException
-import java.time.Duration
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,6 +18,11 @@ import org.apache.kafka.clients.consumer.CommitFailedException
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.errors.RetriableException
+import java.sql.SQLTransientConnectionException
+import java.time.Duration
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import kotlin.coroutines.CoroutineContext
 
 internal class KafkaSubsumsjonBruktDataConsumer(
     private val config: Configuration,

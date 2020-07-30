@@ -6,13 +6,13 @@ import io.grpc.ServerBuilder
 import io.grpc.inprocess.InProcessChannelBuilder
 import io.grpc.inprocess.InProcessServerBuilder
 import io.grpc.testing.GrpcCleanupRule
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 @RunWith(JUnit4::class)
 internal abstract class GrpcTest {

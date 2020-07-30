@@ -3,13 +3,13 @@ package no.nav.dagpenger.inntekt.oppslag
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
-import java.lang.RuntimeException
 import mu.KotlinLogging
 import no.bekk.bekkopen.org.OrganisasjonsnummerValidator
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.responseObject
 import no.nav.dagpenger.oidc.OidcClient
 import no.nav.dagpenger.oidc.OidcToken
+import java.lang.RuntimeException
 
 private val logger = KotlinLogging.logger {}
 
@@ -31,15 +31,18 @@ class OppslagClient(val apiUrl: String, val oidcClient: OidcClient) {
             ) {
                 responseObject<NaturligIdent>()
             }
-            result.fold({ success ->
-                success.naturligIdent
-            }, { error ->
-                logger.warn(
-                    "Feil ved oppslag av personnummer",
-                    OppslagException(error.response.statusCode, error.message ?: "")
-                )
-                null
-            })
+            result.fold(
+                { success ->
+                    success.naturligIdent
+                },
+                { error ->
+                    logger.warn(
+                        "Feil ved oppslag av personnummer",
+                        OppslagException(error.response.statusCode, error.message ?: "")
+                    )
+                    null
+                }
+            )
         }
     }
 
@@ -57,60 +60,72 @@ class OppslagClient(val apiUrl: String, val oidcClient: OidcClient) {
             ) {
                 responseObject<PersonNameResponse>()
             }
-            result.fold({ success ->
-                success.sammensattNavn
-            }, { error ->
-                logger.warn(
-                    "Feil ved oppslag av personnavn",
-                    OppslagException(
-                        response.statusCode,
-                        "Response message: ${response.responseMessage}. Problem message: ${error.message}"
+            result.fold(
+                { success ->
+                    success.sammensattNavn
+                },
+                { error ->
+                    logger.warn(
+                        "Feil ved oppslag av personnavn",
+                        OppslagException(
+                            response.statusCode,
+                            "Response message: ${response.responseMessage}. Problem message: ${error.message}"
+                        )
                     )
-                )
-                null
-            })
+                    null
+                }
+            )
         }
     }
 
     fun organisasjonsNavnFor(orgNr: String): String? {
-        return runCatching { Organisasjonsnummer(orgNr) }.fold({ organisasjonsnummer ->
-            val url = "$apiUrl/organisasjon/${organisasjonsnummer.organisasjonsnummer}"
-            val (_, response, result) = with(
-                url.httpGet()
-                    .header(mapOf("Content-Type" to "application/json"))
+        return runCatching { Organisasjonsnummer(orgNr) }.fold(
+            { organisasjonsnummer ->
+                val url = "$apiUrl/organisasjon/${organisasjonsnummer.organisasjonsnummer}"
+                val (_, response, result) = with(
+                    url.httpGet()
+                        .header(mapOf("Content-Type" to "application/json"))
 
-            ) {
-                responseObject<Organisasjon>()
-            }
-            result.fold({ success ->
-                success.navn
-            }, { error ->
+                ) {
+                    responseObject<Organisasjon>()
+                }
+                result.fold(
+                    { success ->
+                        success.navn
+                    },
+                    { error ->
+                        logger.warn(
+                            "Feil ved oppslag av organisasjonsnavn",
+                            OppslagException(
+                                response.statusCode,
+                                "Response message: ${response.responseMessage}. Problem message: ${error.message}"
+                            )
+                        )
+                        null
+                    }
+                )
+            },
+            {
                 logger.warn(
                     "Feil ved oppslag av organisasjonsnavn",
                     OppslagException(
-                        response.statusCode,
-                        "Response message: ${response.responseMessage}. Problem message: ${error.message}"
+                        500,
+                        "Organisasjonsnummer '$orgNr' er ikke gyldig"
                     )
                 )
                 null
-            })
-        }, {
-            logger.warn(
-                "Feil ved oppslag av organisasjonsnavn",
-                OppslagException(
-                    500,
-                    "Organisasjonsnummer '$orgNr' er ikke gyldig"
-                )
-            )
-            null
-        })
+            }
+        )
     }
 
     private fun <T> withOidc(function: (value: OidcToken) -> T?): T? =
-        runCatching { oidcClient.oidcToken() }.fold(function, onFailure = {
-            logger.warn("Feil ved henting av OIDC token", OppslagException(500, it.message ?: ""))
-            null
-        })
+        runCatching { oidcClient.oidcToken() }.fold(
+            function,
+            onFailure = {
+                logger.warn("Feil ved henting av OIDC token", OppslagException(500, it.message ?: ""))
+                null
+            }
+        )
 }
 
 data class NaturligIdent(val naturligIdent: String)

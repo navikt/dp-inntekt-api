@@ -1,10 +1,10 @@
 package no.nav.dagpenger.inntekt.subsumsjonbrukt
 
 import io.prometheus.client.Counter
-import javax.sql.DataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
+import javax.sql.DataSource
 
 const val INNTEKT_SLETTET = "inntekt_slettet"
 private val deleteCounter = Counter.build()
@@ -17,18 +17,19 @@ class Vaktmester(private val dataSource: DataSource, private val lifeSpanInDays:
     fun rydd() {
         val rowCount =
             using(sessionOf(dataSource)) { session ->
-            session.transaction { transaction ->
-                transaction.run(
-                    queryOf(
-                        """
+                session.transaction { transaction ->
+                    transaction.run(
+                        queryOf(
+                            """
                             DELETE FROM inntekt_v1 WHERE brukt = false AND timestamp  < (now() - (make_interval(days := :days)))
-                        """.trimIndent(), mapOf(
-                            "days" to lifeSpanInDays
-                        )
-                    ).asUpdate
-                )
+                            """.trimIndent(),
+                            mapOf(
+                                "days" to lifeSpanInDays
+                            )
+                        ).asUpdate
+                    )
+                }
             }
-        }
         deleteCounter.inc(rowCount.toDouble())
     }
 }

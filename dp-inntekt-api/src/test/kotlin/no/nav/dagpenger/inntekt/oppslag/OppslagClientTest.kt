@@ -6,8 +6,6 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import com.github.tomakehurst.wiremock.matching.RegexPattern
-import java.util.UUID
-import kotlin.test.assertTrue
 import no.nav.dagpenger.oidc.OidcClient
 import no.nav.dagpenger.oidc.OidcToken
 import no.nav.dagpenger.oidc.StsOidcClientException
@@ -17,9 +15,12 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.util.UUID
+import kotlin.test.assertTrue
 
 class OppslagClientTest {
-    val validResponse = """{
+    val validResponse =
+        """{
         |"naturligIdent": "12345678912"
         |}""".trimMargin()
 
@@ -99,7 +100,8 @@ class OppslagClientTest {
     @Test
     fun `fetch person name on 200 ok`() {
 
-        val validJsonBody = """{"fornavn": "Ola", "mellomnavn": "S", "etternavn":"Nordman", "sammensattNavn" : "sammensattnavntest"}"""
+        val validJsonBody =
+            """{"fornavn": "Ola", "mellomnavn": "S", "etternavn":"Nordman", "sammensattNavn" : "sammensattnavntest"}"""
         val testFnr = "12345678912"
 
         WireMock.stubFor(
@@ -151,13 +153,17 @@ class OppslagClientTest {
         val organisasjonsnummer = "889640782"
         WireMock.stubFor(
             WireMock.get(WireMock.urlEqualTo("//organisasjon/$organisasjonsnummer"))
-                .willReturn(WireMock.aResponse().withBody("""
+                .willReturn(
+                    WireMock.aResponse().withBody(
+                        """
                     {
                         "orgNr": 889640782,
                         "navn": "Arbeids- og velferdsetaten"
                     }
                     
-                """.trimIndent()))
+                        """.trimIndent()
+                    )
+                )
         )
 
         val oppslagClient = OppslagClient(server.url(""), oidcClient)

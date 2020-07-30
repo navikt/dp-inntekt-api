@@ -1,10 +1,10 @@
 package no.nav.dagpenger.inntekt.opptjeningsperiode
 
+import no.bekk.bekkopen.date.NorwegianDateUtil
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Date
-import no.bekk.bekkopen.date.NorwegianDateUtil
 
 data class Opptjeningsperiode(val beregningsdato: LocalDate) {
     private val antattRapporteringsFrist = LocalDate.of(beregningsdato.year, beregningsdato.month, 5)

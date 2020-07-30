@@ -7,8 +7,6 @@ import io.grpc.StatusException
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.spyk
-import java.time.LocalDateTime
-import java.time.YearMonth
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.events.inntekt.v1.Aktør
 import no.nav.dagpenger.events.inntekt.v1.AktørType
@@ -21,6 +19,8 @@ import no.nav.dagpenger.events.moshiInstance
 import no.nav.dagpenger.inntekt.rpc.InntektHenterGrpcKt.InntektHenterCoroutineImplBase
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.LocalDateTime
+import java.time.YearMonth
 
 internal class InntektHenterClientTest : GrpcTest() {
 

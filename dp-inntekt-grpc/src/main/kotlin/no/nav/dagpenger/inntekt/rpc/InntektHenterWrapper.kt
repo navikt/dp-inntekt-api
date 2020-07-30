@@ -9,14 +9,14 @@ import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.Metadata
 import io.grpc.MethodDescriptor
-import java.io.Closeable
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.withContext
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.events.moshiInstance
+import java.io.Closeable
+import java.util.concurrent.TimeUnit
 
 interface InntektHenter : Closeable {
     suspend fun hentSpesifisertInntekt(inntektId: String): SpesifisertInntekt

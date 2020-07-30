@@ -5,9 +5,6 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.events.moshiInstance
@@ -22,6 +19,9 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.KafkaContainer
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.util.concurrent.TimeUnit
 
 private val LOGGER = KotlinLogging.logger { }
 class KafkaSubsumsjonBruktDataConsumerTest {
@@ -39,7 +39,8 @@ class KafkaSubsumsjonBruktDataConsumerTest {
             ).also {
                 it[ProducerConfig.ACKS_CONFIG] = "all"
                 it[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
-            })
+            }
+        )
     }
     private val adapter = moshiInstance.adapter<Map<String, Any?>>(Map::class.java).lenient()
     @Test

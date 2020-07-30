@@ -16,10 +16,6 @@ import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.prometheus.client.CollectorRegistry
-import java.time.Duration
-import java.time.YearMonth
-import java.util.UUID
-import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.oidc.OidcClient
 import no.nav.dagpenger.oidc.OidcToken
@@ -27,6 +23,10 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.Duration
+import java.time.YearMonth
+import java.util.UUID
+import kotlin.test.assertEquals
 
 internal class InntektskomponentHttpClientTest {
 
@@ -192,7 +192,8 @@ internal class InntektskomponentHttpClientTest {
                         "",
                         YearMonth.of(2017, 3),
                         YearMonth.of(2019, 1)
-                    ), InntektskomponentClient.ConnectionTimeout(readTimeout = Duration.ofMillis(5))
+                    ),
+                    InntektskomponentClient.ConnectionTimeout(readTimeout = Duration.ofMillis(5))
                 )
             }
         }
