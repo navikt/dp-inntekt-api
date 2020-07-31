@@ -14,7 +14,6 @@ import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import wiremock.com.google.common.net.HttpHeaders
 import kotlin.test.assertNotNull
 
@@ -47,7 +46,7 @@ internal class PdlGraphQLRepositoryTest {
     }
 
     @Test
-    fun `Feil burde propagere `() {
+    fun `Feil i respons skal føre til tomt svar `() = runBlocking {
         wireMockServer.addPdlResponse(
             matchingJsonPath("$.variables.ident", EqualToPattern("queryFeilet")),
             WireMock.okJson(error)
@@ -60,7 +59,7 @@ internal class PdlGraphQLRepositoryTest {
             )
         )
 
-        assertThrows<Exception> { runBlocking { pdl.hentPerson("queryFeilet") } }
+        pdl.hentPerson("queryFeilet") shouldBe null
     }
 
     @Language("JSON")

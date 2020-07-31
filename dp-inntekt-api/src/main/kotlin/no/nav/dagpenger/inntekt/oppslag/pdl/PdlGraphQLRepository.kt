@@ -28,11 +28,12 @@ class PdlGraphQLRepository constructor(
     override suspend fun hentPerson(aktørId: String): Person? {
         val result = query.execute(HentPerson.Variables(ident = aktørId))
 
-        if (result.errors?.isNotEmpty() == true) {
-            throw Exception("Feil i GraphQL-responsen: ${result.errors}")
+        return if (result.errors?.isNotEmpty() == true) {
+            log.error { "Feil i GraphQL-responsen: ${result.errors}" }
+            null
+        } else {
+            result.toPerson()
         }
-
-        return result.toPerson()
     }
 
     private fun GraphQLResponse<HentPerson.Result>.toPerson(): Person? {
