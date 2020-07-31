@@ -5,7 +5,6 @@ import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.verify
-
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.events.moshiInstance

@@ -18,8 +18,6 @@ import no.nav.dagpenger.streams.PacketDeserializer
 import org.apache.kafka.clients.consumer.CommitFailedException
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.common.errors.RetriableException
-import java.sql.SQLTransientConnectionException
 import java.time.Duration
 import java.time.ZoneOffset
 import java.time.ZonedDateTime

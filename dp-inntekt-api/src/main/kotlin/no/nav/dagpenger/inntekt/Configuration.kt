@@ -7,10 +7,10 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
-import java.net.InetAddress
-import java.net.UnknownHostException
 import no.finn.unleash.util.UnleashConfig
 import no.nav.dagpenger.streams.KafkaCredential
+import java.net.InetAddress
+import java.net.UnknownHostException
 
 private val localProperties = ConfigurationMap(
     mapOf(

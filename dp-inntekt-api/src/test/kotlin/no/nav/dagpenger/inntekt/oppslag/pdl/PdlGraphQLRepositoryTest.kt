@@ -9,7 +9,6 @@ import com.github.tomakehurst.wiremock.matching.ContentPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import io.kotest.matchers.shouldBe
 import io.ktor.util.KtorExperimentalAPI
-import kotlin.test.assertNotNull
 import kotlinx.coroutines.runBlocking
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterAll
@@ -17,6 +16,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import wiremock.com.google.common.net.HttpHeaders
+import kotlin.test.assertNotNull
 
 @KtorExperimentalAPI
 internal class PdlGraphQLRepositoryTest {
@@ -64,7 +64,8 @@ internal class PdlGraphQLRepositoryTest {
     }
 
     @Language("JSON")
-    private val okResponse = """
+    private val okResponse =
+        """
         {"data":{"hentIdenter":{"identer": [{"ident": "fødselsnummer", "gruppe": "FOLKEREGISTERIDENT"}]}, "hentPerson": {"navn": [
         {
           "fornavn": "Donald",
@@ -73,12 +74,13 @@ internal class PdlGraphQLRepositoryTest {
         }
       ]}}}"""
 
-        .trimIndent()
+            .trimIndent()
 
     @Language("JSON")
-    private val error = """
+    private val error =
+        """
         { "data" : null, "errors": [{"message":  "feilet"}]}
-    """.trimIndent()
+        """.trimIndent()
 
     companion object {
         private const val TOKEN = "token"

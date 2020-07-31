@@ -71,7 +71,6 @@ fun Route.uklassifisertInntekt(
                         }?.let {
                         val person = personOppslag.hentPerson(this.aktørId)
                         val inntektsmottaker = Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
-                        val inntektsmottaker = Inntektsmottaker(personNummer, navn)
                         mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), inntektsmottaker)
                     }?.let {
                         call.respond(HttpStatusCode.OK, it)

@@ -9,12 +9,12 @@ import io.ktor.client.features.logging.Logging
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import io.ktor.util.KtorExperimentalAPI
-import java.net.URL
-import java.util.UUID
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.pdl.HentPerson
+import java.net.URL
+import java.util.UUID
 
 private val log = KotlinLogging.logger { }
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
