@@ -20,8 +20,12 @@
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Logger name="tjenestekall" level="debug" includeLocation="true">
-            <AppenderRef ref="securelog"/>
+        <Logger name="tjenestekall" level="trace" additivity="false">
+            <AppenderRef ref="secureLog"/>
+        </Logger>
+
+        <Logger name="io.ktor.auth.jwt" level="trace">
+            <AppenderRef ref="ConsoleAppender"/>
         </Logger>
         <Root level="info">
             <AppenderRef ref="ConsoleAppender"/>
