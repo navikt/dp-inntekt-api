@@ -17,7 +17,6 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.util.pipeline.PipelineContext
 import io.prometheus.client.Counter
-import java.time.LocalDate
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -35,6 +34,7 @@ import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToStoredInntekt
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
+import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -69,12 +69,13 @@ fun Route.uklassifisertInntekt(
                         ?.let {
                             inntektStore.getInntekt(it)
                         }?.let {
-                            val person = personOppslag.hentPerson(this.aktørId)
-                            val inntektsmottaker = Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
-                            mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), inntektsmottaker)
-                        }?.let {
-                            call.respond(HttpStatusCode.OK, it)
-                        } ?: throw InntektNotFoundException("Inntekt with for $this not found.")
+                        val person = personOppslag.hentPerson(this.aktørId)
+                        val inntektsmottaker = Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
+                        val inntektsmottaker = Inntektsmottaker(personNummer, navn)
+                        mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), inntektsmottaker)
+                    }?.let {
+                        call.respond(HttpStatusCode.OK, it)
+                    } ?: throw InntektNotFoundException("Inntekt with for $this not found.")
                 }
             }
             post {

@@ -12,11 +12,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import java.time.LocalDate
-import java.time.ZoneId
-import java.util.Date
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import no.bekk.bekkopen.person.FodselsnummerCalculator.getFodselsnummerForDate
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
@@ -29,6 +24,11 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.Date
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 internal class InntektRouteSpec {
 
@@ -36,7 +36,8 @@ internal class InntektRouteSpec {
     private val ulid = ULID().nextULID()
     private val aktørId = "1234"
     private val beregningsdato = LocalDate.of(2019, 1, 8)
-    private val validJson = """
+    private val validJson =
+        """
         {
         	"aktørId": "$aktørId",
             "vedtakId": 1,
@@ -44,7 +45,8 @@ internal class InntektRouteSpec {
         }
         """.trimIndent()
 
-    private val validJsonWithVedtakIdAsUlid = """
+    private val validJsonWithVedtakIdAsUlid =
+        """
         {
             "aktørId": "$aktørId",
              "vedtakId": "$ulid",
@@ -52,7 +54,8 @@ internal class InntektRouteSpec {
         }
         """.trimIndent()
 
-    private val validJsonWithFnr = """
+    private val validJsonWithFnr =
+        """
         {
             "aktørId": "$aktørId",
              "vedtakId": "$ulid",
@@ -81,7 +84,8 @@ internal class InntektRouteSpec {
         beregningsdato = beregningsdato
     )
 
-    private val jsonMissingFields = """
+    private val jsonMissingFields =
+        """
         {
         	"aktørId": "1234",
         }

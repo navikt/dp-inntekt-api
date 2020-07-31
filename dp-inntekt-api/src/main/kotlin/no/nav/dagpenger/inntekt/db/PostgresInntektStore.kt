@@ -3,9 +3,6 @@ package no.nav.dagpenger.inntekt.db
 import com.squareup.moshi.JsonAdapter
 import de.huxhorn.sulky.ulid.ULID
 import io.prometheus.client.Summary
-import java.time.LocalDate
-import java.time.ZonedDateTime
-import javax.sql.DataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -20,6 +17,9 @@ import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
+import java.time.LocalDate
+import java.time.ZonedDateTime
+import javax.sql.DataSource
 
 internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore, HealthCheck {
 
@@ -36,7 +36,8 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
 
     override fun getManueltRedigert(inntektId: InntektId): ManueltRedigert? {
         @Language("sql")
-        val statement = """
+        val statement =
+            """
             SELECT redigert_av
                 FROM inntekt_V1_manuelt_redigert
             WHERE inntekt_id = ?
@@ -58,7 +59,8 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
     override fun getInntektId(inntektparametre: Inntektparametre): InntektId? {
         try {
             @Language("sql")
-            val statement: String = """
+            val statement: String =
+                """
                 SELECT inntektId
                     FROM inntekt_V1_person_mapping
                 WHERE aktørId = ? 
@@ -88,7 +90,8 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
 
     override fun getBeregningsdato(inntektId: InntektId): LocalDate {
         @Language("sql")
-        val statement = """SELECT coalesce(
+        val statement =
+            """SELECT coalesce(
                (SELECT beregningsdato FROM inntekt_V1_person_mapping WHERE inntektId = :inntektId),
                (SELECT beregningsdato FROM temp_inntekt_V1_person_mapping WHERE inntektId = :inntektId)
            ) as beregningsdato
@@ -96,7 +99,8 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
 
         return using(sessionOf(dataSource)) { session ->
             session.run(
-                queryOf(statement, mapOf("inntektId" to inntektId.id)
+                queryOf(
+                    statement, mapOf("inntektId" to inntektId.id)
                 ).map { row ->
                     row.localDateOrNull("beregningsdato")
                 }.asSingle
@@ -118,19 +122,21 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                         timestamp = row.zonedDateTime("timestamp").toLocalDateTime()
                     )
                 }
-                    .asSingle)
+                    .asSingle
+            )
                 ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
         }
     }
 
     override fun getSpesifisertInntekt(inntektId: InntektId): SpesifisertInntekt {
         @Language("sql")
-        val statement = """ 
+        val statement =
+            """ 
             SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.beregningsdato 
             from inntekt_V1 inntekt 
             inner join inntekt_V1_person_mapping mapping on inntekt.id = mapping.inntektid 
             where inntekt.id = ?"""
-            .trimIndent()
+                .trimIndent()
 
         val stored = using(sessionOf(dataSource)) { session ->
             session.run(
@@ -145,7 +151,8 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                         timestamp = row.zonedDateTime("timestamp").toLocalDateTime()
                     ) to row.localDate("beregningsdato")
                 }
-                    .asSingle)
+                    .asSingle
+            )
                 ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
         }
         return mapToSpesifisertInntekt(stored.first, Opptjeningsperiode(stored.second).sisteAvsluttendeKalenderMåned)
@@ -194,10 +201,11 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                     command.manueltRedigert?.let {
                         tx.run(
                             queryOf(
-                                "INSERT INTO inntekt_V1_manuelt_redigert VALUES(:id,:redigert)", mapOf(
-                                "id" to inntektId.id,
-                                "redigert" to it.redigertAv
-                            )
+                                "INSERT INTO inntekt_V1_manuelt_redigert VALUES(:id,:redigert)",
+                                mapOf(
+                                    "id" to inntektId.id,
+                                    "redigert" to it.redigertAv
+                                )
                             ).asUpdate
                         )
                     }

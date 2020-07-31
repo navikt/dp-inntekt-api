@@ -10,12 +10,6 @@ import io.kotest.property.arbitrary.localDate
 import io.kotest.property.arbitrary.next
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
-import java.time.LocalDate
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import no.nav.dagpenger.inntekt.Configuration
 import no.nav.dagpenger.inntekt.DataSource
 import no.nav.dagpenger.inntekt.dummyConfigs
@@ -26,6 +20,12 @@ import no.nav.dagpenger.inntekt.withCleanDb
 import no.nav.dagpenger.inntekt.withMigratedDb
 import no.nav.dagpenger.inntekt.withProps
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 internal class PostgresTest {
 

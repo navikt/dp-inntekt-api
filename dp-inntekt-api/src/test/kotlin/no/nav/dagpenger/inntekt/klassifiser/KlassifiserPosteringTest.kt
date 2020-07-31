@@ -1,10 +1,10 @@
 package no.nav.dagpenger.inntekt.klassifiser
 
-import kotlin.test.assertEquals
 import no.nav.dagpenger.events.inntekt.v1.InntektKlasse
 import no.nav.dagpenger.events.inntekt.v1.PosteringsType
 import no.nav.dagpenger.inntekt.klassifiserer.klassifiserOgMapInntekt
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 internal class KlassifiserPosteringTest {
 

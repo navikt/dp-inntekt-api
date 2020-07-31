@@ -8,12 +8,12 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
-import java.time.LocalDate
-import java.util.concurrent.Executors
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.db.Inntektparametre
+import java.time.LocalDate
+import java.util.concurrent.Executors
 
 val api = Executors.newFixedThreadPool(4).asCoroutineDispatcher()
 

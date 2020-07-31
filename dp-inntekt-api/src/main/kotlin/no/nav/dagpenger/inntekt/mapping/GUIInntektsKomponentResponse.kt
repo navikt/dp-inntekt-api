@@ -1,8 +1,5 @@
 package no.nav.dagpenger.inntekt.mapping
 
-import java.math.BigDecimal
-import java.time.LocalDateTime
-import java.time.YearMonth
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Avvik
@@ -10,6 +7,9 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Periode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
+import java.math.BigDecimal
+import java.time.LocalDateTime
+import java.time.YearMonth
 
 data class GUIInntekt(
     val inntektId: InntektId?,

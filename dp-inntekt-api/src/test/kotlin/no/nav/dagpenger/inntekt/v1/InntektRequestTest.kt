@@ -1,17 +1,17 @@
 package no.nav.dagpenger.inntekt.v1
 
-import java.time.LocalDate
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 internal class InntektRequestTest {
     @Test
     fun ` Map to InntektkomponentenRequest`() {
         val request = InntektRequest(
-                aktørId = "1234",
-                vedtakId = 1223,
-                beregningsDato = LocalDate.of(2019, 4, 3)
+            aktørId = "1234",
+            vedtakId = 1223,
+            beregningsDato = LocalDate.of(2019, 4, 3)
         )
 
         val opptjeningsperiode = Opptjeningsperiode(request.beregningsDato)

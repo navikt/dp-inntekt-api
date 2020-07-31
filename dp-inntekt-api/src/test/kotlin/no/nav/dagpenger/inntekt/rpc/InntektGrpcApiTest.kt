@@ -14,8 +14,6 @@ import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.time.LocalDateTime
-import java.time.YearMonth
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.events.inntekt.v1.Aktør
 import no.nav.dagpenger.events.inntekt.v1.AktørType
@@ -29,6 +27,8 @@ import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.LocalDateTime
+import java.time.YearMonth
 
 internal class InntektGrpcApiTest : GrpcTest() {
 
