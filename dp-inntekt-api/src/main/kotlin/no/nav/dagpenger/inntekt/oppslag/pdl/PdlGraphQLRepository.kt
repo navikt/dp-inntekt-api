@@ -26,7 +26,7 @@ class PdlGraphQLRepository constructor(
 
     private val query = HentPerson(client)
     override suspend fun hentPerson(aktørId: String): Person? {
-        val result = query.execute(HentPerson.Variables(ident = aktørId))
+        val result = query.execute(HentPerson.Variables(ident = aktørId, grupper = listOf(HentPerson.IdentGruppe.FOLKEREGISTERIDENT), historikk = false))
 
         return if (result.errors?.isNotEmpty() == true) {
             log.error { "Feil i GraphQL-responsen: ${result.errors}" }
@@ -37,8 +37,9 @@ class PdlGraphQLRepository constructor(
     }
 
     private fun GraphQLResponse<HentPerson.Result>.toPerson(): Person? {
-        val navn: HentPerson.Navn? = data?.hentPerson?.navn?.firstOrNull()
         val fødselsnummer = data?.hentIdenter?.identer?.firstOrNull()?.ident
+        sikkerlogg.info { "Fant person $fødselsnummer" }
+        val navn: HentPerson.Navn? = data?.hentPerson?.navn?.firstOrNull()
         return fødselsnummer?.let { fnr ->
             navn?.let { navn ->
                 Person(

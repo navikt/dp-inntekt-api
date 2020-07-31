@@ -1,15 +1,8 @@
-query($ident: ID!){
-    hentIdenter(ident: $ident, historikk: false, grupper: [FOLKEREGISTERIDENT]) {
+query($ident: ID!, $grupper: [IdentGruppe!], $historikk: Boolean = false){
+    hentIdenter(ident: $ident, historikk: $historikk, grupper: $grupper) {
         identer {
             ident,
             gruppe
-        }
-    }
-    hentPerson(ident: $ident) {
-        navn(historikk: false) {
-            fornavn
-            mellomnavn
-            etternavn
         }
     }
 }
