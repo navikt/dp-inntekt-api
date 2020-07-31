@@ -2,9 +2,10 @@ package no.nav.dagpenger.inntekt.subsumsjonbrukt
 
 import de.huxhorn.sulky.ulid.ULID
 import io.kotest.matchers.shouldBe
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.verify
+
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.events.moshiInstance
@@ -19,12 +20,14 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.KafkaContainer
+import java.sql.SQLTransientConnectionException
+import java.time.Duration
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
 private val LOGGER = KotlinLogging.logger { }
-class KafkaSubsumsjonBruktDataConsumerTest {
+internal class KafkaSubsumsjonBruktDataConsumerTest {
     private object Kafka {
         val instance by lazy {
             KafkaContainer("5.3.1").apply { this.start() }
@@ -46,9 +49,9 @@ class KafkaSubsumsjonBruktDataConsumerTest {
     @Test
     fun `Should mark inntekt id as used`() {
         runBlocking {
-            val storeMock = mockk<InntektStore>(relaxed = false).apply {
-                every { this@apply.markerInntektBrukt(any()) } returns 1
-            }
+            val inntektId = InntektId(ULID().nextULID())
+            val storeMock = mockk<InntektStore>(relaxed = false)
+            coEvery { storeMock.markerInntektBrukt(inntektId) } returns 1
             val config = Configuration().run {
                 copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers, user = null, password = null))
             }
@@ -57,8 +60,7 @@ class KafkaSubsumsjonBruktDataConsumerTest {
                 listen()
             }
 
-            val id = ULID().nextULID()
-            val bruktSubsumsjonData = mapOf("faktum" to mapOf("inntektsId" to id))
+            val bruktSubsumsjonData = mapOf("faktum" to mapOf("inntektsId" to inntektId.id))
 
             val metaData = producer.send(ProducerRecord(config.subsumsjonBruktDataTopic, "test", adapter.toJson(bruktSubsumsjonData)))
                 .get(5, TimeUnit.SECONDS)
@@ -67,19 +69,17 @@ class KafkaSubsumsjonBruktDataConsumerTest {
             TimeUnit.MILLISECONDS.sleep(500)
 
             verify(exactly = 1) {
-                storeMock.markerInntektBrukt(InntektId(id))
+                storeMock.markerInntektBrukt(inntektId)
             }
 
-            consumer.status() shouldBe HealthStatus.UP
+            consumer.stop()
         }
     }
 
     @Test
     fun `Cannot mark inntekt id as used if not present in faktum`() {
         runBlocking {
-            val storeMock = mockk<InntektStore>(relaxed = false).apply {
-                every { this@apply.markerInntektBrukt(any()) } returns 1
-            }
+            val storeMock = mockk<InntektStore>(relaxed = false)
             val config = Configuration().run {
                 copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers, user = null, password = null))
             }
@@ -101,33 +101,33 @@ class KafkaSubsumsjonBruktDataConsumerTest {
             }
 
             consumer.status() shouldBe HealthStatus.UP
+            consumer.stop()
         }
     }
 
     @Test
     fun `Should have grace period on health status when job is no longer active`() {
         runBlocking {
-            val storeMock = mockk<InntektStore>(relaxed = false).apply {
-                every { this@apply.markerInntektBrukt(any()) } returns 1
-            }
+            val inntektId = InntektId(ULID().nextULID())
+            val storeMock = mockk<InntektStore>(relaxed = false)
+            coEvery { storeMock.markerInntektBrukt(inntektId) } throws SQLTransientConnectionException("BLÆ")
             val config = Configuration().run {
                 copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers, user = null, password = null))
             }
 
-            val consumer = KafkaSubsumsjonBruktDataConsumer(config, storeMock).apply {
+            val consumer = KafkaSubsumsjonBruktDataConsumer(config = config, inntektStore = storeMock, graceDuration = Duration.ofMillis(1)).apply {
                 listen()
             }
 
-            val illegalInntektId = "bla bla bla" // should
-            val bruktSubsumsjonData = mapOf("faktum" to mapOf("inntektsId" to illegalInntektId))
+            val bruktSubsumsjonData = mapOf("faktum" to mapOf("inntektsId" to inntektId.id))
 
             val metaData = producer.send(ProducerRecord(config.subsumsjonBruktDataTopic, "test", adapter.toJson(bruktSubsumsjonData)))
                 .get(5, TimeUnit.SECONDS)
-            LOGGER.info("Producer produced $bruktSubsumsjonData with meta $metaData")
+            LOGGER.info("Producer produced $bruktSubsumsjonData with meta $metaData + should fail")
 
-            TimeUnit.MILLISECONDS.sleep(500)
+            TimeUnit.MILLISECONDS.sleep(1500)
 
-            consumer.status() shouldBe HealthStatus.UP
+            consumer.status() shouldBe HealthStatus.DOWN
         }
     }
 
