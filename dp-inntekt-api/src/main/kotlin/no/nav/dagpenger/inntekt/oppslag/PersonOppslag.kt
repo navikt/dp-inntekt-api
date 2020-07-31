@@ -10,5 +10,5 @@ data class Person(
     val mellomnavn: String? = null,
     val etternavn: String
 ) {
-    fun sammensattNavn(): String = "$etternavn, $fornavn $mellomnavn"
+    fun sammensattNavn(): String = "$etternavn, $fornavn" + (mellomnavn?.let { " $it" } ?: "")
 }
