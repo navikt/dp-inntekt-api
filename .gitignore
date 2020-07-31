@@ -30,6 +30,8 @@
 .idea/
 *.iml
 
+dp-inntekt-api/src/main/resources/schema.graphql
+
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries

@@ -1,6 +1,14 @@
 plugins {
     application
-    id(Shadow.shadow).version("5.2.0")
+    id(Shadow.shadow) version Shadow.version
+    id(Graphql.graphql) version Graphql.version
+    id("de.undercouch.download")
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
 }
 
 repositories {
@@ -26,6 +34,12 @@ dependencies {
     implementation(Ktor.micrometerMetrics)
     implementation(Dagpenger.Biblioteker.ktorUtils)
     implementation(Micrometer.prometheusRegistry)
+
+    implementation(Graphql.client)
+    implementation(Ktor.library("client-logging-jvm"))
+
+    // unleash
+    implementation("no.finn.unleash:unleash-client-java:3.3.1")
 
     implementation(Moshi.moshi)
     implementation(Moshi.moshiAdapters)
@@ -89,11 +103,62 @@ dependencies {
     testImplementation(JsonAssert.jsonassert)
 }
 
+tasks.named("shadowJar") {
+    dependsOn("test")
+}
+
+tasks.named("jar") {
+    dependsOn("test")
+}
+
+tasks.named("compileKotlin") {
+    dependsOn("spotlessCheck")
+    dependsOn("graphqlGenerateClient")
+}
+
+tasks.named("test") {
+    dependsOn("copySchemaToResources")
+}
+
+tasks.named("graphqlGenerateClient") {
+    dependsOn("downloadPdlSDL")
+}
+
+val schema = "schema.graphql"
+
+val graphqlGenerateClient by tasks.getting(com.expediagroup.graphql.plugin.gradle.tasks.GraphQLGenerateClientTask::class) {
+    packageName.set("no.nav.pdl")
+    schemaFileName.set("$buildDir/$schema")
+    queryFileDirectory.set("$projectDir/src/main/resources")
+}
+
+tasks.register<de.undercouch.gradle.tasks.download.Download>("downloadPdlSDL") {
+    src("https://navikt.github.io/pdl/pdl-api-sdl.graphqls")
+    dest(File(buildDir, schema))
+}
+
+tasks.register<Copy>("copySchemaToResources") {
+    dependsOn("downloadPdlSDL")
+
+    from(buildDir) {
+        include(schema)
+    }
+    into("$projectDir/src/main/resources")
+}
+
+// To get intellij to make sense of generated sources from graphql client
+java {
+    val mainJavaSourceSet: SourceDirectorySet = sourceSets.getByName("main").java
+    val graphqlDir = "$buildDir/generated/source/graphql/main"
+    mainJavaSourceSet.srcDirs(graphqlDir)
+}
+
 dependencyLocking {
     lockAllConfigurations()
 }
 
 configurations.all {
+    resolutionStrategy.failOnVersionConflict()
     resolutionStrategy.activateDependencyLocking()
     resolutionStrategy.preferProjectModules()
     resolutionStrategy.eachDependency { DependencyResolver.execute(this) }

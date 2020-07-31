@@ -7,6 +7,9 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
+import java.net.InetAddress
+import java.net.UnknownHostException
+import no.finn.unleash.util.UnleashConfig
 import no.nav.dagpenger.streams.KafkaCredential
 
 private val localProperties = ConfigurationMap(
@@ -31,7 +34,9 @@ private val localProperties = ConfigurationMap(
         "api.secret" to "secret",
         "api.keys" to "dp-datalaster-inntekt",
         "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
-        "kafka.bootstrap.servers" to "localhost:9092"
+        "kafka.bootstrap.servers" to "localhost:9092",
+        "unleash.url" to "http://localhost/api/",
+        "pdl.url" to "localhost:4321"
     )
 )
 private val devProperties = ConfigurationMap(
@@ -50,7 +55,9 @@ private val devProperties = ConfigurationMap(
         "application.profile" to "DEV",
         "application.httpPort" to "8099",
         "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
-        "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443"
+        "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
+        "unleash.url" to "https://unleash.nais.preprod.local/api/",
+        "pdl.url" to "http://pdl-api.default.svc.nais.local/graphql"
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -69,7 +76,9 @@ private val prodProperties = ConfigurationMap(
         "application.profile" to "PROD",
         "application.httpPort" to "8099",
         "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
-        "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443"
+        "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
+        "unleash.url" to "https://unleash.nais.adeo.no/api/",
+        "pdl.url" to "http://pdl-api.default.svc.nais.local/graphql"
     )
 )
 
@@ -78,6 +87,7 @@ data class Configuration(
     val vault: Vault = Vault(),
     val application: Application = Application(),
     val kafka: Kafka = Kafka(),
+    val pdl: Pdl = Pdl(),
     val subsumsjonBruktDataTopic: String = config()[Key("kafka.subsumsjon.brukt.data.topic", stringType)]
 ) {
 
@@ -122,8 +132,26 @@ data class Configuration(
         val jwksIssuer: String = config()[Key("jwks.issuer", stringType)],
         val name: String = "dp-inntekt-api",
         val apiSecret: String = config()[Key("api.secret", stringType)],
-        val allowedApiKeys: List<String> = config()[Key("api.keys", stringType)].split(",").toList()
+        val allowedApiKeys: List<String> = config()[Key("api.keys", stringType)].split(",").toList(),
+        val unleashConfig: UnleashConfig = UnleashConfig.builder()
+            .appName(config().getOrElse(Key("app.name", stringType), "dp-inntekt-api"))
+            .instanceId(getHostname())
+            .unleashAPI(config()[Key("unleash.url", stringType)])
+            .build()
     )
+
+    data class Pdl(
+        val url: String = config()[Key("pdl.url", stringType)]
+    )
+}
+
+private fun getHostname(): String {
+    return try {
+        val addr: InetAddress = InetAddress.getLocalHost()
+        addr.hostName
+    } catch (e: UnknownHostException) {
+        "unknown"
+    }
 }
 
 enum class Profile {

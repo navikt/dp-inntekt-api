@@ -8,11 +8,15 @@ import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import no.finn.unleash.DefaultUnleash
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
 import no.nav.dagpenger.inntekt.db.dataSourceFrom
 import no.nav.dagpenger.inntekt.db.migrate
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
+import no.nav.dagpenger.inntekt.oppslag.UnleashedPersonOppslag
+import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLClientFactory
+import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLRepository
 import no.nav.dagpenger.inntekt.rpc.InntektGrpcServer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
@@ -41,12 +45,28 @@ fun main() {
             config.application.username,
             config.application.password
         )
+
+        val pdl = PdlGraphQLRepository(
+            client = PdlGraphQLClientFactory(
+                url = config.pdl.url,
+                oidcProvider = { stsOidcClient.oidcToken().access_token }
+            )
+        )
+
+        val oppslagClient = OppslagClient(config.application.oppslagUrl, stsOidcClient)
+
+        val unleashedPersonOppslag = UnleashedPersonOppslag(
+            unleash = DefaultUnleash(config.application.unleashConfig),
+            pdlPersonOppslag = pdl,
+            legacyPersonOppslag = oppslagClient
+        )
+
         val inntektskomponentHttpClient = InntektskomponentHttpClient(
             config.application.hentinntektListeUrl,
             stsOidcClient
         )
         val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentHttpClient, postgresInntektStore)
-        val oppslagClient = OppslagClient(config.application.oppslagUrl, stsOidcClient)
+
         val jwkProvider = JwkProviderBuilder(URL(config.application.jwksUrl))
             .cached(10, 24, TimeUnit.HOURS)
             .rateLimited(10, 1, TimeUnit.MINUTES)
@@ -82,7 +102,7 @@ fun main() {
                 inntektskomponentHttpClient,
                 postgresInntektStore,
                 cachedInntektsGetter,
-                oppslagClient,
+                unleashedPersonOppslag,
                 authApiKeyVerifier,
                 jwkProvider,
                 listOf(

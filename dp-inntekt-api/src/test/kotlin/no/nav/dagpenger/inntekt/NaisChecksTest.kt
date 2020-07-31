@@ -9,7 +9,7 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
-import no.nav.dagpenger.inntekt.oppslag.OppslagClient
+import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.v1.mockInntektApi
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.jupiter.api.Test
@@ -19,7 +19,7 @@ class NaisChecksTest {
     private val apiKeyVerifier = ApiKeyVerifier("secret")
     private val authApiKeyVerifier = AuthApiKeyVerifier(apiKeyVerifier, listOf("test-client"))
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
-    private val oppslagClientMock: OppslagClient = mockk()
+    private val personOppslagMock: PersonOppslag = mockk()
     private val inntektStoreMock: InntektStore = mockk(
         relaxed = true,
         moreInterfaces = *arrayOf(HealthCheck::class)
@@ -46,7 +46,7 @@ class NaisChecksTest {
             mockInntektApi(
                 inntektskomponentClient = inntektskomponentClientMock,
                 inntektStore = inntektStoreMock,
-                oppslagClient = oppslagClientMock,
+                personOppslag = personOppslagMock,
                 apiAuthApiKeyVerifier = authApiKeyVerifier,
                 healthChecks = listOf(
                     inntektStoreMockHealthCheck

@@ -9,13 +9,13 @@ import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
-import no.nav.dagpenger.inntekt.oppslag.OppslagClient
+import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 
 internal fun mockInntektApi(
     inntektskomponentClient: InntektskomponentClient = mockk(),
     inntektStore: InntektStore = mockk(),
     behandlingsInntektsGetter: BehandlingsInntektsGetter = mockk(),
-    oppslagClient: OppslagClient = mockk(),
+    personOppslag: PersonOppslag = mockk(),
     apiAuthApiKeyVerifier: AuthApiKeyVerifier = mockk(relaxed = true),
     jwkProvider: JwkProvider = mockk(relaxed = true),
     healthChecks: List<HealthCheck> = emptyList()
@@ -25,7 +25,7 @@ internal fun mockInntektApi(
             inntektskomponentHttpClient = inntektskomponentClient,
             inntektStore = inntektStore,
             behandlingsInntektsGetter = behandlingsInntektsGetter,
-            oppslagClient = oppslagClient,
+            personOppslag = personOppslag,
             apiAuthApiKeyVerifier = apiAuthApiKeyVerifier,
             jwkProvider = jwkProvider,
             healthChecks = healthChecks

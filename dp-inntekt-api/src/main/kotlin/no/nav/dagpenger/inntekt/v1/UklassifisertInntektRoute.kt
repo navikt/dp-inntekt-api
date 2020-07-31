@@ -32,7 +32,7 @@ import no.nav.dagpenger.inntekt.mapping.dataGrunnlagKlassifiseringToVerdikode
 import no.nav.dagpenger.inntekt.mapping.mapToDetachedInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToStoredInntekt
-import no.nav.dagpenger.inntekt.oppslag.OppslagClient
+import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
 
@@ -59,7 +59,7 @@ private val inntektOppfriskingBruktCounter = Counter.build()
 fun Route.uklassifisertInntekt(
     inntektskomponentClient: InntektskomponentClient,
     inntektStore: InntektStore,
-    oppslagClient: OppslagClient
+    personOppslag: PersonOppslag
 ) {
     authenticate("jwt") {
         route("/uklassifisert/{aktørId}/{vedtakId}/{beregningsDato}") {
@@ -69,8 +69,8 @@ fun Route.uklassifisertInntekt(
                         ?.let {
                             inntektStore.getInntekt(it)
                         }?.let {
-                        val personNummer = oppslagClient.finnNaturligIdent(this.aktørId)
-                        val navn = personNummer?.let { pnr -> oppslagClient.personNavn(pnr) }
+                        val person = personOppslag.hentPerson(this.aktørId)
+                        val inntektsmottaker = Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
                         val inntektsmottaker = Inntektsmottaker(personNummer, navn)
                         mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), inntektsmottaker)
                     }?.let {
@@ -125,9 +125,8 @@ fun Route.uklassifisertInntekt(
                             inntektskomponentClient.getInntekt(it)
                         }
                         .let {
-                            val personNummer = oppslagClient.finnNaturligIdent(this.aktørId)
-                            val navn = personNummer?.let { pnr -> oppslagClient.personNavn(pnr) }
-                            val inntektsmottaker = Inntektsmottaker(personNummer, navn)
+                            val person = personOppslag.hentPerson(this.aktørId)
+                            val inntektsmottaker = Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
                             mapToGUIInntekt(it, opptjeningsperiode, inntektsmottaker)
                         }
                         .let {
