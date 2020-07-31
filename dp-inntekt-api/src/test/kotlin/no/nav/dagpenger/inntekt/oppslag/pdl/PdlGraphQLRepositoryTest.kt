@@ -13,6 +13,7 @@ import kotlinx.coroutines.runBlocking
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import wiremock.com.google.common.net.HttpHeaders
 import kotlin.test.assertNotNull
@@ -20,7 +21,7 @@ import kotlin.test.assertNotNull
 @KtorExperimentalAPI
 internal class PdlGraphQLRepositoryTest {
 
-    @Test
+    @Test @Disabled
     fun `Hent person basert på aktør id `() = runBlocking {
         wireMockServer.addPdlResponse(
             matchingJsonPath("$.variables.ident", EqualToPattern("aktørId")),

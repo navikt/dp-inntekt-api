@@ -39,16 +39,22 @@ class PdlGraphQLRepository constructor(
     private fun GraphQLResponse<HentPerson.Result>.toPerson(): Person? {
         val fødselsnummer = data?.hentIdenter?.identer?.firstOrNull()?.ident
         sikkerlogg.info { "Fant person $fødselsnummer" }
-        val navn: HentPerson.Navn? = data?.hentPerson?.navn?.firstOrNull()
+        // val navn: HentPerson.Navn? = data?.hentPerson?.navn?.firstOrNull()
         return fødselsnummer?.let { fnr ->
-            navn?.let { navn ->
-                Person(
-                    fødselsnummer = fnr,
-                    etternavn = navn.etternavn,
-                    mellomnavn = navn.mellomnavn,
-                    fornavn = navn.fornavn
-                )
-            }
+            Person(
+                fødselsnummer = fnr,
+                etternavn = "TEST",
+                mellomnavn = null,
+                fornavn = "POTET"
+            )
+            // navn?.let { navn ->
+            //     Person(
+            //         fødselsnummer = fnr,
+            //         etternavn = navn.etternavn,
+            //         mellomnavn = navn.mellomnavn,
+            //         fornavn = navn.fornavn
+            //     )
+            // }
         }
     }
 }
