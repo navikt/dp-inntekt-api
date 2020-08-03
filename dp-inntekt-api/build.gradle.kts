@@ -37,6 +37,7 @@ dependencies {
 
     implementation(Graphql.client)
     implementation(Ktor.library("client-logging-jvm"))
+    implementation(Ktor.library("client-apache"))
 
     // unleash
     implementation("no.finn.unleash:unleash-client-java:3.3.1")

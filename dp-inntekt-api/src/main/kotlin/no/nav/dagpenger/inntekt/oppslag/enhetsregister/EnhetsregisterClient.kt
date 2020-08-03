@@ -2,7 +2,7 @@ package no.nav.dagpenger.inntekt.oppslag.enhetsregister
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.apache.Apache
 import io.ktor.client.features.ClientRequestException
 import io.ktor.client.features.HttpTimeout
 import io.ktor.client.features.logging.LogLevel
@@ -11,6 +11,8 @@ import io.ktor.client.request.get
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner
+import java.net.ProxySelector
 import java.time.Duration
 
 class EnhetsregisterClient(
@@ -34,7 +36,7 @@ class EnhetsregisterClient(
 
 @KtorExperimentalAPI
 internal fun httpClient(
-    engine: HttpClientEngine = CIO.create { requestTimeout = Long.MAX_VALUE }
+    engine: HttpClientEngine = Apache.create { customizeClient { setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault())) } }
 ): HttpClient {
     return HttpClient(engine) {
         install(HttpTimeout) {
