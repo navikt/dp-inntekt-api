@@ -14,4 +14,6 @@ spec:
     value: "https://app-q2.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste"
   - name: APPLICATION_ID
     value: "dp-inntekt-api-consumer-q2"
+  - name: ENHETSREGISTERET_URL
+    value: "https://data.brreg.no/enhetsregisteret"
 
