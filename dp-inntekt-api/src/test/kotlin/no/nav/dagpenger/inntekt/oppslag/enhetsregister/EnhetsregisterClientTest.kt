@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.oppslag
+package no.nav.dagpenger.inntekt.oppslag.enhetsregister
 
 import io.kotest.matchers.shouldBe
 import io.ktor.client.engine.mock.MockEngine
@@ -7,8 +7,6 @@ import io.ktor.client.engine.mock.respondOk
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
-import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
-import no.nav.dagpenger.inntekt.oppslag.enhetsregister.httpClient
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 

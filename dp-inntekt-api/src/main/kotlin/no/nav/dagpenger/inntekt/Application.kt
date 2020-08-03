@@ -9,13 +9,10 @@ import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
-import no.finn.unleash.DefaultUnleash
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
 import no.nav.dagpenger.inntekt.db.dataSourceFrom
 import no.nav.dagpenger.inntekt.db.migrate
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
-import no.nav.dagpenger.inntekt.oppslag.OppslagClient
-import no.nav.dagpenger.inntekt.oppslag.UnleashedPersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.httpClient
 import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLClientFactory
@@ -50,24 +47,15 @@ fun main() {
             config.application.password
         )
 
-        val pdl = PdlGraphQLRepository(
+        val pdlPersonOppslag = PdlGraphQLRepository(
             client = PdlGraphQLClientFactory(
                 url = config.pdl.url,
                 oidcProvider = { stsOidcClient.oidcToken().access_token }
             )
         )
-
         val enhetsregisterClient = EnhetsregisterClient(
             baseUrl = config.enhetsregisteretUrl.url,
             httpClient = httpClient()
-        )
-
-        val oppslagClient = OppslagClient(config.application.oppslagUrl, stsOidcClient)
-
-        val unleashedPersonOppslag = UnleashedPersonOppslag(
-            unleash = DefaultUnleash(config.application.unleashConfig),
-            pdlPersonOppslag = pdl,
-            legacyPersonOppslag = oppslagClient
         )
 
         val inntektskomponentHttpClient = InntektskomponentHttpClient(
@@ -111,7 +99,7 @@ fun main() {
                 inntektskomponentHttpClient,
                 postgresInntektStore,
                 cachedInntektsGetter,
-                unleashedPersonOppslag,
+                pdlPersonOppslag,
                 authApiKeyVerifier,
                 jwkProvider,
                 enhetsregisterClient,
@@ -128,7 +116,7 @@ fun main() {
             )
         }
 
-        // Cleans up unused inntekt on a regular interbal
+        // Cleans up unused inntekt on a regular interval
         Vaktmester(dataSource).also {
             fixedRateTimer(
                 name = "vaktmester",
