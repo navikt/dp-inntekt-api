@@ -36,6 +36,8 @@ import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
+import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
+import no.nav.dagpenger.inntekt.v1.enhetsregisteret
 import no.nav.dagpenger.inntekt.v1.inntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
 import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
@@ -58,6 +60,7 @@ fun Application.inntektApi(
     personOppslag: PersonOppslag,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     jwkProvider: JwkProvider,
+    enhetsregisterClient: EnhetsregisterClient,
     healthChecks: List<HealthCheck>
 ) {
     install(DefaultHeaders)
@@ -209,6 +212,7 @@ fun Application.inntektApi(
                 uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, personOppslag)
             }
             opptjeningsperiodeApi(inntektStore)
+            enhetsregisteret(enhetsregisterClient)
         }
         naischecks(healthChecks)
     }

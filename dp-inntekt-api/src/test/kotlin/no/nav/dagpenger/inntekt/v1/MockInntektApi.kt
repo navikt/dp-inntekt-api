@@ -10,6 +10,7 @@ import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
+import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 
 internal fun mockInntektApi(
     inntektskomponentClient: InntektskomponentClient = mockk(),
@@ -18,6 +19,7 @@ internal fun mockInntektApi(
     personOppslag: PersonOppslag = mockk(),
     apiAuthApiKeyVerifier: AuthApiKeyVerifier = mockk(relaxed = true),
     jwkProvider: JwkProvider = mockk(relaxed = true),
+    enhetsregisterClient: EnhetsregisterClient = mockk(relaxed = true),
     healthChecks: List<HealthCheck> = emptyList()
 ): Application.() -> Unit {
     return fun Application.() {
@@ -28,6 +30,7 @@ internal fun mockInntektApi(
             personOppslag = personOppslag,
             apiAuthApiKeyVerifier = apiAuthApiKeyVerifier,
             jwkProvider = jwkProvider,
+            enhetsregisterClient = enhetsregisterClient,
             healthChecks = healthChecks
         )
     }

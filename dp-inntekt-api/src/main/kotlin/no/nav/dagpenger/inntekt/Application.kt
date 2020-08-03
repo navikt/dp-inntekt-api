@@ -4,6 +4,7 @@ import com.auth0.jwk.JwkProviderBuilder
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
+import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -15,6 +16,8 @@ import no.nav.dagpenger.inntekt.db.migrate
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.oppslag.OppslagClient
 import no.nav.dagpenger.inntekt.oppslag.UnleashedPersonOppslag
+import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
+import no.nav.dagpenger.inntekt.oppslag.enhetsregister.httpClient
 import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLClientFactory
 import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLRepository
 import no.nav.dagpenger.inntekt.rpc.InntektGrpcServer
@@ -29,6 +32,7 @@ import kotlin.concurrent.fixedRateTimer
 private val LOGGER = KotlinLogging.logger {}
 private val config = Configuration()
 
+@KtorExperimentalAPI
 fun main() {
     runBlocking {
         migrate(config)
@@ -51,6 +55,11 @@ fun main() {
                 url = config.pdl.url,
                 oidcProvider = { stsOidcClient.oidcToken().access_token }
             )
+        )
+
+        val enhetsregisterClient = EnhetsregisterClient(
+            baseUrl = config.enhetsregisteretUrl.url,
+            httpClient = httpClient()
         )
 
         val oppslagClient = OppslagClient(config.application.oppslagUrl, stsOidcClient)
@@ -105,6 +114,7 @@ fun main() {
                 unleashedPersonOppslag,
                 authApiKeyVerifier,
                 jwkProvider,
+                enhetsregisterClient,
                 listOf(
                     postgresInntektStore as HealthCheck,
                     subsumsjonBruktDataConsumer as HealthCheck
