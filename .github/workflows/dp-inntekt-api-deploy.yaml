@@ -58,7 +58,7 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
-          RESOURCE: nais/alerts.yaml,nais/grpc-svc.yaml,nais/dev/nais.yaml
+          RESOURCE: nais/alerts.yaml,nais/dev/nais.yaml
           VARS: nais/vars.yaml
           VAR: alerts_slack_channel=#team-dagpenger-alerts-non-prod
           PRINT_PAYLOAD: true
@@ -79,7 +79,7 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
-          RESOURCE: nais/alerts.yaml,nais/grpc-svc.yaml,nais/q2/nais.yaml
+          RESOURCE: nais/alerts.yaml,nais/q2/nais.yaml
           VARS: nais/vars.yaml
           VAR: alerts_slack_channel=#team-dagpenger-alerts-non-prod,namespace=q2
           PRINT_PAYLOAD: true
@@ -122,7 +122,7 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
-          RESOURCE: nais/alerts.yaml,nais/grpc-svc.yaml,nais/prod/nais.yaml
+          RESOURCE: nais/alerts.yaml,nais/prod/nais.yaml
           VARS: nais/vars.yaml
           VAR: alerts_slack_channel=#team-dagpenger-alerts
           PRINT_PAYLOAD: true
