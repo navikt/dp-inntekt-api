@@ -19,3 +19,4 @@ spec:
   selector:
     team: {{team}}
     app:  {{app}}
+    namespace: {{namespace}}
