@@ -2,10 +2,10 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: dp-inntekt-api-grpc
-    team: teamdagpenger
-  name: dp-inntekt-api-grpc
-  namespace: default
+    app: {{app}}-grpc
+    team:  {{app}}
+  name:  {{app}}-grpc
+  namespace: {{namespace}}
 spec:
   ports:
     - name: http
@@ -17,5 +17,5 @@ spec:
       protocol: TCP
       targetPort: 50051
   selector:
-    team: teamdagpenger
-    app: dp-inntekt-api
+    team: {{team}}
+    app:  {{app}}

@@ -1,7 +1,38 @@
-apiVersion: "nais.io/v1alpha1"
-kind: "Application"
+# Example https://github.com/nais/naiserator/blob/master/examples/nais-max.yaml
+apiVersion: nais.io/v1alpha1
+kind: Application
 metadata:
-  name: dp-inntekt-api
+  name: {{app}}
+  namespace: {{namespace}}
+  labels:
+    team: {{team}}
 spec:
+  image: {{ image }}
+  port: 8099
+  webproxy: true
+  liveness:
+    path: /isAlive
+  readiness:
+    path: /isReady
+  prometheus:
+    enabled: true
+    path: /metrics
+  replicas:
+    min: 2
+    max: 4
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  vault:
+    enabled: true
+    paths:
+      - kvPath: serviceuser/data/dev/{{service_user}}
+        mountPath: /var/run/secrets/nais.io/service_user
+  secureLogs:
+    enabled: true
   ingresses:
     - "https://dp-inntekt-api.nais.preprod.local"
