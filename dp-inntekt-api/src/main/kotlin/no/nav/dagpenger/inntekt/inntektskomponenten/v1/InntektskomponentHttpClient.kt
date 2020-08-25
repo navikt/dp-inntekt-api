@@ -13,7 +13,8 @@ import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.oidc.OidcClient
 import java.time.YearMonth
 
-private val LOGGER = KotlinLogging.logger {}
+private val logg = KotlinLogging.logger {}
+private val sikkerLogg = KotlinLogging.logger("tjenestekall")
 private val jsonResponseAdapter = moshiInstance.adapter(InntektkomponentResponse::class.java)
 private val jsonRequestRequestAdapter = moshiInstance.adapter(HentInntektListeRequest::class.java)
 private val jsonMapAdapter = moshiInstance.adapter(Map::class.java)
@@ -65,7 +66,7 @@ class InntektskomponentHttpClient(
         withLoggingContext(
             "callId" to callId
         ) {
-            LOGGER.info("Fetching new inntekt for $request")
+            logg.info("Fetching new inntekt for $request")
 
             try {
                 val (_, response, result) = with(hentInntektlisteUrl.httpPost()) {
@@ -101,7 +102,8 @@ class InntektskomponentHttpClient(
                             "Failed to fetch inntekt. Status code ${response.statusCode}. Response message: ${response.responseMessage}. Problem message: $detail",
                             detail
                         ).also {
-                            LOGGER.error { it }
+                            sikkerLogg.error { it }
+                            logg.error("Failed to fetch inntekt. Status code ${response.statusCode}")
                         }
                     }
                 )
