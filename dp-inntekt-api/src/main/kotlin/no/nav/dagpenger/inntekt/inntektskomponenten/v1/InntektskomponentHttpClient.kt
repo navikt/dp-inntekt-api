@@ -103,7 +103,6 @@ class InntektskomponentHttpClient(
                             detail
                         ).also {
                             sikkerLogg.error { it }
-                            logg.error("Failed to fetch inntekt. Status code ${response.statusCode}")
                         }
                     }
                 )
