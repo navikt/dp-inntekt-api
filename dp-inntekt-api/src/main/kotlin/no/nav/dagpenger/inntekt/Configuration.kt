@@ -55,7 +55,7 @@ private val devProperties = ConfigurationMap(
         "application.httpPort" to "8099",
         "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
-        "unleash.url" to "https://unleash.nais.preprod.local/api/",
+        "unleash.url" to "https://unleash.nais.io/api/",
         "pdl.url" to "http://pdl-api.default.svc.nais.local/graphql",
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret"
     )
@@ -76,7 +76,7 @@ private val prodProperties = ConfigurationMap(
         "application.httpPort" to "8099",
         "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
-        "unleash.url" to "https://unleash.nais.adeo.no/api/",
+        "unleash.url" to "https://unleash.nais.io/api/",
         "pdl.url" to "http://pdl-api.default.svc.nais.local/graphql",
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret"
     )
