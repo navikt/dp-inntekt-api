@@ -13,7 +13,7 @@ private val mockedConfigs = listOf(
     "jwks.issuer"
 )
 
-val dummyConfigs = mockedConfigs.associate { it to "test" }
+val dummyConfigs = mockedConfigs.associateWith { "test" }
 
 fun withProps(props: Map<String, String>, test: () -> Unit) {
     for ((k, v) in props) {

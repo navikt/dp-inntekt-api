@@ -25,7 +25,7 @@ class EnhetsregisterClient(
             try {
                 httpClient.get<String>("$baseUrl/api/enheter/$orgnummer")
             } catch (e: ClientRequestException) {
-                when (e.response.status.value) {
+                when (e.response?.status?.value) {
                     404 -> httpClient.get<String>("$baseUrl/api/underenheter/$orgnummer")
                     else -> throw e
                 }

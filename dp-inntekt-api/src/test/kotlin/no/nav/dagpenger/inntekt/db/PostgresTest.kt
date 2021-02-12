@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arb
-import io.kotest.property.arbitrary.localDate
+import io.kotest.property.arbitrary.localDateTime
 import io.kotest.property.arbitrary.next
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -130,7 +131,7 @@ internal class PostgresInntektStoreTest {
                 assertSoftly {
                     getInntektId(aktør1) shouldNotBe null
                     getInntektId(aktør2) shouldNotBe null
-                    getInntektId(aktør2) shouldNotBe getInntektId(aktør1)
+                    assertNotEquals(getInntektId(aktør2), getInntektId(aktør1))
                     getInntektId(Inntektparametre(aktørId = aktørId2, vedtakId = "464664", beregningsdato = LocalDate.now())) shouldBe null
                     getInntektId(Inntektparametre(aktørId = "3535535335", vedtakId = "1234", beregningsdato = LocalDate.now())) shouldBe null
                 }
@@ -362,7 +363,7 @@ internal class InntektsStorePropertyTest : StringSpec() {
                     aktørId = stringArb.next(it),
                     vedtakId = stringArb.next(it),
                     fødselnummer = stringArb.next(it),
-                    beregningsdato = Arb.localDate(minYear = 2010, maxYear = LocalDate.now().year).next(it)
+                    beregningsdato = Arb.localDateTime(minYear = 2010, maxYear = LocalDate.now().year).next(it).toLocalDate()
                 ),
                 inntekt = InntektkomponentResponse(
                     arbeidsInntektMaaned = emptyList(),
