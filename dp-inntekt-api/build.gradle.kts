@@ -21,7 +21,7 @@ application {
     mainClassName = "no.nav.dagpenger.inntekt.ApplicationKt"
 }
 
-val grpcVersion = "1.29.0"
+val grpcVersion = "1.35.0"
 
 dependencies {
     implementation(project(":dp-inntekt-grpc"))
@@ -92,6 +92,7 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation(Ktor.ktorTest)
+    testImplementation(Ktor.library("client-mock"))
     testImplementation(Junit5.api)
     testImplementation(Junit5.params)
     testRuntimeOnly(Junit5.engine)
