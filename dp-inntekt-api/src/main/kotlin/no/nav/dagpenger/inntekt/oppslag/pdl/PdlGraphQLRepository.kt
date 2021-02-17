@@ -1,6 +1,7 @@
 package no.nav.dagpenger.inntekt.oppslag.pdl
 
 import com.expediagroup.graphql.client.GraphQLClient
+import com.expediagroup.graphql.client.ktor.GraphQLKtorClient
 import com.expediagroup.graphql.types.GraphQLResponse
 import io.ktor.client.features.defaultRequest
 import io.ktor.client.features.logging.LogLevel
@@ -21,7 +22,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 @KtorExperimentalAPI
 class PdlGraphQLRepository constructor(
-    client: GraphQLClient<*>
+    client: GraphQLClient
 ) : PersonOppslag {
 
     private val query = HentPerson(client)
@@ -56,7 +57,7 @@ class PdlGraphQLRepository constructor(
 fun PdlGraphQLClientFactory(
     url: String,
     oidcProvider: () -> String
-) = GraphQLClient(url = URL(url)) {
+) = GraphQLKtorClient(url = URL(url)) {
     install(Logging) {
         logger = object : Logger {
             override fun log(message: String) = sikkerlogg.info { message }

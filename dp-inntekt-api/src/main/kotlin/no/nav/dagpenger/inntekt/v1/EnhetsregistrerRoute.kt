@@ -25,8 +25,8 @@ fun Route.enhetsregisteret(client: EnhetsregisterClient) {
                 call.respondText(result, ContentType.Application.Json)
             } catch (e: Exception) {
                 when (e) {
-                    is ClientRequestException -> when (e.response.status.value) {
-                        in 400..499 -> call.response.status(e.response.status)
+                    is ClientRequestException -> when (e.response?.status?.value) {
+                        in 400..499 -> call.response.status(e.response!!.status)
                     } else -> call.response.status(HttpStatusCode.BadGateway)
                 }
             }
