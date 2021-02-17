@@ -69,12 +69,12 @@ fun Route.uklassifisertInntekt(
                         ?.let {
                             inntektStore.getInntekt(it)
                         }?.let {
-                            val person = personOppslag.hentPerson(this.aktørId)
-                            val inntektsmottaker = Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
-                            mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), inntektsmottaker)
-                        }?.let {
-                            call.respond(HttpStatusCode.OK, it)
-                        } ?: throw InntektNotFoundException("Inntekt with for $this not found.")
+                        val person = personOppslag.hentPerson(this.aktørId)
+                        val inntektsmottaker = Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
+                        mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), inntektsmottaker)
+                    }?.let {
+                        call.respond(HttpStatusCode.OK, it)
+                    } ?: throw InntektNotFoundException("Inntekt with for $this not found.")
                 }
             }
             post {

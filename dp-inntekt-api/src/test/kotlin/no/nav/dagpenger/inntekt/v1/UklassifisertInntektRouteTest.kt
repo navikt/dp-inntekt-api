@@ -137,8 +137,9 @@ internal class UklassifisertInntektApiTest {
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
-            assertEquals(HttpStatusCode.NotFound, response.status())
-            val problem = moshiInstance.adapter(Problem::class.java).fromJson(response.content!!)
+            assertTrue(requestHandled)
+            Assertions.assertEquals(HttpStatusCode.NotFound, response.status())
+            val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
             assertEquals("Kunne ikke finne inntekt i databasen", problem?.title)
             assertEquals("urn:dp:error:inntekt", problem?.type.toString())
             assertEquals(404, problem?.status)

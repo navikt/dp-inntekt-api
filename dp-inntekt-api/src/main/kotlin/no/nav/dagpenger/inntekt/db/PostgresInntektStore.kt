@@ -100,8 +100,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    statement,
-                    mapOf("inntektId" to inntektId.id)
+                    statement, mapOf("inntektId" to inntektId.id)
                 ).map { row ->
                     row.localDateOrNull("beregningsdato")
                 }.asSingle

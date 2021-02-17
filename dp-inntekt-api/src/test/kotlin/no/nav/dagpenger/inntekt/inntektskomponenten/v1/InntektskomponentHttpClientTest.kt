@@ -2,8 +2,8 @@ package no.nav.dagpenger.inntekt.inntektskomponenten.v1
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.configureFor
-import com.github.tomakehurst.wiremock.client.WireMock.okForContentType
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
@@ -66,7 +66,9 @@ internal class InntektskomponentHttpClientTest {
                 .withHeader("Nav-Consumer-Id", EqualToPattern("dp-inntekt-api"))
                 .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
-                    okForContentType("application/json", body)
+                    aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(body)
                 )
         )
 
@@ -101,7 +103,9 @@ internal class InntektskomponentHttpClientTest {
                 .withHeader("Nav-Consumer-Id", EqualToPattern("dp-inntekt-api"))
                 .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
-                    okForContentType("application/json", body)
+                    WireMock.aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(body)
                 )
         )
 

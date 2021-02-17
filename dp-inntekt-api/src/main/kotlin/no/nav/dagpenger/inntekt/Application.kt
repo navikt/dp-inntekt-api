@@ -50,7 +50,7 @@ fun main() {
         val pdlPersonOppslag = PdlGraphQLRepository(
             client = PdlGraphQLClientFactory(
                 url = config.pdl.url,
-                oidcProvider = { runBlocking { stsOidcClient.oidcToken().access_token } }
+                oidcProvider = { stsOidcClient.oidcToken().access_token }
             )
         )
         val enhetsregisterClient = EnhetsregisterClient(

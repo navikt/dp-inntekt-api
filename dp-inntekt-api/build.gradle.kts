@@ -12,7 +12,6 @@ buildscript {
 }
 
 repositories {
-    mavenCentral()
     maven("https://packages.confluent.io/maven/")
 }
 
@@ -21,7 +20,7 @@ application {
     mainClassName = "no.nav.dagpenger.inntekt.ApplicationKt"
 }
 
-val grpcVersion = "1.35.0"
+val grpcVersion = "1.29.0"
 
 dependencies {
     implementation(project(":dp-inntekt-grpc"))
@@ -37,7 +36,6 @@ dependencies {
     implementation(Micrometer.prometheusRegistry)
 
     implementation(Graphql.client)
-    implementation(Graphql.library("ktor-client"))
     implementation(Ktor.library("client-logging-jvm"))
     implementation(Ktor.library("client-apache"))
 
@@ -92,10 +90,10 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation(Ktor.ktorTest)
-    testImplementation(Ktor.library("client-mock"))
     testImplementation(Junit5.api)
     testImplementation(Junit5.params)
     testRuntimeOnly(Junit5.engine)
+    testRuntimeOnly(Junit5.vintageEngine)
     testImplementation(Wiremock.standalone)
     testImplementation(KoTest.assertions)
     testImplementation(KoTest.runner)

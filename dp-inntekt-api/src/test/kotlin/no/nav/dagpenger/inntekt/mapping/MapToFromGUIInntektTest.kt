@@ -174,8 +174,7 @@ internal class KategoriseringTest {
         val mappedJson = moshiInstance.adapter(GUIInntektsKomponentResponse::class.java).toJson(guiInntekt.inntekt)
 
         JSONAssert.assertEquals(
-            mappedJson,
-            beforeJson,
+            mappedJson, beforeJson,
             AttributeIgnoringComparator(
                 JSONCompareMode.STRICT,
                 setOf("verdikode", "fraDato", "tilDato"),
@@ -187,8 +186,7 @@ internal class KategoriseringTest {
     @Test
     fun `mapFromGUIInntekt removes verdikode and updates to beskrivelse, type and tilleggsinformasjon correctly`() {
         val guiInntekt = GUIInntekt(
-            InntektId(ULID().nextULID()),
-            LocalDateTime.now(),
+            InntektId(ULID().nextULID()), LocalDateTime.now(),
             GUIInntektsKomponentResponse(
                 YearMonth.now(),
                 YearMonth.now(),
@@ -201,8 +199,7 @@ internal class KategoriseringTest {
                 ),
                 Aktoer(AktoerType.AKTOER_ID, "3333333333")
             ),
-            false,
-            false
+            false, false
         )
 
         val mappedInntekt = mapToStoredInntekt(guiInntekt)
@@ -218,8 +215,7 @@ internal class KategoriseringTest {
     @Test
     fun `mapFromGUIInntekt does not modify other fields than beskrivelse, type and tilleggsinformasjon`() {
         val guiInntekt = GUIInntekt(
-            InntektId(ULID().nextULID()),
-            LocalDateTime.now(),
+            InntektId(ULID().nextULID()), LocalDateTime.now(),
             GUIInntektsKomponentResponse(
                 YearMonth.now(),
                 YearMonth.now(),
@@ -232,8 +228,7 @@ internal class KategoriseringTest {
                 ),
                 Aktoer(AktoerType.AKTOER_ID, "3333333333")
             ),
-            false,
-            false
+            false, false
         )
 
         val mappedInntekt = mapToStoredInntekt(guiInntekt)
@@ -242,8 +237,7 @@ internal class KategoriseringTest {
         val mappedJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(mappedInntekt.inntekt)
 
         JSONAssert.assertEquals(
-            beforeJson,
-            mappedJson,
+            beforeJson, mappedJson,
             AttributeIgnoringComparator(
                 JSONCompareMode.LENIENT,
                 setOf("verdikode", "fraDato", "tilDato"),
