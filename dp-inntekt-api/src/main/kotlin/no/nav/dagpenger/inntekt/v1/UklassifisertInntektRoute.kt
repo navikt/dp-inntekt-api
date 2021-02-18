@@ -17,6 +17,8 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.util.pipeline.PipelineContext
 import io.prometheus.client.Counter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -64,121 +66,137 @@ fun Route.uklassifisertInntekt(
     authenticate("jwt") {
         route("/uklassifisert/{aktørId}/{vedtakId}/{beregningsDato}") {
             get {
-                parseUrlPathParameters().run {
-                    inntektStore.getInntektId(Inntektparametre(aktørId = this.aktørId, vedtakId = this.vedtakId.toString(), beregningsdato = this.beregningsDato))
-                        ?.let {
-                            inntektStore.getInntekt(it)
-                        }?.let {
-                            val person = personOppslag.hentPerson(this.aktørId)
-                            val inntektsmottaker = Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
-                            mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), inntektsmottaker)
-                        }?.let {
-                            call.respond(HttpStatusCode.OK, it)
-                        } ?: throw InntektNotFoundException("Inntekt with for $this not found.")
+                withContext(Dispatchers.IO) {
+                    parseUrlPathParameters().run {
+                        inntektStore.getInntektId(
+                            Inntektparametre(
+                                aktørId = this.aktørId,
+                                vedtakId = this.vedtakId.toString(),
+                                beregningsdato = this.beregningsDato
+                            )
+                        )
+                            ?.let {
+                                inntektStore.getInntekt(it)
+                            }?.let {
+                                val person = personOppslag.hentPerson(this.aktørId)
+                                val inntektsmottaker = Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
+                                mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), inntektsmottaker)
+                            }?.let {
+                                call.respond(HttpStatusCode.OK, it)
+                            } ?: throw InntektNotFoundException("Inntekt with for $this not found.")
+                    }
                 }
             }
             post {
-                parseUrlPathParameters().run {
-                    val guiInntekt = call.receive<GUIInntekt>()
-                    mapToStoredInntekt(guiInntekt)
-                        .let {
+                withContext(Dispatchers.IO) {
+                    parseUrlPathParameters().run {
+                        val guiInntekt = call.receive<GUIInntekt>()
+                        mapToStoredInntekt(guiInntekt)
+                            .let {
 
-                            inntektStore.storeInntekt(
-                                StoreInntektCommand(
-                                    inntektparametre = Inntektparametre(
-                                        aktørId = this.aktørId,
-                                        vedtakId = this.vedtakId.toString(),
-                                        beregningsdato = this.beregningsDato
-                                    ),
-                                    inntekt = it.inntekt,
-                                    manueltRedigert = ManueltRedigert.from(
-                                        guiInntekt.redigertAvSaksbehandler,
-                                        getSubject()
+                                inntektStore.storeInntekt(
+                                    StoreInntektCommand(
+                                        inntektparametre = Inntektparametre(
+                                            aktørId = this.aktørId,
+                                            vedtakId = this.vedtakId.toString(),
+                                            beregningsdato = this.beregningsDato
+                                        ),
+                                        inntekt = it.inntekt,
+                                        manueltRedigert = ManueltRedigert.from(
+                                            guiInntekt.redigertAvSaksbehandler,
+                                            getSubject()
+                                        )
+                                    )
+
+                                )
+                            }
+                            .let {
+                                call.respond(
+                                    HttpStatusCode.OK,
+                                    mapToGUIInntekt(
+                                        it,
+                                        Opptjeningsperiode(this.beregningsDato),
+                                        guiInntekt.inntektsmottaker
                                     )
                                 )
-
-                            )
-                        }
-                        .let {
-                            call.respond(
-                                HttpStatusCode.OK,
-                                mapToGUIInntekt(
-                                    it,
-                                    Opptjeningsperiode(this.beregningsDato),
-                                    guiInntekt.inntektsmottaker
-                                )
-                            )
-                        }.also {
-                            inntektKorrigeringCounter.inc()
-                        }
+                            }.also {
+                                inntektKorrigeringCounter.inc()
+                            }
+                    }
                 }
             }
         }
 
         route("/uklassifisert/uncached/{aktørId}/{vedtakId}/{beregningsDato}") {
             get {
-                parseUrlPathParameters().run {
-                    val opptjeningsperiode = Opptjeningsperiode(this.beregningsDato)
-                    toInntektskomponentRequest(this, opptjeningsperiode)
-                        .let {
-                            inntektskomponentClient.getInntekt(it)
-                        }
-                        .let {
-                            val person = personOppslag.hentPerson(this.aktørId)
-                            val inntektsmottaker = Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
-                            mapToGUIInntekt(it, opptjeningsperiode, inntektsmottaker)
-                        }
-                        .let {
-                            call.respond(HttpStatusCode.OK, it)
-                        }.also {
-                            inntektOppfriskingCounter.inc()
-                        }
+                withContext(Dispatchers.IO) {
+                    parseUrlPathParameters().run {
+                        val opptjeningsperiode = Opptjeningsperiode(this.beregningsDato)
+                        toInntektskomponentRequest(this, opptjeningsperiode)
+                            .let {
+                                inntektskomponentClient.getInntekt(it)
+                            }
+                            .let {
+                                val person = personOppslag.hentPerson(this.aktørId)
+                                val inntektsmottaker = Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
+                                mapToGUIInntekt(it, opptjeningsperiode, inntektsmottaker)
+                            }
+                            .let {
+                                call.respond(HttpStatusCode.OK, it)
+                            }.also {
+                                inntektOppfriskingCounter.inc()
+                            }
+                    }
                 }
             }
 
             post {
-                parseUrlPathParameters().run {
-                    val guiInntekt = call.receive<GUIInntekt>()
-                    mapToDetachedInntekt(guiInntekt)
-                        .let {
-                            inntektStore.storeInntekt(
-                                StoreInntektCommand(
-                                    inntektparametre = Inntektparametre(
-                                        aktørId = this.aktørId,
-                                        vedtakId = this.vedtakId.toString(),
-                                        beregningsdato = this.beregningsDato
-                                    ),
-                                    inntekt = it.inntekt,
-                                    manueltRedigert = ManueltRedigert.from(
-                                        guiInntekt.redigertAvSaksbehandler,
-                                        getSubject()
+                withContext(Dispatchers.IO) {
+                    parseUrlPathParameters().run {
+                        val guiInntekt = call.receive<GUIInntekt>()
+                        mapToDetachedInntekt(guiInntekt)
+                            .let {
+                                inntektStore.storeInntekt(
+                                    StoreInntektCommand(
+                                        inntektparametre = Inntektparametre(
+                                            aktørId = this.aktørId,
+                                            vedtakId = this.vedtakId.toString(),
+                                            beregningsdato = this.beregningsDato
+                                        ),
+                                        inntekt = it.inntekt,
+                                        manueltRedigert = ManueltRedigert.from(
+                                            guiInntekt.redigertAvSaksbehandler,
+                                            getSubject()
+                                        )
                                     )
                                 )
-                            )
-                        }
-                        .let {
-                            call.respond(
-                                HttpStatusCode.OK,
-                                mapToGUIInntekt(
-                                    it,
-                                    Opptjeningsperiode(this.beregningsDato),
-                                    guiInntekt.inntektsmottaker
+                            }
+                            .let {
+                                call.respond(
+                                    HttpStatusCode.OK,
+                                    mapToGUIInntekt(
+                                        it,
+                                        Opptjeningsperiode(this.beregningsDato),
+                                        guiInntekt.inntektsmottaker
+                                    )
                                 )
-                            )
-                        }.also {
-                            inntektOppfriskingBruktCounter.inc()
-                        }
+                            }.also {
+                                inntektOppfriskingBruktCounter.inc()
+                            }
+                    }
                 }
             }
         }
     }
     route("/verdikoder") {
         get {
-            call.respondText(
-                inntektKlassifiseringsKoderJsonAdapter.toJson(dataGrunnlagKlassifiseringToVerdikode.values),
-                ContentType.Application.Json,
-                HttpStatusCode.OK
-            )
+            withContext(Dispatchers.IO) {
+                call.respondText(
+                    inntektKlassifiseringsKoderJsonAdapter.toJson(dataGrunnlagKlassifiseringToVerdikode.values),
+                    ContentType.Application.Json,
+                    HttpStatusCode.OK
+                )
+            }
         }
     }
 }
