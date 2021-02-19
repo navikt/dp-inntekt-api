@@ -19,6 +19,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.KafkaContainer
+import org.testcontainers.utility.DockerImageName
 import java.sql.SQLTransientConnectionException
 import java.time.Duration
 import java.time.ZoneOffset
@@ -29,7 +30,7 @@ private val LOGGER = KotlinLogging.logger { }
 internal class KafkaSubsumsjonBruktDataConsumerTest {
     private object Kafka {
         val instance by lazy {
-            KafkaContainer("5.3.1").apply { this.start() }
+            KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka").withTag("5.3.1")).apply { this.start() }
         }
     }
 
