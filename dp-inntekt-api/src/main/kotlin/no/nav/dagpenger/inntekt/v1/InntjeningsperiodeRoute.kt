@@ -7,6 +7,8 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
@@ -18,19 +20,21 @@ fun Route.opptjeningsperiodeApi(inntektStore: InntektStore) {
 
     route("is-samme-inntjeningsperiode") {
         post {
-            val parametere = call.receive<InntjeningsperiodeParametre>()
+            withContext(Dispatchers.IO) {
+                val parametere = call.receive<InntjeningsperiodeParametre>()
 
-            val gammelBeregningsdato = inntektStore.getBeregningsdato(InntektId(parametere.inntektsId))
+                val gammelBeregningsdato = inntektStore.getBeregningsdato(InntektId(parametere.inntektsId))
 
-            val resultat = Opptjeningsperiode(gammelBeregningsdato).sammeOpptjeningsPeriode(
-                Opptjeningsperiode(
-                    LocalDate.parse(parametere.beregningsdato)
+                val resultat = Opptjeningsperiode(gammelBeregningsdato).sammeOpptjeningsPeriode(
+                    Opptjeningsperiode(
+                        LocalDate.parse(parametere.beregningsdato)
+                    )
                 )
-            )
 
-            val response = InntjeningsperiodeResultat(resultat, parametere)
+                val response = InntjeningsperiodeResultat(resultat, parametere)
 
-            call.respond(HttpStatusCode.OK, response)
+                call.respond(HttpStatusCode.OK, response)
+            }
         }
     }
 }
