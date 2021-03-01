@@ -9,6 +9,7 @@ import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
+import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
@@ -26,7 +27,7 @@ internal class VaktmesterTest {
 
     private val parameters = Inntektparametre(
         aktørId = "1234",
-        vedtakId = "1234",
+        regelkontekst = RegelKontekst("1234"),
         beregningsdato = LocalDate.now()
     )
 

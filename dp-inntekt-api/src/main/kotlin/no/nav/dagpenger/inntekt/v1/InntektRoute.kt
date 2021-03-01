@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.db.Inntektparametre
+import no.nav.dagpenger.inntekt.db.RegelKontekst
 import java.time.LocalDate
 
 fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
@@ -25,7 +26,7 @@ fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
                         behandlingsInntektsGetter.getSpesifisertInntekt(
                             Inntektparametre(
                                 aktørId = request.aktørId,
-                                vedtakId = request.vedtakId,
+                                regelkontekst = request.regelkontekst ?: RegelKontekst(request.vedtakId),
                                 beregningsdato = request.beregningsDato,
                                 fødselnummer = request.fødselsnummer
                             )
@@ -43,7 +44,7 @@ fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
                         behandlingsInntektsGetter.getKlassifisertInntekt(
                             Inntektparametre(
                                 aktørId = request.aktørId,
-                                vedtakId = request.vedtakId,
+                                regelkontekst = request.regelkontekst ?: RegelKontekst(request.vedtakId),
                                 beregningsdato = request.beregningsDato,
                                 fødselnummer = request.fødselsnummer
                             )
@@ -58,6 +59,7 @@ fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
 data class InntektRequestMedFnr(
     val aktørId: String,
     val vedtakId: String,
+    val regelkontekst: RegelKontekst?,
     val fødselsnummer: String? = null,
     val beregningsDato: LocalDate
 )

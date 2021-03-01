@@ -18,6 +18,7 @@ import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.Inntektparametre
+import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
@@ -66,20 +67,20 @@ internal class InntektRouteSpec {
 
     private val inntektParametre = Inntektparametre(
         aktørId = "$aktørId",
-        vedtakId = "1",
+        regelkontekst = RegelKontekst("1"),
         beregningsdato = beregningsdato
 
     )
 
     private val vedtakIdUlidParametre = Inntektparametre(
         aktørId = aktørId,
-        vedtakId = ulid,
+        regelkontekst = RegelKontekst(ulid),
         beregningsdato = beregningsdato
     )
 
     private val fnrParametre = Inntektparametre(
         aktørId = aktørId,
-        vedtakId = ulid,
+        regelkontekst = RegelKontekst(ulid),
         fødselnummer = fnr,
         beregningsdato = beregningsdato
     )

@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.Inntektparametre
+import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
@@ -33,7 +34,7 @@ internal class CachedInntektsGetterTest {
     fun `Get cached inntekt for known behandlingsKey`() {
         val parameters = Inntektparametre(
             aktørId = "1234",
-            vedtakId = "112233",
+            regelkontekst = RegelKontekst("112233"),
             beregningsdato = LocalDate.of(2019, 5, 6)
         )
 
@@ -62,7 +63,7 @@ internal class CachedInntektsGetterTest {
     fun `Get new inntekt for uknown behandlingsKey`() {
         val parameters = Inntektparametre(
             aktørId = "5678",
-            vedtakId = "546787",
+            regelkontekst = RegelKontekst("546787"),
             beregningsdato = LocalDate.of(2019, 4, 26)
         )
 
