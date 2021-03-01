@@ -10,7 +10,8 @@ internal class InntektRequestTest {
     fun ` Map to InntektkomponentenRequest`() {
         val request = InntektRequest(
             aktørId = "1234",
-            vedtakId = 1223,
+            kontekstId = "1223",
+            kontekstType = "VEDTAK",
             beregningsDato = LocalDate.of(2019, 4, 3)
         )
 

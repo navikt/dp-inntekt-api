@@ -65,14 +65,14 @@ fun Route.uklassifisertInntekt(
     personOppslag: PersonOppslag
 ) {
     authenticate("jwt") {
-        route("/uklassifisert/{aktørId}/{vedtakId}/{beregningsDato}") {
+        route("/uklassifisert/{aktørId}/{kontekstType}/{kontekstId}/{beregningsDato}") {
             get {
                 withContext(Dispatchers.IO) {
                     parseUrlPathParameters().run {
                         inntektStore.getInntektId(
                             Inntektparametre(
                                 aktørId = this.aktørId,
-                                regelkontekst = RegelKontekst(this.vedtakId.toString()),
+                                regelkontekst = RegelKontekst(this.kontekstId, this.kontekstType),
                                 beregningsdato = this.beregningsDato
                             )
                         )
@@ -99,7 +99,7 @@ fun Route.uklassifisertInntekt(
                                     StoreInntektCommand(
                                         inntektparametre = Inntektparametre(
                                             aktørId = this.aktørId,
-                                            regelkontekst = RegelKontekst(this.vedtakId.toString()),
+                                            regelkontekst = RegelKontekst(this.kontekstId, this.kontekstType),
                                             beregningsdato = this.beregningsDato
                                         ),
                                         inntekt = it.inntekt,
@@ -128,7 +128,7 @@ fun Route.uklassifisertInntekt(
             }
         }
 
-        route("/uklassifisert/uncached/{aktørId}/{vedtakId}/{beregningsDato}") {
+        route("/uklassifisert/uncached/{aktørId}/{kontekstType}/{kontekstId}/{beregningsDato}") {
             get {
                 withContext(Dispatchers.IO) {
                     parseUrlPathParameters().run {
@@ -161,7 +161,7 @@ fun Route.uklassifisertInntekt(
                                     StoreInntektCommand(
                                         inntektparametre = Inntektparametre(
                                             aktørId = this.aktørId,
-                                            regelkontekst = RegelKontekst(this.vedtakId.toString()),
+                                            regelkontekst = RegelKontekst(this.kontekstId, this.kontekstType),
                                             beregningsdato = this.beregningsDato
                                         ),
                                         inntekt = it.inntekt,
@@ -216,14 +216,16 @@ private fun PipelineContext<Unit, ApplicationCall>.getSubject(): String {
 private fun PipelineContext<Unit, ApplicationCall>.parseUrlPathParameters(): InntektRequest = runCatching {
     InntektRequest(
         aktørId = call.parameters["aktørId"]!!,
-        vedtakId = call.parameters["vedtakId"]!!.toLong(),
+        kontekstId = call.parameters["kontekstId"]!!,
+        kontekstType = call.parameters["kontekstType"]!!,
         beregningsDato = LocalDate.parse(call.parameters["beregningsDato"]!!)
     )
 }.getOrElse { t -> throw IllegalArgumentException("Failed to parse parameters", t) }
 
 data class InntektRequest(
     val aktørId: String,
-    val vedtakId: Long,
+    val kontekstId: String,
+    val kontekstType: String,
     val beregningsDato: LocalDate
 )
 
