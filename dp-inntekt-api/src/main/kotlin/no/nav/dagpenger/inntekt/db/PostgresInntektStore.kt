@@ -76,7 +76,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                         statement,
                         inntektparametre.aktørId,
                         inntektparametre.fødselnummer,
-                        inntektparametre.vedtakId,
+                        inntektparametre.regelkontekst.id,
                         inntektparametre.beregningsdato
                     ).map { row ->
                         InntektId(row.string("inntektId"))
@@ -193,7 +193,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                                 "inntektId" to inntektId.id,
                                 "aktorId" to command.inntektparametre.aktørId,
                                 "fnr" to command.inntektparametre.fødselnummer,
-                                "vedtakId" to command.inntektparametre.vedtakId,
+                                "vedtakId" to command.inntektparametre.regelkontekst.id,
                                 "beregningsdato" to command.inntektparametre.beregningsdato
                             )
                         ).asUpdate

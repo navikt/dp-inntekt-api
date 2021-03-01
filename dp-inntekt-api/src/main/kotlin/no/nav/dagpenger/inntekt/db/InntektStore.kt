@@ -21,12 +21,14 @@ interface InntektStore {
 
 data class Inntektparametre(
     val aktørId: String,
-    val vedtakId: String,
     val beregningsdato: LocalDate,
+    val regelkontekst: RegelKontekst,
     val fødselnummer: String? = null
 ) {
     val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(beregningsdato)
 }
+
+data class RegelKontekst(val id: String, val type: String = "UKJENT") // todo:??
 
 data class StoreInntektCommand(
     val inntektparametre: Inntektparametre,

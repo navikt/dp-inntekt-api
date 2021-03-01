@@ -24,6 +24,7 @@ import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
+import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
@@ -71,7 +72,7 @@ fun Route.uklassifisertInntekt(
                         inntektStore.getInntektId(
                             Inntektparametre(
                                 aktørId = this.aktørId,
-                                vedtakId = this.vedtakId.toString(),
+                                regelkontekst = RegelKontekst(this.vedtakId.toString()),
                                 beregningsdato = this.beregningsDato
                             )
                         )
@@ -98,7 +99,7 @@ fun Route.uklassifisertInntekt(
                                     StoreInntektCommand(
                                         inntektparametre = Inntektparametre(
                                             aktørId = this.aktørId,
-                                            vedtakId = this.vedtakId.toString(),
+                                            regelkontekst = RegelKontekst(this.vedtakId.toString()),
                                             beregningsdato = this.beregningsDato
                                         ),
                                         inntekt = it.inntekt,
@@ -160,7 +161,7 @@ fun Route.uklassifisertInntekt(
                                     StoreInntektCommand(
                                         inntektparametre = Inntektparametre(
                                             aktørId = this.aktørId,
-                                            vedtakId = this.vedtakId.toString(),
+                                            regelkontekst = RegelKontekst(this.vedtakId.toString()),
                                             beregningsdato = this.beregningsDato
                                         ),
                                         inntekt = it.inntekt,

@@ -22,6 +22,7 @@ import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
+import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
@@ -58,10 +59,14 @@ internal class UklassifisertInntektApiTest {
     private val token = jwtStub.createTokenFor("user")
 
     private val notFoundQuery =
-        Inntektparametre(aktørId = "1234", vedtakId = "1", beregningsdato = LocalDate.of(2019, 1, 8))
+        Inntektparametre(
+            aktørId = "1234",
+            regelkontekst = RegelKontekst("1"),
+            beregningsdato = LocalDate.of(2019, 1, 8)
+        )
 
     private val foundQuery =
-        Inntektparametre(aktørId = "1234", vedtakId = "1234", beregningsdato = LocalDate.of(2019, 1, 8))
+        Inntektparametre(aktørId = "1234", regelkontekst = RegelKontekst("1234"), beregningsdato = LocalDate.of(2019, 1, 8))
 
     private val inntektkomponentenFoundRequest = InntektkomponentRequest(
         "1234",
@@ -133,7 +138,7 @@ internal class UklassifisertInntektApiTest {
     fun `GET unknown uklassifisert inntekt should return 404 not found`() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.vedtakId}/${notFoundQuery.beregningsdato}"
+            "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}"
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
@@ -153,7 +158,7 @@ internal class UklassifisertInntektApiTest {
     fun `GET uklassifisert without auth cookie should return 401 `() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.vedtakId}/${notFoundQuery.beregningsdato}"
+            "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}"
         ) {
         }.apply {
             assertTrue(requestHandled)
@@ -175,7 +180,7 @@ internal class UklassifisertInntektApiTest {
         val anotherIssuer = JwtStub("https://anotherissuer")
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.vedtakId}/${notFoundQuery.beregningsdato}"
+            "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}"
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=${anotherIssuer.createTokenFor("user")}")
         }.apply {
@@ -188,7 +193,7 @@ internal class UklassifisertInntektApiTest {
     fun `GET uklassifisert inntekt with malformed parameters should return bad request`() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.vedtakId}/blabla"
+            "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.id}/blabla"
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
@@ -201,7 +206,7 @@ internal class UklassifisertInntektApiTest {
     fun `Get request for uklassifisert inntekt should return 200 ok`() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.vedtakId}/${foundQuery.beregningsdato}"
+            "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
@@ -217,7 +222,7 @@ internal class UklassifisertInntektApiTest {
     fun `Get request for uncached uklassifisert inntekt should return 200 ok`() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/uncached/${foundQuery.aktørId}/${foundQuery.vedtakId}/${foundQuery.beregningsdato}"
+            "$uklassifisertInntekt/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
@@ -241,7 +246,7 @@ internal class UklassifisertInntektApiTest {
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.vedtakId}/${foundQuery.beregningsdato}"
+            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
@@ -267,7 +272,7 @@ internal class UklassifisertInntektApiTest {
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.vedtakId}/${foundQuery.beregningsdato}"
+            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
@@ -319,7 +324,7 @@ internal class UklassifisertInntektApiTest {
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.vedtakId}/${foundQuery.beregningsdato}"
+            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
@@ -344,7 +349,7 @@ internal class UklassifisertInntektApiTest {
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.vedtakId}/${foundQuery.beregningsdato}"
+            "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
@@ -372,7 +377,7 @@ internal class UklassifisertInntektApiTest {
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.vedtakId}/${foundQuery.beregningsdato}"
+            "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
