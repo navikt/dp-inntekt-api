@@ -34,7 +34,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(12, migrations, "Wrong number of migrations")
+            assertEquals(13, migrations, "Wrong number of migrations")
         }
     }
 
@@ -52,7 +52,7 @@ internal class PostgresTest {
     fun `Migration of testdata `() {
         withCleanDb {
             val migrations = migrate(DataSource.instance, locations = listOf("db/migration", "db/testdata"))
-            assertEquals(17, migrations, "Wrong number of migrations")
+            assertEquals(18, migrations, "Wrong number of migrations")
         }
     }
 
@@ -336,6 +336,18 @@ internal class PostgresInntektStoreTest {
                 val beregningsDatoFromBackup = getBeregningsdato(InntektId("01EDBSHDENAHCVBYT02W160E6X"))
                 assertNotNull(beregningsDatoFromBackup)
                 assertEquals(LocalDate.of(2019, 3, 3), beregningsDatoFromBackup)
+            }
+        }
+    }
+
+    @Test
+    fun `Sucessfully  migrates from vedtakid and converts to konteksttype`() {
+        withCleanDb {
+            migrate(DataSource.instance, locations = listOf("db/migration", "unit-testdata"))
+
+            with(PostgresInntektStore(DataSource.instance)) {
+                val inntektsid = getInntektId(Inntektparametre("AKTØR_ID", LocalDate.of(2019, 1, 1), RegelKontekst("-1337", "veiledning")))
+                assertNotNull(inntektsid)
             }
         }
     }
