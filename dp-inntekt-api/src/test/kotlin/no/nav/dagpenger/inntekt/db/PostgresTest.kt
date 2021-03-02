@@ -140,6 +140,48 @@ internal class PostgresInntektStoreTest {
     }
 
     @Test
+    fun ` Should fetch different inntekt based on different konteksttype and same vedtak id and same aktørid`() {
+
+        val aktørId1 = "1234"
+
+        withMigratedDb {
+
+            with(PostgresInntektStore(DataSource.instance)) {
+
+                val aktør1 =
+                    Inntektparametre(aktørId = aktørId1, beregningsdato = LocalDate.now(), regelkontekst = RegelKontekst("1234", "veiledning"))
+                val aktør2 =
+                    Inntektparametre(aktørId = aktørId1, beregningsdato = LocalDate.now(), regelkontekst = RegelKontekst("1234", "saksbehandling"))
+                storeInntekt(
+                    StoreInntektCommand(
+                        inntektparametre = aktør1,
+                        inntekt = InntektkomponentResponse(
+                            emptyList(),
+                            Aktoer(AktoerType.AKTOER_ID, aktørId1)
+                        )
+                    )
+                )
+
+                storeInntekt(
+                    StoreInntektCommand(
+                        inntektparametre = aktør2,
+                        inntekt = InntektkomponentResponse(
+                            emptyList(),
+                            Aktoer(AktoerType.AKTOER_ID, aktørId1)
+                        )
+                    )
+                )
+
+                assertSoftly {
+                    getInntektId(aktør1) shouldNotBe null
+                    getInntektId(aktør2) shouldNotBe null
+                    assertNotEquals(getInntektId(aktør2), getInntektId(aktør1))
+                }
+            }
+        }
+    }
+
+    @Test
     fun `Successful insert of inntekter which is manuelt redigert`() {
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
