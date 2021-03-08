@@ -142,6 +142,6 @@ VALUES ('01D8G4TGH7Q9NKT7BPAG5XGXRT', TRUE, '
 }')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO inntekt_v1_person_mapping (inntektid, aktørid, vedtakid, fnr, beregningsdato)
-VALUES ('01D8G4TGH7Q9NKT7BPAG5XGXRT', '1.5_G_INNTEKT_KORONA', 12345, null, '2020-03-21')
+INSERT INTO inntekt_v1_person_mapping (inntektid, aktørid, kontekstId, kontekstType, fnr, beregningsdato)
+VALUES ('01D8G4TGH7Q9NKT7BPAG5XGXRT', '1.5_G_INNTEKT_KORONA', '12345', 'vedtak'::kontekstTypeNavn, null, '2020-03-21')
 ON CONFLICT DO NOTHING;;

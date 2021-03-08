@@ -34,7 +34,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(12, migrations, "Wrong number of migrations")
+            assertEquals(14, migrations, "Wrong number of migrations")
         }
     }
 
@@ -52,7 +52,7 @@ internal class PostgresTest {
     fun `Migration of testdata `() {
         withCleanDb {
             val migrations = migrate(DataSource.instance, locations = listOf("db/migration", "db/testdata"))
-            assertEquals(17, migrations, "Wrong number of migrations")
+            assertEquals(19, migrations, "Wrong number of migrations")
         }
     }
 
@@ -134,6 +134,48 @@ internal class PostgresInntektStoreTest {
                     assertNotEquals(getInntektId(aktør2), getInntektId(aktør1))
                     getInntektId(Inntektparametre(aktørId = aktørId2, beregningsdato = LocalDate.now(), regelkontekst = RegelKontekst("464664"))) shouldBe null
                     getInntektId(Inntektparametre(aktørId = "3535535335", beregningsdato = LocalDate.now(), regelkontekst = RegelKontekst("1234"))) shouldBe null
+                }
+            }
+        }
+    }
+
+    @Test
+    fun ` Should fetch different inntekt based on different konteksttype and same vedtak id and same aktørid`() {
+
+        val aktørId1 = "1234"
+
+        withMigratedDb {
+
+            with(PostgresInntektStore(DataSource.instance)) {
+
+                val aktør1 =
+                    Inntektparametre(aktørId = aktørId1, beregningsdato = LocalDate.now(), regelkontekst = RegelKontekst("1234", "veiledning"))
+                val aktør2 =
+                    Inntektparametre(aktørId = aktørId1, beregningsdato = LocalDate.now(), regelkontekst = RegelKontekst("1234", "saksbehandling"))
+                storeInntekt(
+                    StoreInntektCommand(
+                        inntektparametre = aktør1,
+                        inntekt = InntektkomponentResponse(
+                            emptyList(),
+                            Aktoer(AktoerType.AKTOER_ID, aktørId1)
+                        )
+                    )
+                )
+
+                storeInntekt(
+                    StoreInntektCommand(
+                        inntektparametre = aktør2,
+                        inntekt = InntektkomponentResponse(
+                            emptyList(),
+                            Aktoer(AktoerType.AKTOER_ID, aktørId1)
+                        )
+                    )
+                )
+
+                assertSoftly {
+                    getInntektId(aktør1) shouldNotBe null
+                    getInntektId(aktør2) shouldNotBe null
+                    assertNotEquals(getInntektId(aktør2), getInntektId(aktør1))
                 }
             }
         }
@@ -294,6 +336,18 @@ internal class PostgresInntektStoreTest {
                 val beregningsDatoFromBackup = getBeregningsdato(InntektId("01EDBSHDENAHCVBYT02W160E6X"))
                 assertNotNull(beregningsDatoFromBackup)
                 assertEquals(LocalDate.of(2019, 3, 3), beregningsDatoFromBackup)
+            }
+        }
+    }
+
+    @Test
+    fun `Sucessfully  migrates from vedtakid and converts to konteksttype`() {
+        withCleanDb {
+            migrate(DataSource.instance, locations = listOf("db/migration", "unit-testdata"))
+
+            with(PostgresInntektStore(DataSource.instance)) {
+                val inntektsid = getInntektId(Inntektparametre("AKTØR_ID", LocalDate.of(2019, 1, 1), RegelKontekst("-1337", "forskudd")))
+                assertNotNull(inntektsid)
             }
         }
     }

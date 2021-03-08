@@ -65,7 +65,8 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                     FROM inntekt_V1_person_mapping
                 WHERE aktørId = ? 
                 AND (fnr = ? OR fnr IS NULL)
-                AND vedtakId = ? 
+                AND kontekstId = ? 
+                AND kontekstType = ?::kontekstTypeNavn
                 AND beregningsdato = ? 
                 ORDER BY timestamp DESC LIMIT 1
         """.trimMargin()
@@ -77,6 +78,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                         inntektparametre.aktørId,
                         inntektparametre.fødselnummer,
                         inntektparametre.regelkontekst.id,
+                        inntektparametre.regelkontekst.type,
                         inntektparametre.beregningsdato
                     ).map { row ->
                         InntektId(row.string("inntektId"))
@@ -188,12 +190,13 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                     )
                     tx.run(
                         queryOf(
-                            "INSERT INTO inntekt_V1_person_mapping VALUES (:inntektId, :aktorId, :fnr, :vedtakId, :beregningsdato)",
+                            "INSERT INTO inntekt_V1_person_mapping(inntektId, aktørId, fnr, kontekstId, beregningsdato, kontekstType) VALUES (:inntektId, :aktorId, :fnr, :kontekstId, :beregningsdato, :kontekstType::kontekstTypeNavn)",
                             mapOf(
                                 "inntektId" to inntektId.id,
                                 "aktorId" to command.inntektparametre.aktørId,
                                 "fnr" to command.inntektparametre.fødselnummer,
-                                "vedtakId" to command.inntektparametre.regelkontekst.id,
+                                "kontekstId" to command.inntektparametre.regelkontekst.id,
+                                "kontekstType" to command.inntektparametre.regelkontekst.type,
                                 "beregningsdato" to command.inntektparametre.beregningsdato
                             )
                         ).asUpdate

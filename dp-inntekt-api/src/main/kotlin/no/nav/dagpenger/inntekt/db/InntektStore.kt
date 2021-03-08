@@ -28,7 +28,7 @@ data class Inntektparametre(
     val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(beregningsdato)
 }
 
-data class RegelKontekst(val id: String, val type: String = "UKJENT") // todo:??
+data class RegelKontekst(val id: String, val type: String = "vedtak")
 
 data class StoreInntektCommand(
     val inntektparametre: Inntektparametre,
