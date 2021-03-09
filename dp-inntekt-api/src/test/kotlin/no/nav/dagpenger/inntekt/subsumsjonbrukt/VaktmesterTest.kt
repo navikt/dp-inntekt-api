@@ -27,7 +27,7 @@ internal class VaktmesterTest {
 
     private val parameters = Inntektparametre(
         aktørId = "1234",
-        regelkontekst = RegelKontekst("1234"),
+        regelkontekst = RegelKontekst("1234", "vedtak"),
         beregningsdato = LocalDate.now()
     )
 

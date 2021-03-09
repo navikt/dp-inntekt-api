@@ -41,7 +41,7 @@ internal class InntektRouteSpec {
         """
         {
         	"aktørId": "$aktørId",
-            "vedtakId": 1,
+            "regelkontekst": { "id" : "1", "type" : "vedtak" },
             "beregningsDato": "$beregningsdato"
         }
         """.trimIndent()
@@ -50,7 +50,7 @@ internal class InntektRouteSpec {
         """
         {
             "aktørId": "$aktørId",
-             "vedtakId": "$ulid",
+            "regelkontekst": { "id" : "$ulid", "type" : "vedtak" },
             "beregningsDato": "2019-01-08"
         }
         """.trimIndent()
@@ -59,28 +59,28 @@ internal class InntektRouteSpec {
         """
         {
             "aktørId": "$aktørId",
-             "vedtakId": "$ulid",
-             "fødselsnummer": "$fnr",
+            "regelkontekst": { "id" : "$ulid", "type" : "vedtak" },
+            "fødselsnummer": "$fnr",
             "beregningsDato": "$beregningsdato"
         }
         """.trimIndent()
 
     private val inntektParametre = Inntektparametre(
         aktørId = "$aktørId",
-        regelkontekst = RegelKontekst("1"),
+        regelkontekst = RegelKontekst("1", "vedtak"),
         beregningsdato = beregningsdato
 
     )
 
     private val vedtakIdUlidParametre = Inntektparametre(
         aktørId = aktørId,
-        regelkontekst = RegelKontekst(ulid),
+        regelkontekst = RegelKontekst(ulid, "vedtak"),
         beregningsdato = beregningsdato
     )
 
     private val fnrParametre = Inntektparametre(
         aktørId = aktørId,
-        regelkontekst = RegelKontekst(ulid),
+        regelkontekst = RegelKontekst(ulid, "vedtak"),
         fødselnummer = fnr,
         beregningsdato = beregningsdato
     )

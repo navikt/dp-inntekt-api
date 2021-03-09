@@ -34,7 +34,7 @@ internal class CachedInntektsGetterTest {
     fun `Get cached inntekt for known behandlingsKey`() {
         val parameters = Inntektparametre(
             aktørId = "1234",
-            regelkontekst = RegelKontekst("112233"),
+            regelkontekst = RegelKontekst("112233", "vedtak"),
             beregningsdato = LocalDate.of(2019, 5, 6)
         )
 
@@ -63,7 +63,7 @@ internal class CachedInntektsGetterTest {
     fun `Get new inntekt for uknown behandlingsKey`() {
         val parameters = Inntektparametre(
             aktørId = "5678",
-            regelkontekst = RegelKontekst("546787"),
+            regelkontekst = RegelKontekst("546787", "vedtak"),
             beregningsdato = LocalDate.of(2019, 4, 26)
         )
 

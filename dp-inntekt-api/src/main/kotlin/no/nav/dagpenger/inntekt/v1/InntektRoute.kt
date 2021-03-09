@@ -26,7 +26,7 @@ fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
                         behandlingsInntektsGetter.getSpesifisertInntekt(
                             Inntektparametre(
                                 aktørId = request.aktørId,
-                                regelkontekst = request.regelkontekst ?: RegelKontekst(request.vedtakId),
+                                regelkontekst = request.regelkontekst,
                                 beregningsdato = request.beregningsDato,
                                 fødselnummer = request.fødselsnummer
                             )
@@ -44,7 +44,7 @@ fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
                         behandlingsInntektsGetter.getKlassifisertInntekt(
                             Inntektparametre(
                                 aktørId = request.aktørId,
-                                regelkontekst = request.regelkontekst ?: RegelKontekst(request.vedtakId),
+                                regelkontekst = request.regelkontekst,
                                 beregningsdato = request.beregningsDato,
                                 fødselnummer = request.fødselsnummer
                             )
@@ -58,8 +58,7 @@ fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
 
 data class InntektRequestMedFnr(
     val aktørId: String,
-    val vedtakId: String,
-    val regelkontekst: RegelKontekst?,
+    val regelkontekst: RegelKontekst,
     val fødselsnummer: String? = null,
     val beregningsDato: LocalDate
 )
