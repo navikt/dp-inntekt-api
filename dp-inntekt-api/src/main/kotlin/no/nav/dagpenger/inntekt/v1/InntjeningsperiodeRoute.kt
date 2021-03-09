@@ -17,26 +17,6 @@ import no.nav.dagpenger.inntekt.v1.models.InntjeningsperiodeResultat
 import java.time.LocalDate
 
 fun Route.opptjeningsperiodeApi(inntektStore: InntektStore) {
-    // todo remmove
-    route("is-samme-inntjeningsperiode") {
-        post {
-            withContext(Dispatchers.IO) {
-                val parametere = call.receive<InntjeningsperiodeParametre>()
-
-                val gammelBeregningsdato = inntektStore.getBeregningsdato(InntektId(parametere.inntektsId))
-
-                val resultat = Opptjeningsperiode(gammelBeregningsdato).sammeOpptjeningsPeriode(
-                    Opptjeningsperiode(
-                        LocalDate.parse(parametere.beregningsdato)
-                    )
-                )
-
-                val response = InntjeningsperiodeResultat(resultat, parametere)
-
-                call.respond(HttpStatusCode.OK, response)
-            }
-        }
-    }
     route("samme-inntjeningsperiode") {
         post {
             withContext(Dispatchers.IO) {
