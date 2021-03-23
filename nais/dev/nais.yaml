@@ -27,6 +27,8 @@ spec:
     requests:
       cpu: 100m
       memory: 256Mi
+  kafka:
+    pool: nav-dev
   vault:
     enabled: true
     paths:
