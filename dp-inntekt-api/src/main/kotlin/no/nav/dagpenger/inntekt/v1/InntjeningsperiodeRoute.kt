@@ -17,8 +17,7 @@ import no.nav.dagpenger.inntekt.v1.models.InntjeningsperiodeResultat
 import java.time.LocalDate
 
 fun Route.opptjeningsperiodeApi(inntektStore: InntektStore) {
-
-    route("is-samme-inntjeningsperiode") {
+    route("samme-inntjeningsperiode") {
         post {
             withContext(Dispatchers.IO) {
                 val parametere = call.receive<InntjeningsperiodeParametre>()
@@ -30,9 +29,7 @@ fun Route.opptjeningsperiodeApi(inntektStore: InntektStore) {
                         LocalDate.parse(parametere.beregningsdato)
                     )
                 )
-
-                val response = InntjeningsperiodeResultat(resultat, parametere)
-
+                val response = InntjeningsperiodeResultat(sammeInntjeningsPeriode = resultat)
                 call.respond(HttpStatusCode.OK, response)
             }
         }
