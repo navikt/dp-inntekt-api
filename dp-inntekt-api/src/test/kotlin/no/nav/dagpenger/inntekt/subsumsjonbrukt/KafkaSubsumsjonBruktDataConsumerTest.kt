@@ -33,6 +33,25 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
             KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka").withTag("5.3.1")).apply { this.start() }
         }
     }
+    val inntektId = InntektId(ULID().nextULID())
+
+    private val bruktInntektMelding = mapOf(
+        "@event_name" to "brukt_inntekt",
+        "inntektsId" to inntektId.id,
+        "aktorId" to "12345678910",
+        "kontekst" to mapOf(
+            "id" to "2",
+            "type" to "vedtak"
+        )
+    )
+    private val bruktInntektMeldingManueltGrunnlag = mapOf(
+        "@event_name" to "brukt_inntekt",
+        "aktorId" to "12345678910",
+        "kontekst" to mapOf(
+            "id" to "1",
+            "type" to "vedtak"
+        )
+    )
 
     private val producer by lazy {
         KafkaProducer<String, String>(
@@ -49,22 +68,19 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
     @Test
     fun `Should mark inntekt id as used`() {
         runBlocking {
-            val inntektId = InntektId(ULID().nextULID())
             val storeMock = mockk<InntektStore>(relaxed = false)
             coEvery { storeMock.markerInntektBrukt(inntektId) } returns 1
             val config = Configuration().run {
-                copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers, user = null, password = null))
+                copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
             }
 
             val consumer = KafkaSubsumsjonBruktDataConsumer(config, storeMock).apply {
                 listen()
             }
 
-            val bruktSubsumsjonData = mapOf("faktum" to mapOf("inntektsId" to inntektId.id))
-
-            val metaData = producer.send(ProducerRecord(config.subsumsjonBruktDataTopic, "test", adapter.toJson(bruktSubsumsjonData)))
+            val metaData = producer.send(ProducerRecord(config.inntektBruktDataTopic, "test", adapter.toJson(bruktInntektMelding)))
                 .get(5, TimeUnit.SECONDS)
-            LOGGER.info("Producer produced $bruktSubsumsjonData with meta $metaData")
+            LOGGER.info("Producer produced $bruktInntektMelding with meta $metaData")
 
             TimeUnit.MILLISECONDS.sleep(500)
 
@@ -81,7 +97,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
         runBlocking {
             val storeMock = mockk<InntektStore>(relaxed = false)
             val config = Configuration().run {
-                copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers, user = null, password = null))
+                copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
             }
 
             val consumer = KafkaSubsumsjonBruktDataConsumer(config, storeMock).apply {
@@ -90,7 +106,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
 
             val bruktSubsumsjonData = mapOf("faktum" to mapOf("manueltGrunnlag" to "122212"))
 
-            val metaData = producer.send(ProducerRecord(config.subsumsjonBruktDataTopic, "test", adapter.toJson(bruktSubsumsjonData)))
+            val metaData = producer.send(ProducerRecord(config.inntektBruktDataTopic, "test", adapter.toJson(bruktInntektMeldingManueltGrunnlag)))
                 .get(5, TimeUnit.SECONDS)
             LOGGER.info("Producer produced $bruktSubsumsjonData with meta $metaData")
 
@@ -112,18 +128,16 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
             val storeMock = mockk<InntektStore>(relaxed = false)
             coEvery { storeMock.markerInntektBrukt(inntektId) } throws SQLTransientConnectionException("BLÆ")
             val config = Configuration().run {
-                copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers, user = null, password = null))
+                copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
             }
 
             val consumer = KafkaSubsumsjonBruktDataConsumer(config = config, inntektStore = storeMock, graceDuration = Duration.ofMillis(1)).apply {
                 listen()
             }
 
-            val bruktSubsumsjonData = mapOf("faktum" to mapOf("inntektsId" to inntektId.id))
-
-            val metaData = producer.send(ProducerRecord(config.subsumsjonBruktDataTopic, "test", adapter.toJson(bruktSubsumsjonData)))
+            val metaData = producer.send(ProducerRecord(config.inntektBruktDataTopic, "test", adapter.toJson(bruktInntektMelding)))
                 .get(5, TimeUnit.SECONDS)
-            LOGGER.info("Producer produced $bruktSubsumsjonData with meta $metaData + should fail")
+            LOGGER.info("Producer produced $bruktInntektMelding with meta $metaData + should fail")
 
             TimeUnit.MILLISECONDS.sleep(1500)
 

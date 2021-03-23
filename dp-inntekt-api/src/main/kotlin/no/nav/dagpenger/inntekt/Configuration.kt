@@ -8,7 +8,7 @@ import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import no.finn.unleash.util.UnleashConfig
-import no.nav.dagpenger.streams.KafkaCredential
+import no.nav.dagpenger.streams.KafkaAivenCredentials
 import java.net.InetAddress
 import java.net.UnknownHostException
 
@@ -20,6 +20,7 @@ private val localProperties = ConfigurationMap(
         "database.user" to "postgres",
         "database.password" to "postgres",
         "vault.mountpath" to "postgresql/dev/",
+        "KAFKA_BROKERS" to "localhost:9092",
         "application.profile" to "LOCAL",
         "application.httpPort" to "8099",
         "hentinntektliste.url" to "https://localhost/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
@@ -32,8 +33,7 @@ private val localProperties = ConfigurationMap(
         "flyway.locations" to "db/migration,db/testdata",
         "api.secret" to "secret",
         "api.keys" to "dp-datalaster-inntekt",
-        "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
-        "kafka.bootstrap.servers" to "localhost:9092",
+        "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
         "unleash.url" to "http://localhost/api/",
         "pdl.url" to "http://localhost:4321",
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret"
@@ -53,8 +53,7 @@ private val devProperties = ConfigurationMap(
         "jwks.issuer" to "https://isso-q.adeo.no:443/isso/oauth2",
         "application.profile" to "DEV",
         "application.httpPort" to "8099",
-        "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
-        "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
+        "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
         "unleash.url" to "https://unleash.nais.io/api/",
         "pdl.url" to "http://pdl-api.default.svc.nais.local/graphql",
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret"
@@ -74,8 +73,7 @@ private val prodProperties = ConfigurationMap(
         "jwks.issuer" to "https://isso.adeo.no:443/isso/oauth2",
         "application.profile" to "PROD",
         "application.httpPort" to "8099",
-        "kafka.subsumsjon.brukt.data.topic" to "privat-dagpenger-subsumsjon-brukt-data",
-        "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
+        "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
         "unleash.url" to "https://unleash.nais.io/api/",
         "pdl.url" to "http://pdl-api.default.svc.nais.local/graphql",
         "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret"
@@ -86,10 +84,9 @@ data class Configuration(
     val database: Database = Database(),
     val vault: Vault = Vault(),
     val application: Application = Application(),
-    val kafka: Kafka = Kafka(),
     val pdl: Pdl = Pdl(),
     val enhetsregisteretUrl: Enhetsregister = Enhetsregister(),
-    val subsumsjonBruktDataTopic: String = config()[Key("kafka.subsumsjon.brukt.data.topic", stringType)]
+    val inntektBruktDataTopic: String = config()[Key("kafka.inntekt.brukt.topic", stringType)]
 ) {
 
     data class Database(
@@ -107,21 +104,11 @@ data class Configuration(
         val mountPath: String = config()[Key("vault.mountpath", stringType)]
     )
 
-    data class Kafka(
-        val brokers: String = config()[Key("kafka.bootstrap.servers", stringType)],
-        val user: String? = config().getOrNull(Key("srvdp.inntekt.api.username", stringType)),
-        val password: String? = config().getOrNull(Key("srvdp.inntekt.api.password", stringType))
-    ) {
-        fun credential(): KafkaCredential? {
-            return if (user != null && password != null) {
-                KafkaCredential(user, password)
-            } else null
-        }
-    }
-
     data class Application(
         val id: String = config().getOrElse(Key("application.id", stringType), "dp-inntekt-api-consumer"),
+        val brokers: String = config()[Key("KAFKA_BROKERS", stringType)],
         val profile: Profile = config()[Key("application.profile", stringType)].let { Profile.valueOf(it) },
+        val credential: KafkaAivenCredentials? = if (profile == Profile.LOCAL) null else KafkaAivenCredentials(),
         val httpPort: Int = config()[Key("application.httpPort", intType)],
         val username: String = config()[Key("srvdp.inntekt.api.username", stringType)],
         val password: String = config()[Key("srvdp.inntekt.api.password", stringType)],
