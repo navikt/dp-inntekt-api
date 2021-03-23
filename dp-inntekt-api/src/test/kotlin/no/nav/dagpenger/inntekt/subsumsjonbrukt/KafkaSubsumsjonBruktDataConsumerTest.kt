@@ -71,7 +71,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
             val storeMock = mockk<InntektStore>(relaxed = false)
             coEvery { storeMock.markerInntektBrukt(inntektId) } returns 1
             val config = Configuration().run {
-                copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers, user = null, password = null))
+                copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
             }
 
             val consumer = KafkaSubsumsjonBruktDataConsumer(config, storeMock).apply {
@@ -97,7 +97,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
         runBlocking {
             val storeMock = mockk<InntektStore>(relaxed = false)
             val config = Configuration().run {
-                copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers, user = null, password = null))
+                copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
             }
 
             val consumer = KafkaSubsumsjonBruktDataConsumer(config, storeMock).apply {
@@ -128,7 +128,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
             val storeMock = mockk<InntektStore>(relaxed = false)
             coEvery { storeMock.markerInntektBrukt(inntektId) } throws SQLTransientConnectionException("BLÆ")
             val config = Configuration().run {
-                copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers, user = null, password = null))
+                copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
             }
 
             val consumer = KafkaSubsumsjonBruktDataConsumer(config = config, inntektStore = storeMock, graceDuration = Duration.ofMillis(1)).apply {

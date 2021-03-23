@@ -10,7 +10,8 @@ private val mockedConfigs = listOf(
     "api.secret",
     "api.keys",
     "jwks.url",
-    "jwks.issuer"
+    "jwks.issuer",
+    "KAFKA_BROKERS"
 )
 
 val dummyConfigs = mockedConfigs.associateWith { "test" }

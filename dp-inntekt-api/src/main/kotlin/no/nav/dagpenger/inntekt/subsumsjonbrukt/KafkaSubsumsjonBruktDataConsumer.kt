@@ -13,7 +13,6 @@ import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.plain.consumerConfig
-import no.nav.dagpenger.streams.KafkaCredential
 import no.nav.dagpenger.streams.PacketDeserializer
 import org.apache.kafka.clients.consumer.CommitFailedException
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -43,18 +42,14 @@ internal class KafkaSubsumsjonBruktDataConsumer(
 
     fun listen() {
         launch(coroutineContext) {
-            val creds = config.kafka.user?.let { u ->
-                config.kafka.password?.let { p ->
-                    KafkaCredential(username = u, password = p)
-                }
-            }
+
             logger.info { "Starting ${config.application.id}" }
 
             KafkaConsumer<String, Packet>(
                 consumerConfig(
                     groupId = config.application.id,
-                    bootstrapServerUrl = config.kafka.brokers,
-                    credential = creds
+                    bootstrapServerUrl = config.application.brokers,
+                    credential = config.application.credential
                 ).also {
                     it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = PacketDeserializer::class.java
                     it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
