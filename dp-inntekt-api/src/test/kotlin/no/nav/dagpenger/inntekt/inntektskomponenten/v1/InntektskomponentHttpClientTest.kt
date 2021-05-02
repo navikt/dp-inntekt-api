@@ -52,6 +52,8 @@ internal class InntektskomponentHttpClientTest {
     }
 
     class DummyOidcClient : OidcClient {
+        override suspend fun getOidcToken(): OidcToken = oidcToken()
+
         override fun oidcToken(): OidcToken = OidcToken(UUID.randomUUID().toString(), "openid", 3000)
     }
 
