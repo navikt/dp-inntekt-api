@@ -21,7 +21,7 @@ application {
     mainClassName = "no.nav.dagpenger.inntekt.ApplicationKt"
 }
 
-val grpcVersion = "1.35.0"
+val grpcVersion = "1.38.1"
 
 dependencies {
     implementation(project(":dp-inntekt-grpc"))

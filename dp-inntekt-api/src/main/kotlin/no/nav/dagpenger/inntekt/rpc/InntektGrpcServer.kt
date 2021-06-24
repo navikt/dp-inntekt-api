@@ -24,8 +24,8 @@ private val logger = KotlinLogging.logger {}
 
 internal class InntektGrpcServer(
     private val port: Int,
-    private val apiKeyVerifier: AuthApiKeyVerifier,
-    private val inntektStore: InntektStore
+    apiKeyVerifier: AuthApiKeyVerifier,
+    inntektStore: InntektStore
 ) {
     private val inntektGrpcApi = InntektGrpcApi(inntektStore).bindService()
 
