@@ -1,33 +1,34 @@
 package no.nav.dagpenger.inntekt.oppslag.pdl
 
-import com.expediagroup.graphql.client.GraphQLClient
+import com.expediagroup.graphql.client.jackson.GraphQLClientJacksonSerializer
 import com.expediagroup.graphql.client.ktor.GraphQLKtorClient
-import com.expediagroup.graphql.types.GraphQLResponse
+import com.expediagroup.graphql.client.types.GraphQLClientResponse
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.defaultRequest
 import io.ktor.client.features.logging.LogLevel
 import io.ktor.client.features.logging.Logger
 import io.ktor.client.features.logging.Logging
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
-import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.pdl.HentPerson
+import no.nav.pdl.hentperson.Navn
 import java.net.URL
 import java.util.UUID
 
 private val log = KotlinLogging.logger { }
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-@KtorExperimentalAPI
-class PdlGraphQLRepository constructor(
-    client: GraphQLClient
+class PdlGraphQLRepository(
+    private val client: GraphQLKtorClient
 ) : PersonOppslag {
 
-    private val query = HentPerson(client)
     override suspend fun hentPerson(aktørId: String): Person? {
-        val result = query.execute(HentPerson.Variables(ident = aktørId))
+        val query = HentPerson(HentPerson.Variables(ident = aktørId))
+        val result = client.execute(query)
 
         return if (result.errors?.isNotEmpty() == true) {
             log.error { "Feil i GraphQL-responsen: ${result.errors}" }
@@ -37,8 +38,8 @@ class PdlGraphQLRepository constructor(
         }
     }
 
-    private fun GraphQLResponse<HentPerson.Result>.toPerson(): Person? {
-        val navn: HentPerson.Navn? = data?.hentPerson?.navn?.firstOrNull()
+    private fun GraphQLClientResponse<HentPerson.Result>.toPerson(): Person? {
+        val navn: Navn? = data?.hentPerson?.navn?.firstOrNull()
         val fødselsnummer = data?.hentIdenter?.identer?.firstOrNull()?.ident
         return fødselsnummer?.let { fnr ->
             navn?.let { navn ->
@@ -53,27 +54,31 @@ class PdlGraphQLRepository constructor(
     }
 }
 
-@KtorExperimentalAPI
 fun PdlGraphQLClientFactory(
     url: String,
     oidcProvider: () -> String
-) = GraphQLKtorClient(url = URL(url)) {
-    install(Logging) {
-        logger = object : Logger {
-            override fun log(message: String) = sikkerlogg.info { message }
+): GraphQLKtorClient {
+    val client = HttpClient(engineFactory = CIO) {
+        install(Logging) {
+            logger = object : Logger {
+                override fun log(message: String) = sikkerlogg.info { message }
+            }
+
+            level = LogLevel.HEADERS
         }
 
-        level = LogLevel.HEADERS
-    }
+        defaultRequest {
+            oidcProvider().also {
+                header(HttpHeaders.Authorization, "Bearer $it")
+                header("Nav-Consumer-Token", "Bearer $it")
+            }
 
-    defaultRequest {
-        oidcProvider().also {
-            header(HttpHeaders.Authorization, "Bearer $it")
-            header("Nav-Consumer-Token", "Bearer $it")
+            header(HttpHeaders.UserAgent, "dp-inntekt-api")
+            header(HttpHeaders.Accept, "application/json")
+            header("Tema", "DAG")
+            header("Nav-Call-Id", UUID.randomUUID())
         }
-
-        header("User-Agent", "dp-inntekt-api")
-        header("Tema", "DAG")
-        header("Nav-Call-Id", UUID.randomUUID())
     }
+
+    return GraphQLKtorClient(url = URL(url), httpClient = client, serializer = GraphQLClientJacksonSerializer())
 }

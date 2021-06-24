@@ -68,10 +68,6 @@ allprojects {
         dependsOn("spotlessApply", "spotlessKotlinCheck")
     }
 
-    tasks.named("jar") {
-        dependsOn("test")
-    }
-
     repositories {
         jcenter()
         maven("https://jitpack.io")
@@ -96,6 +92,7 @@ subprojects {
     val scmUrl = "scm:git:https://github.com/navikt/dp-inntekt.git"
 
     val sourcesJar by tasks.registering(Jar::class) {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
     }

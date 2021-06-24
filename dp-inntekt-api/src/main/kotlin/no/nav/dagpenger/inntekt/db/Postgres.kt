@@ -50,7 +50,7 @@ fun hikariConfigFrom(config: Configuration) =
     }
 
 fun migrate(dataSource: HikariDataSource, initSql: String = "", locations: List<String> = listOf("db/migration")): Int =
-    Flyway.configure().locations(*locations.toTypedArray()).dataSource(dataSource).initSql(initSql).load().migrate()
+    Flyway.configure().locations(*locations.toTypedArray()).dataSource(dataSource).initSql(initSql).load().migrate().migrations.size
 
 fun clean(dataSource: HikariDataSource) = Flyway.configure().dataSource(dataSource).load().clean()
 

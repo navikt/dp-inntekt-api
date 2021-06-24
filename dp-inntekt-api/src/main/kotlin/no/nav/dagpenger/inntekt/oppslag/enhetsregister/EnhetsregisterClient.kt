@@ -8,7 +8,6 @@ import io.ktor.client.features.HttpTimeout
 import io.ktor.client.features.logging.LogLevel
 import io.ktor.client.features.logging.Logging
 import io.ktor.client.request.get
-import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
@@ -34,7 +33,6 @@ class EnhetsregisterClient(
     }
 }
 
-@KtorExperimentalAPI
 internal fun httpClient(
     engine: HttpClientEngine = Apache.create { customizeClient { setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault())) } }
 ): HttpClient {

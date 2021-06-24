@@ -61,12 +61,13 @@ fun Application.inntektApi(
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     jwkProvider: JwkProvider,
     enhetsregisterClient: EnhetsregisterClient,
-    healthChecks: List<HealthCheck>
+    healthChecks: List<HealthCheck>,
+    collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
 ) {
     install(DefaultHeaders)
 
     install(MicrometerMetrics) {
-        registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, CollectorRegistry.defaultRegistry, Clock.SYSTEM)
+        registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, collectorRegistry, Clock.SYSTEM)
     }
 
     install(Authentication) {

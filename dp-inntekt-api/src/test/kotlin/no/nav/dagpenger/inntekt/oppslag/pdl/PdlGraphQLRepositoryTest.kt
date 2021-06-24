@@ -8,7 +8,6 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.ContentPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import io.kotest.matchers.shouldBe
-import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.runBlocking
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterAll
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.Test
 import wiremock.com.google.common.net.HttpHeaders
 import kotlin.test.assertNotNull
 
-@KtorExperimentalAPI
 internal class PdlGraphQLRepositoryTest {
 
     @Test

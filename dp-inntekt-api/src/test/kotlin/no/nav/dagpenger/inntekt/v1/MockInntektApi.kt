@@ -3,6 +3,7 @@ package no.nav.dagpenger.inntekt.v1
 import com.auth0.jwk.JwkProvider
 import io.ktor.application.Application
 import io.mockk.mockk
+import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.HealthCheck
@@ -31,7 +32,8 @@ internal fun mockInntektApi(
             apiAuthApiKeyVerifier = apiAuthApiKeyVerifier,
             jwkProvider = jwkProvider,
             enhetsregisterClient = enhetsregisterClient,
-            healthChecks = healthChecks
+            healthChecks = healthChecks,
+            collectorRegistry = CollectorRegistry(true)
         )
     }
 }

@@ -1,26 +1,19 @@
 import com.google.protobuf.gradle.* // ktlint-disable no-wildcard-imports
 
-val grpcVersion = "1.35.0"
-val grpcKotlinVersion = "0.1.1"
-val protbufVersion = "3.11.1"
-val protobufGradleVersion = "0.8.12"
+val grpcVersion = "1.38.1"
+val grpcKotlinVersion = "1.1.0"
+val protbufVersion = "3.17.3"
+val protobufGradleVersion = "0.8.16"
 
 plugins {
     kotlin("jvm")
-    id("com.google.protobuf") version "0.8.12"
+    id("com.google.protobuf") version "0.8.16"
 }
 
 apply(plugin = "com.google.protobuf")
 
 group = "com.github.navikt"
 version = "1.0-SNAPSHOT"
-
-// To get intellij to make sense of generated sources
-java {
-    val mainJavaSourceSet: SourceDirectorySet = sourceSets.getByName("main").java
-    val protoSrcDir = "$buildDir/generated/source/proto/main"
-    mainJavaSourceSet.srcDirs("$protoSrcDir/java", "$protoSrcDir/grpc", "$protoSrcDir/grpckotlin")
-}
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -58,13 +51,11 @@ dependencies {
     testImplementation(KoTest.assertions)
 }
 
-// Could not resolve all files for configuration ':protomodule:compileProtoPath' bug
-// https://github.com/google/protobuf-gradle-plugin/issues/391 and
-// https://github.com/kotest/kotest/issues/1366
-configurations.forEach {
-    if (it.name.toLowerCase().contains("proto")) {
-        it.attributes.attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage::class.java, "java-runtime"))
-    }
+// To get intellij to make sense of generated sources
+java {
+    val mainJavaSourceSet: SourceDirectorySet = sourceSets.getByName("main").java
+    val protoSrcDir = "$buildDir/generated/source/proto/main"
+    mainJavaSourceSet.srcDirs("$protoSrcDir/java", "$protoSrcDir/grpc", "$protoSrcDir/grpckotlin")
 }
 
 protobuf {
@@ -77,7 +68,7 @@ protobuf {
             artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
         }
         id("grpckotlin") {
-            artifact = "io.grpc:protoc-gen-grpc-kotlin:$grpcKotlinVersion"
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:$grpcKotlinVersion:jdk7@jar"
         }
     }
 
@@ -89,10 +80,6 @@ protobuf {
             }
         }
     }
-}
-
-fun ProtobufConfigurator.generateProtoTasks(action: ProtobufConfigurator.GenerateProtoTaskCollection.() -> Unit) {
-    generateProtoTasks(closureOf(action))
 }
 
 sourceSets {

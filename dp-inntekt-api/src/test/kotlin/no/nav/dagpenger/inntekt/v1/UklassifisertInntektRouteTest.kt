@@ -161,7 +161,6 @@ internal class UklassifisertInntektApiTest {
             "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}"
         ) {
         }.apply {
-            assertTrue(requestHandled)
             Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
             val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
             assertEquals("Ikke innlogget", problem?.title)
@@ -197,7 +196,6 @@ internal class UklassifisertInntektApiTest {
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
-            assertTrue(requestHandled)
             assertEquals(HttpStatusCode.BadRequest, response.status())
         }
     }
@@ -210,7 +208,6 @@ internal class UklassifisertInntektApiTest {
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
-            assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
             val storedInntekt =
                 moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
@@ -226,7 +223,6 @@ internal class UklassifisertInntektApiTest {
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
         }.apply {
-            assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
             val uncachedInntekt =
                 moshiInstance.adapter<DetachedInntekt>(DetachedInntekt::class.java).fromJson(response.content!!)!!
@@ -252,7 +248,6 @@ internal class UklassifisertInntektApiTest {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
             setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
         }.apply {
-            assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
             val storedInntekt =
                 moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
@@ -278,7 +273,6 @@ internal class UklassifisertInntektApiTest {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
             setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
         }.apply {
-            assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
             val storedInntekt =
                 moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
@@ -331,7 +325,6 @@ internal class UklassifisertInntektApiTest {
             val body = moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt)
             setBody(body.replace(oldValue = "123", newValue = ""))
         }.apply {
-            assertTrue(requestHandled)
             assertEquals(HttpStatusCode.BadRequest, response.status())
         }
     }
@@ -355,7 +348,6 @@ internal class UklassifisertInntektApiTest {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
             setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
         }.apply {
-            assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
             val storedInntekt =
                 moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
@@ -383,7 +375,6 @@ internal class UklassifisertInntektApiTest {
             addHeader(HttpHeaders.Cookie, "ID_token=$token")
             setBody(moshiInstance.adapter(GUIInntekt::class.java).toJson(guiInntekt))
         }.apply {
-            assertTrue(requestHandled)
             assertEquals(HttpStatusCode.OK, response.status())
             val storedInntekt =
                 moshiInstance.adapter(StoredInntekt::class.java).fromJson(response.content!!)!!
@@ -397,7 +388,6 @@ internal class UklassifisertInntektApiTest {
         handleRequest(HttpMethod.Get, "v1/inntekt/verdikoder") {
             addHeader(HttpHeaders.ContentType, "application/json")
         }.apply {
-            assertTrue(requestHandled)
             assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
             assertEquals(HttpStatusCode.OK, response.status())
             assertTrue(runCatching { inntektKlassifiseringsKoderJsonAdapter.fromJson(response.content!!) }.isSuccess)

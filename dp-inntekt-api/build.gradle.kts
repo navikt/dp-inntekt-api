@@ -38,6 +38,7 @@ dependencies {
 
     implementation(Graphql.client)
     implementation(Graphql.library("ktor-client"))
+    implementation(Graphql.library("client-jackson"))
     implementation(Ktor.library("client-logging-jvm"))
     implementation(Ktor.library("client-apache"))
 
@@ -81,7 +82,6 @@ dependencies {
     implementation(Prometheus.common)
     implementation(Prometheus.hotspot)
     implementation(Prometheus.log4j2)
-
     implementation(Bekk.nocommons)
 
     implementation(Kotlinx.bimap)
@@ -91,7 +91,10 @@ dependencies {
     runtimeOnly("io.grpc:grpc-netty-shaded:$grpcVersion")
 
     testImplementation(kotlin("test"))
-    testImplementation(Ktor.ktorTest)
+    testImplementation(Ktor.ktorTest) {
+        // https://youtrack.jetbrains.com/issue/KT-46090
+        exclude("org.jetbrains.kotlin", "kotlin-test-junit")
+    }
     testImplementation(Ktor.library("client-mock"))
     testImplementation(Junit5.api)
     testImplementation(Junit5.params)
@@ -107,10 +110,6 @@ dependencies {
 }
 
 tasks.named("shadowJar") {
-    dependsOn("test")
-}
-
-tasks.named("jar") {
     dependsOn("test")
 }
 
@@ -135,13 +134,13 @@ val graphqlGenerateClient by tasks.getting(com.expediagroup.graphql.plugin.gradl
     queryFileDirectory.set("$projectDir/src/main/resources")
 }
 
-tasks.register<de.undercouch.gradle.tasks.download.Download>("downloadPdlSDL") {
+val downloadPdlSDL by tasks.register<de.undercouch.gradle.tasks.download.Download>("downloadPdlSDL") {
     src("https://navikt.github.io/pdl/pdl-api-sdl.graphqls")
     dest(File(buildDir, schema))
 }
 
 tasks.register<Copy>("copySchemaToResources") {
-    dependsOn("downloadPdlSDL")
+    dependsOn(downloadPdlSDL)
 
     from(buildDir) {
         include(schema)

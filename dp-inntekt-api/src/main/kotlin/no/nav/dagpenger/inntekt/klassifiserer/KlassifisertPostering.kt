@@ -140,6 +140,7 @@ private fun isSykepengerFangstFiske(posteringsType: PosteringsType): Boolean {
 
 private fun isTiltakslønn(posteringsType: PosteringsType): Boolean {
     val tiltakslønnPosteringsTyper = listOf(
+        // @todo Honorar/Akkord/Prosent/Provisjon ?
         PosteringsType.L_ANNET_T,
         PosteringsType.L_BONUS_T,
         PosteringsType.L_FAST_TILLEGG_T,
