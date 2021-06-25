@@ -133,7 +133,7 @@ object Kotlin {
 }
 
 object KoTest {
-    const val version = "4.4.1"
+    const val version = "4.6.0"
 
     // for kotest framework
     const val runner = "io.kotest:kotest-runner-junit5-jvm:$version"
@@ -234,7 +234,7 @@ object Spotless {
 }
 
 object Shadow {
-    const val version = "5.2.0"
+    const val version = "7.0.0"
     const val shadow = "com.github.johnrengelman.shadow"
 }
 
